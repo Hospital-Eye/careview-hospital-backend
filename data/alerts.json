@@ -1,0 +1,113 @@
+[    
+    
+    {
+    "_id": { "$oid": "6667d8a7a1b2c3d4e5f61001" },
+    "type": "Patient Safety",
+    "title": "CRITICAL: Fall Detected in Room 301",
+    "severity": "Critical",
+    "source": {
+        "type": "CV System",
+        "eventId": { "$oid": "6667d8a6a1b2c3d4e5f6f003" }
+    },
+    "recipients": [
+        {
+        "staffId": { "$oid": "6667d8a2a1b2c3d4e5f6b004" },
+        "acknowledgedAt": { "$date": "2025-06-10T20:55:18.000Z" }
+        },
+        {
+        "staffId": { "$oid": "6667d8a2a1b2c3d4e5f6b002" },
+        "acknowledgedAt": null
+        }
+    ],
+    "status": "Resolved",
+    "timestamps": {
+        "created": { "$date": "2025-06-10T20:55:06.000Z" },
+        "resolved": { "$date": "2025-06-10T21:02:45.000Z" }
+    },
+    "associatedIds": {
+        "patientId": { "$oid": "6667d8a3a1b2c3d4e5f6c001" },
+        "roomId": { "$oid": "6667d8a1a1b2c3d4e5f6a007" }
+    },
+    "resolutionNotes": "Rapid response team activated. Patient assessed, vitals stable, no apparent injury. Assisted back to bed. Neurological checks initiated by Dr. Petrova-Singh."
+    },
+    
+    {
+    "_id": { "$oid": "6667d8a7a1b2c3d4e5f61002" },
+    "type": "PPE Compliance",
+    "title": "Visitor without mask detected in HALL-1N",
+    "severity": "Info",
+    "source": {
+        "type": "CV System",
+        "eventId": { "$oid": "6667d8a6a1b2c3d4e5f6f004" }
+    },
+    "recipients": [
+        {
+        "staffId": { "$oid": "6667d8a2a1b2c3d4e5f6b012" },
+        "acknowledgedAt": { "$date": "2025-06-10T20:52:30.000Z" }
+        }
+    ],
+    "status": "Resolved",
+    "timestamps": {
+        "created": { "$date": "2025-06-10T20:52:01.000Z" },
+        "resolved": { "$date": "2025-06-10T20:54:00.000Z" }
+    },
+    "associatedIds": {
+        "roomId": { "$oid": "6667d8a1a1b2c3d4e5f6a016" }
+    },
+    "resolutionNotes": "Unit clerk notified security. Security staff provided visitor with a mask."
+    },
+   
+    {
+    "_id": { "$oid": "6667d8a7a1b2c3d4e5f61003" },
+    "type": "Task Overdue",
+    "title": "Vitals Check Overdue for Patient in Room 101-A",
+    "severity": "Warning",
+    "source": {
+        "type": "Automated",
+        "taskId": { "$oid": "6667d8a5a1b2c3d4e5f6e002" }
+    },
+    "recipients": [
+        {
+        "staffId": { "$oid": "6667d8a2a1b2c3d4e5f6b005" },
+        "acknowledgedAt": null
+        }
+    ],
+    "status": "Active",
+    "timestamps": {
+        "created": { "$date": "2025-06-10T19:00:01.000Z" },
+        "resolved": null
+    },
+    "associatedIds": {
+        "patientId": { "$oid": "6667d8a3a1b2c3d4e5f6c002" },
+        "staffId": { "$oid": "6667d8a2a1b2c3d4e5f6b005" }
+    },
+    "resolutionNotes": ""
+    },
+    
+    {
+    "_id": { "$oid": "6667d8a7a1b2c3d4e5f61004" },
+    "type": "Staff Communication",
+    "title": "STAT Consult Request: Cardiology for patient in ICU-301",
+    "severity": "High",
+    "source": {
+        "type": "Manual",
+        "requestingStaffId": { "$oid": "6667d8a2a1b2c3d4e5f6b001" }
+    },
+    "recipients": [
+        {
+        "staffId": { "$oid": "6667d8a2a1b2c3d4e5f6b002" },
+        "acknowledgedAt": null
+        }
+    ],
+    "status": "Active",
+    "timestamps": {
+        "created": { "$date": "2025-06-10T21:15:30.000Z" },
+        "resolved": null
+    },
+    "associatedIds": {
+        "patientId": { "$oid": "6667d8a3a1b2c3d4e5f6c001" }
+    },
+    "resolutionNotes": ""
+    }
+
+]
