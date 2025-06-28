@@ -1,14 +1,20 @@
 const mongoose = require('mongoose');
 
 const deviceLogSchema = new mongoose.Schema({
-  deviceId: { type: String, required: true },
-  eventType: {
-    type: String,
-    enum: ['motion', 'fall', 'temperature', 'heartbeat', 'custom'],
-    required: true
+  timestamp: { type: Date, default: Date.now },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  action: { type: String, required: true },
+  entity: {
+    type: {
+      type: String,
+      required: true,
+    },
+    id: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+    }
   },
-  data: mongoose.Schema.Types.Mixed,
-  recordedAt: { type: Date, default: Date.now }
+  details: { type: String }
 });
 
 module.exports = mongoose.model('DeviceLog', deviceLogSchema);
