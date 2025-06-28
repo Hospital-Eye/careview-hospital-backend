@@ -1,36 +1,39 @@
 const mongoose = require('mongoose');
 
 const taskSchema = new mongoose.Schema({
-  title: { type: String, required: true },
-  description: String,
+  description: { type: String, required: true },
+  category: { type: String, required: true },
   status: {
     type: String,
-    enum: ['todo', 'in_progress', 'done'],
-    default: 'todo',
+    enum: ['Pending', 'In-Progress', 'Completed', 'Overdue'],
+    default: 'Pending',
   },
   priority: {
     type: String,
-    enum: ['low', 'medium', 'high'],
-    default: 'medium',
-  },
-  keywords: [String], // NLP extracted terms
-  createdBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-  },
-  assignedTo: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    enum: ['Low', 'Normal', 'High', 'Urgent'],
+    default: 'Normal',
   },
   patientId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Patient',
+    default: null
   },
-  createdAt: {
-    type: Date,
-    default: Date.now,
+  assignedStaffId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
   },
-  updatedAt: Date,
+  timestamps: {
+    created: { type: Date, default: Date.now },
+    due: Date,
+    completed: Date,
+  },
+  duration: {
+    estimated: Number,
+    actual: Number
+  },
+  dependencies: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Task' }],
+  location: String
 });
 
 module.exports = mongoose.model('Task', taskSchema);

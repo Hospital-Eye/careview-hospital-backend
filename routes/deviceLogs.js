@@ -1,11 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const {
-  createLog,
-  getLogs
+  createDeviceLog,
+  getDeviceLogs,
+  getDeviceLogById,
+  deleteDeviceLog
 } = require('../controllers/deviceLogController');
 
-router.post('/', createLog);
-router.get('/', getLogs);
+router.post('/', createDeviceLog);
+router.get('/', getDeviceLogs);
+router.get('/:id', getDeviceLogById);
+router.delete('/:id', deleteDeviceLog);
 
 module.exports = router;

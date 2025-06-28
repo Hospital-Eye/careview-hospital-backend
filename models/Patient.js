@@ -1,27 +1,34 @@
 const mongoose = require('mongoose');
 
 const patientSchema = new mongoose.Schema({
+  mrn: { type: String, required: true, unique: true },
   name: { type: String, required: true },
-  roomNumber: String,
-  status: {
-    type: String,
-    enum: ['stable', 'critical', 'discharged'],
-    default: 'stable',
+  dob: { type: Date },
+  gender: String,
+  weight: {
+    value: Number,
+    unit: String
   },
-  assignedStaff: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-  }],
-  admittedAt: {
-    type: Date,
-    default: Date.now,
+  emergencyContact: {
+    name: String,
+    relation: String,
+    phone: String
   },
-  updatedAt: Date,
-  archetype: {
-    type: String,
-    enum: ['patient'],
-    default: 'patient',
-  },
+  admissionDate: Date,
+  dischargeDate: Date,
+  roomId: { type: mongoose.Schema.Types.ObjectId, ref: 'Room' },
+  admissionReason: String,
+  diagnoses: [String],
+  attendingPhysicianId: { type: mongoose.Schema.Types.ObjectId, ref: 'Staff' },
+  acuityLevel: Number,
+  status: String,
+  carePlan: {
+    assignedStaffIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Staff' }],
+    notes: String,
+    scheduledProcedures: [String],
+    medicationSchedule: [String],
+    dietaryRestrictions: String
+  }
 });
 
 module.exports = mongoose.model('Patient', patientSchema);

@@ -3,15 +3,15 @@ const router = express.Router();
 const {
   createPatient,
   getPatients,
-  getPatientById,
-  updatePatient,
-  deletePatient
+  getPatientByMRN,
+  updatePatientByMRN,
+  deletePatientByMRN
 } = require('../controllers/patientController');
 
 router.post('/', createPatient);
 router.get('/', getPatients);
-router.get('/:id', getPatientById);
-router.put('/:id', updatePatient);
-router.delete('/:id', deletePatient);
+router.get('/:mrn', getPatientByMRN);
+router.put('/:mrn', updatePatientByMRN);
+router.delete('/:mrn', deletePatientByMRN);
 
 module.exports = router;
