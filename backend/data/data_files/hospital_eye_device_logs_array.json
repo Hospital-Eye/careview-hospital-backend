@@ -1,0 +1,702 @@
+[
+  {
+    "timestamp": "2025-07-05 01:15:58",
+    "user": "Rasha Venkatesh",
+    "action": "PATIENT ADMITTED",
+    "entity": "1366794b-dcb2-4117-ad17-00fffd12a01e",
+    "details": "Admitted new patient Ayesha Mammen to Room 104-B."
+  },
+  {
+    "timestamp": "2025-07-06 12:15:58",
+    "user": "Brett Hernandez",
+    "action": "MEDICATION ORDER EDITED",
+    "entity": "e9214135-3c1c-4633-b447-6b7de79e684d",
+    "details": "Changed Atorvastatin dose for patient ."
+  },
+  {
+    "timestamp": "2025-07-07 05:15:58",
+    "user": "Brian Garcia",
+    "action": "PATIENT ADMITTED",
+    "entity": "45568b50-b8f3-49ca-8749-d77cacd9d64e",
+    "details": "Admitted new patient Jaime Gray to Room 101-A."
+  },
+  {
+    "timestamp": "2025-07-05 02:15:58",
+    "user": "Paige Evans",
+    "action": "STAFF RECORD CREATED",
+    "entity": "7f7118e3-a2a7-4232-8dd7-7a771e3cf05b",
+    "details": "Created new staff record for Kimaya Shenoy."
+  },
+  {
+    "timestamp": "2025-07-07 07:15:58",
+    "user": "Robert Green",
+    "action": "PATIENT RECORD UPDATED",
+    "entity": "3b7cf149-066b-4543-b73f-506354c31730",
+    "details": "Updated care plan for Richard Wilson. Adjusted insulin dosage per endocrinology consult."
+  },
+  {
+    "timestamp": "2025-07-06 19:15:58",
+    "user": "Rati Sheth",
+    "action": "MEDICATION ORDER EDITED",
+    "entity": "6ccf6156-ea70-4348-98a1-9c7b57ec4daa",
+    "details": "Changed Metformin dose for patient   ."
+  },
+  {
+    "timestamp": "2025-07-05 17:15:58",
+    "user": "Tammy Wall",
+    "action": "PATIENT RECORD UPDATED",
+    "entity": "e07d610f-83fb-40d5-81fc-a76963e0cb34",
+    "details": "Updated care plan for Eric Mercado. Adjusted insulin dosage per endocrinology consult."
+  },
+  {
+    "timestamp": "2025-07-05 05:15:58",
+    "user": "Robert Tran",
+    "action": "USER ACCESS GRANTED",
+    "entity": "90308b9e-9af0-49fb-95a5-32e3238785b9",
+    "details": "Granted 'Security' access to staff member Yashvi Bhargava."
+  },
+  {
+    "timestamp": "2025-07-04 23:15:58",
+    "user": "Armando Gurule Guerra",
+    "action": "PATIENT RECORD UPDATED",
+    "entity": "553d33d3-99ac-467a-9d01-7fca70cabc7f",
+    "details": "Updated care plan for   . Adjusted insulin dosage per endocrinology consult."
+  },
+  {
+    "timestamp": "2025-07-06 10:15:58",
+    "user": "Diana Gil Almanza",
+    "action": "USER ACCESS GRANTED",
+    "entity": "b992cbda-c41a-49cc-a078-36e04f31f5e3",
+    "details": "Granted 'Pharmacy' access to staff member Hrishita Anand."
+  },
+  {
+    "timestamp": "2025-07-04 16:15:58",
+    "user": "Tammy Wall",
+    "action": "USER ACCESS GRANTED",
+    "entity": "0b3fd6f8-a358-4e16-96e3-0754f77511aa",
+    "details": "Granted 'Oncology' access to staff member Marisol Escalante."
+  },
+  {
+    "timestamp": "2025-07-07 06:15:58",
+    "user": "Tarini Venkatesh",
+    "action": "ALERT ACKNOWLEDGED",
+    "entity": "AL-511",
+    "details": "Acknowledged the fall alert for Room 183-B."
+  },
+  {
+    "timestamp": "2025-07-05 12:15:58",
+    "user": "Jeremy Santos",
+    "action": "MEDICATION ORDER EDITED",
+    "entity": "174440e0-da1b-4c47-8776-f19a31880116",
+    "details": "Changed Lisinopril dose for patient Jos Luis Espinosa."
+  },
+  {
+    "timestamp": "2025-07-06 23:15:58",
+    "user": "Jennifer Jordan",
+    "action": "TASK COMPLETED",
+    "entity": "2efd7131-31fa-48a4-800d-3ef1fe07b8f6",
+    "details": "Task 'Page Cardiology for consult' for patient    marked as completed."
+  },
+  {
+    "timestamp": "2025-07-04 18:15:58",
+    "user": "Tarini Sharaf",
+    "action": "PATIENT RECORD UPDATED",
+    "entity": "497510f5-900f-4c5f-a285-828d0d77c9f8",
+    "details": "Updated care plan for Rasha Arya. Adjusted insulin dosage per endocrinology consult."
+  },
+  {
+    "timestamp": "2025-07-05 08:15:58",
+    "user": "Elizabeth Haynes",
+    "action": "MEDICATION ORDER EDITED",
+    "entity": "a4189b90-a543-445c-ae0d-1ba934ad9250",
+    "details": "Changed Atorvastatin dose for patient Gabriela Silvia Lucio."
+  },
+  {
+    "timestamp": "2025-07-05 10:15:58",
+    "user": "Keya Dhillon",
+    "action": "MEDICATION ORDER EDITED",
+    "entity": "31c10a35-11fa-4c80-803f-4984ba02ae60",
+    "details": "Changed Metformin dose for patient Eugenio Elias Ibarra."
+  },
+  {
+    "timestamp": "2025-07-06 20:15:58",
+    "user": "Rodolfo Carmen Lucero",
+    "action": "STAFF RECORD CREATED",
+    "entity": "b796d161-9c02-4322-82b9-602c12668fee",
+    "details": "Created new staff record for Mtro. Noelia Fajardo."
+  },
+  {
+    "timestamp": "2025-07-04 08:15:58",
+    "user": "Kavya Buch",
+    "action": "STAFF RECORD CREATED",
+    "entity": "9ea613ea-126b-4896-9e9c-6c17efca711e",
+    "details": "Created new staff record for Erin Hayes."
+  },
+  {
+    "timestamp": "2025-07-05 13:15:58",
+    "user": "Chelsea Howell",
+    "action": "TASK COMPLETED",
+    "entity": "a7d89578-f49c-422d-bea3-68eeff059564",
+    "details": "Task 'Draw blood for lab analysis' for patient  marked as completed."
+  },
+  {
+    "timestamp": "2025-07-05 07:15:58",
+    "user": "Anay Varma",
+    "action": "USER ACCESS GRANTED",
+    "entity": "2ff2a655-94c9-4c11-8731-0c475f4df58e",
+    "details": "Granted 'Environmental Services' access to staff member Tyler Martinez."
+  },
+  {
+    "timestamp": "2025-07-05 03:15:58",
+    "user": "Dr. Roberto Villareal",
+    "action": "PATIENT ADMITTED",
+    "entity": "e9214135-3c1c-4633-b447-6b7de79e684d",
+    "details": "Admitted new patient  to Room 122-B."
+  },
+  {
+    "timestamp": "2025-07-06 17:15:58",
+    "user": "Lisa Simon",
+    "action": "PATIENT RECORD UPDATED",
+    "entity": "70771857-d861-4065-988a-d8baded69d96",
+    "details": "Updated care plan for Joshua Wood. Adjusted insulin dosage per endocrinology consult."
+  },
+  {
+    "timestamp": "2025-07-07 07:15:58",
+    "user": "Taylor Solomon",
+    "action": "USER ACCESS GRANTED",
+    "entity": "b8efb015-2bec-4031-9852-d934225ae926",
+    "details": "Granted 'Outpatient Clinic' access to staff member Rania Bir."
+  },
+  {
+    "timestamp": "2025-07-06 11:15:58",
+    "user": "Hunar Gera",
+    "action": "PATIENT ADMITTED",
+    "entity": "f5c3a35d-958a-4e4e-8be9-5e2a3f490277",
+    "details": "Admitted new patient    to Room 121-B."
+  },
+  {
+    "timestamp": "2025-07-04 22:15:58",
+    "user": "Prisha Karpe",
+    "action": "MEDICATION ORDER EDITED",
+    "entity": "2a30517b-b9e7-4094-9996-a0e773c5005c",
+    "details": "Changed Lisinopril dose for patient Gabriela Ocampo Uribe."
+  },
+  {
+    "timestamp": "2025-07-06 21:15:58",
+    "user": "Hrishita Sathe",
+    "action": "TASK COMPLETED",
+    "entity": "00579646-6d4a-460a-bae8-b1b1b9e2858c",
+    "details": "Task 'Assist patient to bedside commode' for patient Kathleen Lewis marked as completed."
+  },
+  {
+    "timestamp": "2025-07-05 23:15:58",
+    "user": "Larry Miller",
+    "action": "PATIENT ADMITTED",
+    "entity": "d613a02b-6b23-438f-9655-e39bfbced69a",
+    "details": "Admitted new patient Steven Bishop to Room 103-A."
+  },
+  {
+    "timestamp": "2025-07-06 11:15:58",
+    "user": "Raymond Gutierrez",
+    "action": "ALERT ACKNOWLEDGED",
+    "entity": "AL-650",
+    "details": "Acknowledged the fall alert for Room 115-C."
+  },
+  {
+    "timestamp": "2025-07-04 16:15:58",
+    "user": "Trisha Mander",
+    "action": "ALERT ACKNOWLEDGED",
+    "entity": "AL-342",
+    "details": "Acknowledged the fall alert for Room 136-B."
+  },
+  {
+    "timestamp": "2025-07-04 20:15:58",
+    "user": "Tyler Martinez",
+    "action": "MEDICATION ORDER EDITED",
+    "entity": "873bd16b-0c7e-4136-b7f9-962a85827581",
+    "details": "Changed Heparin Drip dose for patient Whitney Miller."
+  },
+  {
+    "timestamp": "2025-07-06 12:15:58",
+    "user": "Tyler Martinez",
+    "action": "ALERT ACKNOWLEDGED",
+    "entity": "AL-105",
+    "details": "Acknowledged the fall alert for Room 127-A."
+  },
+  {
+    "timestamp": "2025-07-05 02:15:58",
+    "user": "Amani Khosla",
+    "action": "MEDICATION ORDER EDITED",
+    "entity": "f0c04003-163b-4bca-a362-136caa89c548",
+    "details": "Changed Metformin dose for patient Daro Abel Rascn."
+  },
+  {
+    "timestamp": "2025-07-04 22:15:58",
+    "user": "Nitya Keer",
+    "action": "USER ACCESS GRANTED",
+    "entity": "4296c1a5-2606-4dd6-a417-2f7949945619",
+    "details": "Granted 'Environmental Services' access to staff member Catherine Woods."
+  },
+  {
+    "timestamp": "2025-07-04 20:15:58",
+    "user": "Robert Browning",
+    "action": "TASK COMPLETED",
+    "entity": "9514ffaf-159c-41dc-bbcb-c1c70beff860",
+    "details": "Task 'Change dressing on surgical site' for patient .    marked as completed."
+  },
+  {
+    "timestamp": "2025-07-05 02:15:58",
+    "user": "Genaro Gonzalo Laureano",
+    "action": "TASK COMPLETED",
+    "entity": "290091bb-c0e5-4518-ab2b-f597a380f1af",
+    "details": "Task 'Administer prescribed pain medication' for patient Sr(a). Felix Alonzo marked as completed."
+  },
+  {
+    "timestamp": "2025-07-04 10:15:58",
+    "user": "Luis Rael",
+    "action": "PATIENT RECORD UPDATED",
+    "entity": "d48e5029-c6bc-4195-8df4-3b3975557273",
+    "details": "Updated care plan for Phillip Lee. Adjusted insulin dosage per endocrinology consult."
+  },
+  {
+    "timestamp": "2025-07-05 03:15:58",
+    "user": "Marvin Scott",
+    "action": "PATIENT ADMITTED",
+    "entity": "7881ff0b-5eeb-4c50-89b0-ff89abf82677",
+    "details": "Admitted new patient Hilda Delgadillo Jquez to Room 130-B."
+  },
+  {
+    "timestamp": "2025-07-06 13:15:58",
+    "user": "Robert Tran",
+    "action": "ALERT ACKNOWLEDGED",
+    "entity": "AL-720",
+    "details": "Acknowledged the fall alert for Room 133-A."
+  },
+  {
+    "timestamp": "2025-07-07 06:15:58",
+    "user": "Lic. Esther Quesada",
+    "action": "MEDICATION ORDER EDITED",
+    "entity": "22b8af18-aacd-4c5e-ba31-3a408f0ed6a7",
+    "details": "Changed Metformin dose for patient   ."
+  },
+  {
+    "timestamp": "2025-07-05 17:15:58",
+    "user": "Andrea Alfonso Cordero",
+    "action": "STAFF RECORD CREATED",
+    "entity": "db49e3a4-9e5c-4408-9a66-aa987136b292",
+    "details": "Created new staff record for Raymond Gutierrez."
+  },
+  {
+    "timestamp": "2025-07-05 16:15:58",
+    "user": "Diya Brar",
+    "action": "STAFF RECORD CREATED",
+    "entity": "1506719f-a442-4258-b444-39c5683b99e1",
+    "details": "Created new staff record for Madhup Bedi."
+  },
+  {
+    "timestamp": "2025-07-05 14:15:58",
+    "user": "Krish Malhotra",
+    "action": "PATIENT RECORD UPDATED",
+    "entity": "432100f3-1c99-4399-a61d-41e9d3abf451",
+    "details": "Updated care plan for Eva Bath. Adjusted insulin dosage per endocrinology consult."
+  },
+  {
+    "timestamp": "2025-07-07 02:15:58",
+    "user": "Catherine Thomas",
+    "action": "MEDICATION ORDER EDITED",
+    "entity": "37462413-f679-4063-96c6-3f4cf327d377",
+    "details": "Changed Lisinopril dose for patient ."
+  },
+  {
+    "timestamp": "2025-07-06 15:15:58",
+    "user": "Bradley King",
+    "action": "ALERT ACKNOWLEDGED",
+    "entity": "AL-732",
+    "details": "Acknowledged the fall alert for Room 191-A."
+  },
+  {
+    "timestamp": "2025-07-05 05:15:58",
+    "user": "Vivaan Kapadia",
+    "action": "PATIENT ADMITTED",
+    "entity": "9514ffaf-159c-41dc-bbcb-c1c70beff860",
+    "details": "Admitted new patient .    to Room 117-B."
+  },
+  {
+    "timestamp": "2025-07-05 01:15:58",
+    "user": "Rodolfo Carmen Lucero",
+    "action": "TASK COMPLETED",
+    "entity": "5743264e-60d8-4e79-b4d6-a44306c1e899",
+    "details": "Task 'Assist patient to bedside commode' for patient    marked as completed."
+  },
+  {
+    "timestamp": "2025-07-06 18:15:58",
+    "user": "Courtney Cummings",
+    "action": "PATIENT RECORD UPDATED",
+    "entity": "31c10a35-11fa-4c80-803f-4984ba02ae60",
+    "details": "Updated care plan for Eugenio Elias Ibarra. Adjusted insulin dosage per endocrinology consult."
+  },
+  {
+    "timestamp": "2025-07-07 07:15:58",
+    "user": "Raymond Gutierrez",
+    "action": "USER ACCESS GRANTED",
+    "entity": "3941d47d-3109-4573-9554-79058b16bdaa",
+    "details": "Granted 'Pathology' access to staff member Shray Mahal."
+  },
+  {
+    "timestamp": "2025-07-05 16:15:58",
+    "user": "Francisco Javier Huerta Arteaga",
+    "action": "USER ACCESS GRANTED",
+    "entity": "f1c852b2-9c0d-4495-9240-58476af09e7e",
+    "details": "Granted 'Cardiology' access to staff member Brenda Clark."
+  },
+  {
+    "timestamp": "2025-07-05 05:15:58",
+    "user": "Kristen Martin",
+    "action": "STAFF RECORD CREATED",
+    "entity": "369a15af-9580-4374-8fbf-bee5ded16e91",
+    "details": "Created new staff record for Trisha Mander."
+  },
+  {
+    "timestamp": "2025-07-05 05:15:58",
+    "user": "Debbie Valentine",
+    "action": "PATIENT RECORD UPDATED",
+    "entity": "f5c3a35d-958a-4e4e-8be9-5e2a3f490277",
+    "details": "Updated care plan for   . Adjusted insulin dosage per endocrinology consult."
+  },
+  {
+    "timestamp": "2025-07-05 16:15:58",
+    "user": "Alison Parks",
+    "action": "PATIENT RECORD UPDATED",
+    "entity": "d0ccc97d-bc8b-4b73-90ed-c30fbd146bb7",
+    "details": "Updated care plan for Ricardo Villa Rosado. Adjusted insulin dosage per endocrinology consult."
+  },
+  {
+    "timestamp": "2025-07-06 16:15:58",
+    "user": "Whitney Davis",
+    "action": "TASK COMPLETED",
+    "entity": "5743264e-60d8-4e79-b4d6-a44306c1e899",
+    "details": "Task 'Draw blood for lab analysis' for patient    marked as completed."
+  },
+  {
+    "timestamp": "2025-07-05 18:15:58",
+    "user": "Aarna Baria",
+    "action": "PATIENT RECORD UPDATED",
+    "entity": "08fe4306-2e8a-4001-8ecd-bae15f9b6845",
+    "details": "Updated care plan for Laurie West. Adjusted insulin dosage per endocrinology consult."
+  },
+  {
+    "timestamp": "2025-07-06 04:15:58",
+    "user": "Larry Marsh",
+    "action": "TASK COMPLETED",
+    "entity": "f4dd8087-603c-489a-93d6-ab376c3e1a51",
+    "details": "Task 'Change dressing on surgical site' for patient Veer Loke marked as completed."
+  },
+  {
+    "timestamp": "2025-07-06 21:15:58",
+    "user": "Shaan Lata",
+    "action": "USER ACCESS GRANTED",
+    "entity": "5e1f98c5-6af2-4ae3-b2c8-187142cbf28b",
+    "details": "Granted 'Environmental Services' access to staff member Ishita Devi."
+  },
+  {
+    "timestamp": "2025-07-05 05:15:58",
+    "user": "Linda Russell",
+    "action": "ALERT ACKNOWLEDGED",
+    "entity": "AL-390",
+    "details": "Acknowledged the fall alert for Room 131-C."
+  },
+  {
+    "timestamp": "2025-07-05 00:15:58",
+    "user": "Jacob Johnson MD",
+    "action": "ALERT ACKNOWLEDGED",
+    "entity": "AL-551",
+    "details": "Acknowledged the fall alert for Room 176-C."
+  },
+  {
+    "timestamp": "2025-07-04 18:15:58",
+    "user": "Lorenzo Segovia Regalado",
+    "action": "USER ACCESS GRANTED",
+    "entity": "fb8de3be-30fb-4142-bb79-2929a2a91b6b",
+    "details": "Granted 'Nutrition' access to staff member Claire Romero."
+  },
+  {
+    "timestamp": "2025-07-05 06:15:58",
+    "user": "Ela Dhillon",
+    "action": "USER ACCESS GRANTED",
+    "entity": "be0666df-6b6b-4d63-8a4c-ce974edd1525",
+    "details": "Granted 'Administration' access to staff member Brian Garcia."
+  },
+  {
+    "timestamp": "2025-07-06 19:15:58",
+    "user": "Donald Mitchell",
+    "action": "STAFF RECORD CREATED",
+    "entity": "9a24cf4d-c135-4a9c-97ad-6bdcdbecd8b6",
+    "details": "Created new staff record for Matthew Hill."
+  },
+  {
+    "timestamp": "2025-07-06 07:15:58",
+    "user": "Natalia Hilda Escalante",
+    "action": "ALERT ACKNOWLEDGED",
+    "entity": "AL-441",
+    "details": "Acknowledged the fall alert for Room 155-A."
+  },
+  {
+    "timestamp": "2025-07-07 06:15:58",
+    "user": "Trisha Mangal",
+    "action": "TASK COMPLETED",
+    "entity": "290091bb-c0e5-4518-ab2b-f597a380f1af",
+    "details": "Task 'Page Cardiology for consult' for patient Sr(a). Felix Alonzo marked as completed."
+  },
+  {
+    "timestamp": "2025-07-07 07:15:58",
+    "user": "Eugenia Vigil Santacruz",
+    "action": "TASK COMPLETED",
+    "entity": "ab235535-2f71-4f4a-91c1-d0c091ea35f9",
+    "details": "Task 'Administer prescribed pain medication' for patient  marked as completed."
+  },
+  {
+    "timestamp": "2025-07-05 05:15:58",
+    "user": "Erin Hayes",
+    "action": "ALERT ACKNOWLEDGED",
+    "entity": "AL-167",
+    "details": "Acknowledged the fall alert for Room 145-A."
+  },
+  {
+    "timestamp": "2025-07-04 16:15:58",
+    "user": "Beverly Stevenson",
+    "action": "MEDICATION ORDER EDITED",
+    "entity": "00579646-6d4a-460a-bae8-b1b1b9e2858c",
+    "details": "Changed Heparin Drip dose for patient Kathleen Lewis."
+  },
+  {
+    "timestamp": "2025-07-06 17:15:58",
+    "user": "David Calderon",
+    "action": "TASK COMPLETED",
+    "entity": "2e0f9928-2f8b-4559-bd8f-b13293705445",
+    "details": "Task 'Record and monitor vitals every 4 hours' for patient Stephen Buck marked as completed."
+  },
+  {
+    "timestamp": "2025-07-05 20:15:58",
+    "user": "Tiffany Burns",
+    "action": "STAFF RECORD CREATED",
+    "entity": "b5f9cf60-0ae1-4d9d-ba39-178a210bb4cc",
+    "details": "Created new staff record for Elizabeth Long."
+  },
+  {
+    "timestamp": "2025-07-05 16:15:58",
+    "user": "Robert Thomas",
+    "action": "PATIENT ADMITTED",
+    "entity": "a4189b90-a543-445c-ae0d-1ba934ad9250",
+    "details": "Admitted new patient Gabriela Silvia Lucio to Room 117-B."
+  },
+  {
+    "timestamp": "2025-07-04 14:15:58",
+    "user": "Julia Zelaya",
+    "action": "PATIENT ADMITTED",
+    "entity": "5abfd6ae-b3bc-4d4c-b90d-d1222cb76335",
+    "details": "Admitted new patient Gina Koch to Room 115-B."
+  },
+  {
+    "timestamp": "2025-07-05 20:15:58",
+    "user": "Tiffany Burns",
+    "action": "ALERT ACKNOWLEDGED",
+    "entity": "AL-279",
+    "details": "Acknowledged the fall alert for Room 103-C."
+  },
+  {
+    "timestamp": "2025-07-07 06:15:58",
+    "user": "Dr. Angel Savage",
+    "action": "ALERT ACKNOWLEDGED",
+    "entity": "AL-302",
+    "details": "Acknowledged the fall alert for Room 127-A."
+  },
+  {
+    "timestamp": "2025-07-04 10:15:58",
+    "user": "Aarna Baria",
+    "action": "ALERT ACKNOWLEDGED",
+    "entity": "AL-799",
+    "details": "Acknowledged the fall alert for Room 168-B."
+  },
+  {
+    "timestamp": "2025-07-07 02:15:58",
+    "user": "Vanya Setty",
+    "action": "ALERT ACKNOWLEDGED",
+    "entity": "AL-818",
+    "details": "Acknowledged the fall alert for Room 134-A."
+  },
+  {
+    "timestamp": "2025-07-06 11:15:58",
+    "user": "Amy Dunlap",
+    "action": "USER ACCESS GRANTED",
+    "entity": "6d8f28bd-9482-43cd-a8a0-1078a21339e8",
+    "details": "Granted 'Pharmacy' access to staff member Nicole Craig."
+  },
+  {
+    "timestamp": "2025-07-06 03:15:58",
+    "user": "Ryan Stephens",
+    "action": "USER ACCESS GRANTED",
+    "entity": "3249e5c1-1325-4f02-a672-3200a3835fa7",
+    "details": "Granted 'Oncology' access to staff member Barbara Harris DDS."
+  },
+  {
+    "timestamp": "2025-07-04 22:15:58",
+    "user": "Julia Sara Alvarado",
+    "action": "MEDICATION ORDER EDITED",
+    "entity": "e9214135-3c1c-4633-b447-6b7de79e684d",
+    "details": "Changed Atorvastatin dose for patient ."
+  },
+  {
+    "timestamp": "2025-07-06 11:15:58",
+    "user": "Andrew Lawrence",
+    "action": "TASK COMPLETED",
+    "entity": "18c6f092-f1b1-4721-905d-d4f6ec9c0b37",
+    "details": "Task 'Administer Heparin drip as prescribed' for patient  marked as completed."
+  },
+  {
+    "timestamp": "2025-07-06 20:15:58",
+    "user": "Brandon Lopez",
+    "action": "PATIENT ADMITTED",
+    "entity": "629ce8e2-e83a-4d47-8999-2753efbd2fce",
+    "details": "Admitted new patient Lynn Martinez to Room 110-B."
+  },
+  {
+    "timestamp": "2025-07-05 04:15:58",
+    "user": "Bhavin Subramanian",
+    "action": "USER ACCESS GRANTED",
+    "entity": "48cf2955-6c30-46da-a80d-0d862f002174",
+    "details": "Granted 'Pathology' access to staff member Brett Bennett."
+  },
+  {
+    "timestamp": "2025-07-07 07:15:58",
+    "user": "Jivin Dalal",
+    "action": "MEDICATION ORDER EDITED",
+    "entity": "63163f68-029d-47ba-bd4b-3492a90a1d6b",
+    "details": "Changed Atorvastatin dose for patient   ."
+  },
+  {
+    "timestamp": "2025-07-07 00:15:58",
+    "user": "Andrew Lawrence",
+    "action": "ALERT ACKNOWLEDGED",
+    "entity": "AL-231",
+    "details": "Acknowledged the fall alert for Room 151-B."
+  },
+  {
+    "timestamp": "2025-07-05 15:15:58",
+    "user": "Yasmin Basak",
+    "action": "USER ACCESS GRANTED",
+    "entity": "b0595320-2624-473a-ac5f-4bb08ffe6968",
+    "details": "Granted 'Environmental Services' access to staff member Michael Tyler."
+  },
+  {
+    "timestamp": "2025-07-05 21:15:58",
+    "user": "Pamela Sharp",
+    "action": "TASK COMPLETED",
+    "entity": "b0657591-e8b6-4bde-9428-00e1de2112c5",
+    "details": "Task 'Administer prescribed pain medication' for patient    marked as completed."
+  },
+  {
+    "timestamp": "2025-07-06 00:15:58",
+    "user": "Alan Flores",
+    "action": "TASK COMPLETED",
+    "entity": "e9214135-3c1c-4633-b447-6b7de79e684d",
+    "details": "Task 'Deliver nutritional supplement' for patient  marked as completed."
+  },
+  {
+    "timestamp": "2025-07-06 14:15:58",
+    "user": "Emily Bowen",
+    "action": "PATIENT ADMITTED",
+    "entity": "1366794b-dcb2-4117-ad17-00fffd12a01e",
+    "details": "Admitted new patient Ayesha Mammen to Room 115-A."
+  },
+  {
+    "timestamp": "2025-07-06 04:15:58",
+    "user": "Dan Dougherty",
+    "action": "PATIENT ADMITTED",
+    "entity": "22b8af18-aacd-4c5e-ba31-3a408f0ed6a7",
+    "details": "Admitted new patient    to Room 113-A."
+  },
+  {
+    "timestamp": "2025-07-06 18:15:58",
+    "user": "Kenneth Turner",
+    "action": "TASK COMPLETED",
+    "entity": "892db9a9-3472-48a1-9b29-d335a5737d56",
+    "details": "Task 'Page Cardiology for consult' for patient    marked as completed."
+  },
+  {
+    "timestamp": "2025-07-05 05:15:58",
+    "user": "Amy Johnson",
+    "action": "ALERT ACKNOWLEDGED",
+    "entity": "AL-482",
+    "details": "Acknowledged the fall alert for Room 134-B."
+  },
+  {
+    "timestamp": "2025-07-04 15:15:58",
+    "user": "Ayesha Tandon",
+    "action": "STAFF RECORD CREATED",
+    "entity": "615db6e7-f9e3-4c6c-9d1f-554ccb9c328d",
+    "details": "Created new staff record for Timothy Graves."
+  },
+  {
+    "timestamp": "2025-07-05 03:15:58",
+    "user": "Diana Gil Almanza",
+    "action": "USER ACCESS GRANTED",
+    "entity": "08766c7f-d39d-4190-bb5f-4cce5d0292c2",
+    "details": "Granted 'Oncology' access to staff member Manjari Sarraf."
+  },
+  {
+    "timestamp": "2025-07-05 15:15:58",
+    "user": "Billy Nichols",
+    "action": "MEDICATION ORDER EDITED",
+    "entity": "8d2fe2fc-9ccf-40f4-a1aa-0ff99f23046c",
+    "details": "Changed Atorvastatin dose for patient Michael Haynes."
+  },
+  {
+    "timestamp": "2025-07-06 07:15:58",
+    "user": "Sr(a). Claudia Delgadillo",
+    "action": "TASK COMPLETED",
+    "entity": "0206e3af-9081-409b-9ae3-e1c5cdf93312",
+    "details": "Task 'Record and monitor vitals every 4 hours' for patient Dylan Armstrong marked as completed."
+  },
+  {
+    "timestamp": "2025-07-05 09:15:58",
+    "user": "Georgina Oswaldo Luna Vaca",
+    "action": "MEDICATION ORDER EDITED",
+    "entity": "b1edb4d5-17f6-454b-b98c-659331974f81",
+    "details": "Changed Lisinopril dose for patient ."
+  },
+  {
+    "timestamp": "2025-07-04 20:15:58",
+    "user": "Catherine Maldonado",
+    "action": "PATIENT RECORD UPDATED",
+    "entity": "ebc13e31-485a-4207-93e8-f9acf66782d5",
+    "details": "Updated care plan for Mauricio Ojeda Alfaro. Adjusted insulin dosage per endocrinology consult."
+  },
+  {
+    "timestamp": "2025-07-05 03:15:58",
+    "user": "Emir Din",
+    "action": "USER ACCESS GRANTED",
+    "entity": "e457339d-f8df-4d53-94f3-1d3f476d834a",
+    "details": "Granted 'Pharmacy' access to staff member Jesse Salazar."
+  },
+  {
+    "timestamp": "2025-07-06 01:15:58",
+    "user": "Thomas Valentine III",
+    "action": "PATIENT ADMITTED",
+    "entity": "38ee86ba-ead8-4d85-b299-9a9d55471a29",
+    "details": "Admitted new patient Pablo Norma Olivares Padrn to Room 107-B."
+  },
+  {
+    "timestamp": "2025-07-05 13:15:58",
+    "user": "Anvi Kapur",
+    "action": "ALERT ACKNOWLEDGED",
+    "entity": "AL-667",
+    "details": "Acknowledged the fall alert for Room 182-A."
+  },
+  {
+    "timestamp": "2025-07-06 11:15:58",
+    "user": "Lic. Sara Acosta",
+    "action": "STAFF RECORD CREATED",
+    "entity": "e9746e95-4552-47d6-b641-0adf17bff29a",
+    "details": "Created new staff record for Gerardo Paola Valenzuela."
+  }
+]
