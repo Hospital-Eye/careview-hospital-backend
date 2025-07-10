@@ -1,0 +1,7024 @@
+[
+  {
+    "_id": "57666c9d-ef98-48e9-883d-05c3ebe90c5b",
+    "mrn": "HE-5053-704",
+    "name": "Victoria Lowe",
+    "dob": "1960-09-12",
+    "gender": "Female",
+    "age": 64,
+    "status": "Admitted - Critical",
+    "acuityLevel": 5,
+    "weight": {
+      "value": 130,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-05T03:20:19.720469",
+    "admissionReason": "Shortness of Breath",
+    "diagnoses": [
+      {
+        "name": "COPD",
+        "code": "J44.9",
+        "type": "Primary"
+      }
+    ],
+    "allergies": [
+      "Penicillin",
+      "Shellfish"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with shortness of breath, diagnosed with COPD. Monitor vitals closely. Continue standard supportive care.",
+      "medicationSchedule": [
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Cardiac Catheterization",
+          "datetime": "2025-07-06T18:20:19.720469",
+          "status": "Completed",
+          "cpt": "93452"
+        }
+      ],
+      "dietaryRestrictions": "Low Sodium"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "Full Code"
+    },
+    "emergencyContact": {
+      "name": "Laura Gibson",
+      "relation": "Friend",
+      "phone": "395-687-2570"
+    },
+    "admissionHistory": [
+      {
+        "admission": "2025-03-12T03:20:19.720469",
+        "discharge": "2025-03-14T03:20:19.720469",
+        "reason": "Persistent Cough",
+        "diagnosis": "COPD",
+        "status": "Discharged"
+      }
+    ]
+  },
+  {
+    "_id": "b1faf049-796d-4940-8790-b1f0d1748b98",
+    "mrn": "HE-7562-685",
+    "name": "Joseph Harvey",
+    "dob": "1945-09-25",
+    "gender": "Male",
+    "age": 79,
+    "status": "Admitted - Stable",
+    "acuityLevel": 1,
+    "weight": {
+      "value": 174,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-07T01:20:19.809994",
+    "admissionReason": "Leg Swelling",
+    "diagnoses": [
+      {
+        "name": "Congestive Heart Failure",
+        "code": "I50.9",
+        "type": "Primary"
+      },
+      {
+        "name": "Hyperlipidemia",
+        "code": "E78.5",
+        "type": "Secondary"
+      },
+      {
+        "name": "Type 2 Diabetes",
+        "code": "E11.9",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [],
+    "carePlan": {
+      "notes": "Patient admitted with leg swelling, diagnosed with Congestive Heart Failure. Routine observation. Continue standard supportive care.",
+      "medicationSchedule": [
+        {
+          "name": "Atorvastatin",
+          "rxnorm": "83367",
+          "dosage": "40mg",
+          "route": "PO",
+          "frequency": "QHS"
+        },
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Appendectomy",
+          "datetime": "2025-07-07T13:20:19.809994",
+          "status": "Completed",
+          "cpt": "44950"
+        }
+      ],
+      "dietaryRestrictions": "Low Sodium, NPO until stable"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "Full Code"
+    },
+    "emergencyContact": {
+      "name": "Richard Foley",
+      "relation": "Sibling",
+      "phone": "279-207-3005"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "03094c8a-a0dd-42ec-a44a-42efb0d02f56",
+    "mrn": "HE-8680-896",
+    "name": "Rodney Gutierrez",
+    "dob": "1991-09-21",
+    "gender": "Male",
+    "age": 33,
+    "status": "Admitted - Stable",
+    "acuityLevel": 3,
+    "weight": {
+      "value": 225,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-04T02:20:19.896104",
+    "admissionReason": "Dizziness",
+    "diagnoses": [
+      {
+        "name": "Hypertension",
+        "code": "I10",
+        "type": "Primary"
+      },
+      {
+        "name": "Obesity",
+        "code": "E66.9",
+        "type": "Secondary"
+      },
+      {
+        "name": "Anemia",
+        "code": "D64.9",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [
+      "Latex"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with dizziness, diagnosed with Hypertension. Routine observation. High fall risk. Cardiology consult advised.",
+      "medicationSchedule": [
+        {
+          "name": "Atorvastatin",
+          "rxnorm": "83367",
+          "dosage": "40mg",
+          "route": "PO",
+          "frequency": "QHS"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "MRI Brain",
+          "datetime": "2025-07-05T03:20:19.896104",
+          "status": "Scheduled",
+          "cpt": "70551"
+        }
+      ],
+      "dietaryRestrictions": "Clear Liquids"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "Comfort Measures Only"
+    },
+    "emergencyContact": {
+      "name": "Jessica Rosario",
+      "relation": "Friend",
+      "phone": "747-190-2137"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "31c10a35-11fa-4c80-803f-4984ba02ae60",
+    "mrn": "HE-9221-676",
+    "name": "Eugenio Elias Ibarra",
+    "dob": "1939-10-14",
+    "gender": "Female",
+    "age": 85,
+    "status": "Admitted - Stable",
+    "acuityLevel": 1,
+    "weight": {
+      "value": 124,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-07T01:20:19.957424",
+    "admissionReason": "Dizziness",
+    "diagnoses": [
+      {
+        "name": "Hypertension",
+        "code": "I10",
+        "type": "Primary"
+      }
+    ],
+    "allergies": [
+      "Shellfish",
+      "Penicillin"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with dizziness, diagnosed with Hypertension. Routine observation. High fall risk. Cardiology consult advised.",
+      "medicationSchedule": [
+        {
+          "name": "Metformin",
+          "rxnorm": "860975",
+          "dosage": "500mg",
+          "route": "PO",
+          "frequency": "BID"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Appendectomy",
+          "datetime": "2025-07-08T12:20:19.957424",
+          "status": "Completed",
+          "cpt": "44950"
+        }
+      ],
+      "dietaryRestrictions": "Low Sodium"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "Full Code"
+    },
+    "emergencyContact": {
+      "name": "Kenneth Jackson",
+      "relation": "Friend",
+      "phone": "951-626-7015"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "7b695d79-f031-4686-a1b8-7fd3431dfb27",
+    "mrn": "HE-2315-823",
+    "name": "Emily Lewis",
+    "dob": "1989-05-31",
+    "gender": "Female",
+    "age": 36,
+    "status": "Admitted - Stable",
+    "acuityLevel": 1,
+    "weight": {
+      "value": 198,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-07T04:20:20.036043",
+    "admissionReason": "Fever and Fatigue",
+    "diagnoses": [
+      {
+        "name": "Pneumonia",
+        "code": "J18.9",
+        "type": "Primary"
+      },
+      {
+        "name": "Hyperlipidemia",
+        "code": "E78.5",
+        "type": "Secondary"
+      },
+      {
+        "name": "Obesity",
+        "code": "E66.9",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [
+      "Aspirin",
+      "Latex"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with fever and fatigue, diagnosed with Pneumonia. Routine observation. Monitor oxygen saturation. Start antibiotic protocol.",
+      "medicationSchedule": [
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        },
+        {
+          "name": "Metformin",
+          "rxnorm": "860975",
+          "dosage": "500mg",
+          "route": "PO",
+          "frequency": "BID"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Appendectomy",
+          "datetime": "2025-07-08T14:20:20.036043",
+          "status": "Scheduled",
+          "cpt": "44950"
+        }
+      ],
+      "dietaryRestrictions": "Cardiac Diet"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNR"
+    },
+    "emergencyContact": {
+      "name": "Mr. Richard Bush",
+      "relation": "Partner",
+      "phone": "388-590-3891"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "4045a4b3-0617-49ad-816e-2c3bbd0ed36e",
+    "mrn": "HE-5943-188",
+    "name": "Mamooty Dayal",
+    "dob": "1962-09-14",
+    "gender": "Female",
+    "age": 62,
+    "status": "Admitted - Stable",
+    "acuityLevel": 1,
+    "weight": {
+      "value": 171,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-06T00:20:20.139730",
+    "admissionReason": "Shortness of Breath",
+    "diagnoses": [
+      {
+        "name": "COPD",
+        "code": "J44.9",
+        "type": "Primary"
+      }
+    ],
+    "allergies": [],
+    "carePlan": {
+      "notes": "Patient admitted with shortness of breath, diagnosed with COPD. Routine observation. Continue standard supportive care.",
+      "medicationSchedule": [
+        {
+          "name": "Heparin Drip",
+          "rxnorm": "5224",
+          "dosage": "5000 units/hr",
+          "route": "IV",
+          "frequency": "Continuous"
+        },
+        {
+          "name": "Atorvastatin",
+          "rxnorm": "83367",
+          "dosage": "40mg",
+          "route": "PO",
+          "frequency": "QHS"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "MRI Brain",
+          "datetime": "2025-07-07T02:20:20.139730",
+          "status": "Scheduled",
+          "cpt": "70551"
+        }
+      ],
+      "dietaryRestrictions": "Diabetic, Low Sodium"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNI"
+    },
+    "emergencyContact": {
+      "name": "Candice Bowen",
+      "relation": "Spouse",
+      "phone": "280-779-9454"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "ae9c5e26-e84c-4316-9196-d4ca3e99764b",
+    "mrn": "HE-7323-682",
+    "name": "Justin Rodriguez",
+    "dob": "1978-12-07",
+    "gender": "Male",
+    "age": 46,
+    "status": "Admitted - Stable",
+    "acuityLevel": 1,
+    "weight": {
+      "value": 133,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-07T02:20:20.238473",
+    "admissionReason": "Dizziness",
+    "diagnoses": [
+      {
+        "name": "Hypertension",
+        "code": "I10",
+        "type": "Primary"
+      }
+    ],
+    "allergies": [
+      "Penicillin"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with dizziness, diagnosed with Hypertension. Routine observation. High fall risk. Cardiology consult advised.",
+      "medicationSchedule": [
+        {
+          "name": "Metformin",
+          "rxnorm": "860975",
+          "dosage": "500mg",
+          "route": "PO",
+          "frequency": "BID"
+        },
+        {
+          "name": "Heparin Drip",
+          "rxnorm": "5224",
+          "dosage": "5000 units/hr",
+          "route": "IV",
+          "frequency": "Continuous"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Appendectomy",
+          "datetime": "2025-07-08T11:20:20.238473",
+          "status": "Scheduled",
+          "cpt": "44950"
+        }
+      ],
+      "dietaryRestrictions": "Low Sodium"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNI"
+    },
+    "emergencyContact": {
+      "name": "Rachel Guerra",
+      "relation": "Spouse",
+      "phone": "480-962-5214"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "6f2817ec-4d7c-44b0-90a1-b48409f5c4a8",
+    "mrn": "HE-8543-289",
+    "name": "Nathaniel King DDS",
+    "dob": "1958-09-30",
+    "gender": "Male",
+    "age": 66,
+    "status": "Admitted - Stable",
+    "acuityLevel": 3,
+    "weight": {
+      "value": 157,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-07T03:20:20.326161",
+    "admissionReason": "Leg Swelling",
+    "diagnoses": [
+      {
+        "name": "Congestive Heart Failure",
+        "code": "I50.9",
+        "type": "Primary"
+      },
+      {
+        "name": "Anemia",
+        "code": "D64.9",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [
+      "Iodine"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with leg swelling, diagnosed with Congestive Heart Failure. Routine observation. Continue standard supportive care.",
+      "medicationSchedule": [
+        {
+          "name": "Metformin",
+          "rxnorm": "860975",
+          "dosage": "500mg",
+          "route": "PO",
+          "frequency": "BID"
+        },
+        {
+          "name": "Atorvastatin",
+          "rxnorm": "83367",
+          "dosage": "40mg",
+          "route": "PO",
+          "frequency": "QHS"
+        },
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "MRI Brain",
+          "datetime": "2025-07-07T10:20:20.326161",
+          "status": "Scheduled",
+          "cpt": "70551"
+        }
+      ],
+      "dietaryRestrictions": "Low Sodium, Clear Liquids"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "Full Code"
+    },
+    "emergencyContact": {
+      "name": "Dr. Diane Bolton",
+      "relation": "Partner",
+      "phone": "865-189-5915"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "629ce8e2-e83a-4d47-8999-2753efbd2fce",
+    "mrn": "HE-2629-831",
+    "name": "Lynn Martinez",
+    "dob": "1963-09-18",
+    "gender": "Female",
+    "age": 61,
+    "status": "Admitted - Critical",
+    "acuityLevel": 4,
+    "weight": {
+      "value": 163,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-04T03:20:20.416677",
+    "admissionReason": "Chest Pain",
+    "diagnoses": [
+      {
+        "name": "Acute Myocardial Infarction",
+        "code": "I21.9",
+        "type": "Primary"
+      },
+      {
+        "name": "Type 2 Diabetes",
+        "code": "E11.9",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [],
+    "carePlan": {
+      "notes": "Patient admitted with chest pain, diagnosed with Acute Myocardial Infarction. Monitor vitals closely. High fall risk. Cardiology consult advised.",
+      "medicationSchedule": [
+        {
+          "name": "Heparin Drip",
+          "rxnorm": "5224",
+          "dosage": "5000 units/hr",
+          "route": "IV",
+          "frequency": "Continuous"
+        },
+        {
+          "name": "Metformin",
+          "rxnorm": "860975",
+          "dosage": "500mg",
+          "route": "PO",
+          "frequency": "BID"
+        },
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "MRI Brain",
+          "datetime": "2025-07-04T11:20:20.416677",
+          "status": "Scheduled",
+          "cpt": "70551"
+        }
+      ],
+      "dietaryRestrictions": "Diabetic, Cardiac Diet"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNR"
+    },
+    "emergencyContact": {
+      "name": "Jesus Carlson",
+      "relation": "Partner",
+      "phone": "889-856-2457"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "82486ee4-98f5-4262-87af-ee408a6a3246",
+    "mrn": "HE-9769-239",
+    "name": "\u675c\u6676",
+    "dob": "1993-02-17",
+    "gender": "Male",
+    "age": 32,
+    "status": "Admitted - Critical",
+    "acuityLevel": 4,
+    "weight": {
+      "value": 171,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-05T02:20:20.500024",
+    "admissionReason": "Vomiting",
+    "diagnoses": [
+      {
+        "name": "Gastroenteritis",
+        "code": "A09",
+        "type": "Primary"
+      },
+      {
+        "name": "Type 2 Diabetes",
+        "code": "E11.9",
+        "type": "Secondary"
+      },
+      {
+        "name": "Anemia",
+        "code": "D64.9",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [
+      "Latex"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with vomiting, diagnosed with Gastroenteritis. Monitor vitals closely. Fluid replacement ongoing. Watch for signs of dehydration.",
+      "medicationSchedule": [
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "MRI Brain",
+          "datetime": "2025-07-05T18:20:20.500024",
+          "status": "Scheduled",
+          "cpt": "70551"
+        }
+      ],
+      "dietaryRestrictions": "Diabetic"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNR"
+    },
+    "emergencyContact": {
+      "name": "Natasha Moyer",
+      "relation": "Partner",
+      "phone": "048-070-3966"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "5abfd6ae-b3bc-4d4c-b90d-d1222cb76335",
+    "mrn": "HE-7053-397",
+    "name": "Gina Koch",
+    "dob": "1944-01-28",
+    "gender": "Female",
+    "age": 81,
+    "status": "Admitted - Stable",
+    "acuityLevel": 1,
+    "weight": {
+      "value": 117,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-04T03:20:20.577531",
+    "admissionReason": "Vomiting",
+    "diagnoses": [
+      {
+        "name": "Gastroenteritis",
+        "code": "A09",
+        "type": "Primary"
+      },
+      {
+        "name": "Obesity",
+        "code": "E66.9",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [
+      "Aspirin"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with vomiting, diagnosed with Gastroenteritis. Routine observation. Fluid replacement ongoing. Watch for signs of dehydration.",
+      "medicationSchedule": [
+        {
+          "name": "Heparin Drip",
+          "rxnorm": "5224",
+          "dosage": "5000 units/hr",
+          "route": "IV",
+          "frequency": "Continuous"
+        },
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Appendectomy",
+          "datetime": "2025-07-05T02:20:20.577531",
+          "status": "Completed",
+          "cpt": "44950"
+        }
+      ],
+      "dietaryRestrictions": "Clear Liquids"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNI"
+    },
+    "emergencyContact": {
+      "name": "Savannah Farley",
+      "relation": "Parent",
+      "phone": "047-230-1779"
+    },
+    "admissionHistory": [
+      {
+        "admission": "2024-09-10T03:20:20.577531",
+        "discharge": "2024-09-15T03:20:20.577531",
+        "reason": "Vomiting",
+        "diagnosis": "Congestive Heart Failure",
+        "status": "Discharged"
+      }
+    ]
+  },
+  {
+    "_id": "892db9a9-3472-48a1-9b29-d335a5737d56",
+    "mrn": "HE-6373-162",
+    "name": "\u041a\u043e\u043c\u0438\u0441\u0441\u0430\u0440\u043e\u0432 \u041c\u0430\u043a\u0441\u0438\u043c \u0414\u0438\u043c\u0438\u0442\u0440\u0438\u0435\u0432\u0438\u0447",
+    "dob": "1954-06-03",
+    "gender": "Male",
+    "age": 71,
+    "status": "Admitted - Stable",
+    "acuityLevel": 1,
+    "weight": {
+      "value": 171,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-06T23:20:20.675602",
+    "admissionReason": "Vomiting",
+    "diagnoses": [
+      {
+        "name": "Gastroenteritis",
+        "code": "A09",
+        "type": "Primary"
+      },
+      {
+        "name": "Type 2 Diabetes",
+        "code": "E11.9",
+        "type": "Secondary"
+      },
+      {
+        "name": "Obesity",
+        "code": "E66.9",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [],
+    "carePlan": {
+      "notes": "Patient admitted with vomiting, diagnosed with Gastroenteritis. Routine observation. Fluid replacement ongoing. Watch for signs of dehydration.",
+      "medicationSchedule": [
+        {
+          "name": "Atorvastatin",
+          "rxnorm": "83367",
+          "dosage": "40mg",
+          "route": "PO",
+          "frequency": "QHS"
+        },
+        {
+          "name": "Heparin Drip",
+          "rxnorm": "5224",
+          "dosage": "5000 units/hr",
+          "route": "IV",
+          "frequency": "Continuous"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Appendectomy",
+          "datetime": "2025-07-07T03:20:20.675602",
+          "status": "Completed",
+          "cpt": "44950"
+        }
+      ],
+      "dietaryRestrictions": "Cardiac Diet"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "Comfort Measures Only"
+    },
+    "emergencyContact": {
+      "name": "John Mills",
+      "relation": "Sibling",
+      "phone": "368-376-1242"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "6ccf6156-ea70-4348-98a1-9c7b57ec4daa",
+    "mrn": "HE-2790-149",
+    "name": "\u041a\u0443\u043b\u0430\u0433\u0438\u043d\u0430 \u0413\u043b\u0430\u0444\u0438\u0440\u0430 \u041e\u043b\u0435\u0433\u043e\u0432\u043d\u0430",
+    "dob": "1968-05-28",
+    "gender": "Female",
+    "age": 57,
+    "status": "Admitted - Stable",
+    "acuityLevel": 2,
+    "weight": {
+      "value": 214,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-04T01:20:20.740726",
+    "admissionReason": "Persistent Cough",
+    "diagnoses": [
+      {
+        "name": "Asthma",
+        "code": "J45.909",
+        "type": "Primary"
+      },
+      {
+        "name": "Anemia",
+        "code": "D64.9",
+        "type": "Secondary"
+      },
+      {
+        "name": "Hyperlipidemia",
+        "code": "E78.5",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [],
+    "carePlan": {
+      "notes": "Patient admitted with persistent cough, diagnosed with Asthma. Routine observation. Bronchodilator therapy initiated. Assess respiratory effort.",
+      "medicationSchedule": [
+        {
+          "name": "Atorvastatin",
+          "rxnorm": "83367",
+          "dosage": "40mg",
+          "route": "PO",
+          "frequency": "QHS"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Knee Replacement",
+          "datetime": "2025-07-05T23:20:20.740726",
+          "status": "Scheduled",
+          "cpt": "27447"
+        }
+      ],
+      "dietaryRestrictions": "Cardiac Diet"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNI"
+    },
+    "emergencyContact": {
+      "name": "Joseph Daniels",
+      "relation": "Partner",
+      "phone": "306-097-2948"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "57baf1b6-a4fe-4337-b902-3c485917fed5",
+    "mrn": "HE-2311-641",
+    "name": "Krystal Clark",
+    "dob": "1945-06-07",
+    "gender": "Female",
+    "age": 80,
+    "status": "Admitted - Critical",
+    "acuityLevel": 4,
+    "weight": {
+      "value": 151,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-06T04:20:20.812555",
+    "admissionReason": "Persistent Cough",
+    "diagnoses": [
+      {
+        "name": "Asthma",
+        "code": "J45.909",
+        "type": "Primary"
+      },
+      {
+        "name": "Obesity",
+        "code": "E66.9",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [],
+    "carePlan": {
+      "notes": "Patient admitted with persistent cough, diagnosed with Asthma. Monitor vitals closely. Bronchodilator therapy initiated. Assess respiratory effort.",
+      "medicationSchedule": [
+        {
+          "name": "Metformin",
+          "rxnorm": "860975",
+          "dosage": "500mg",
+          "route": "PO",
+          "frequency": "BID"
+        },
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        },
+        {
+          "name": "Heparin Drip",
+          "rxnorm": "5224",
+          "dosage": "5000 units/hr",
+          "route": "IV",
+          "frequency": "Continuous"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Appendectomy",
+          "datetime": "2025-07-06T18:20:20.812555",
+          "status": "Scheduled",
+          "cpt": "44950"
+        }
+      ],
+      "dietaryRestrictions": "Clear Liquids"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNR"
+    },
+    "emergencyContact": {
+      "name": "Morgan Davis",
+      "relation": "Partner",
+      "phone": "270-914-2981"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "9ab2d619-7a4a-4147-8280-3fa8820b2b5b",
+    "mrn": "HE-2215-958",
+    "name": "\u80e1\u6768",
+    "dob": "1956-12-21",
+    "gender": "Male",
+    "age": 68,
+    "status": "Admitted - Stable",
+    "acuityLevel": 3,
+    "weight": {
+      "value": 159,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-05T00:20:20.868723",
+    "admissionReason": "Persistent Cough",
+    "diagnoses": [
+      {
+        "name": "Asthma",
+        "code": "J45.909",
+        "type": "Primary"
+      }
+    ],
+    "allergies": [
+      "Aspirin",
+      "Iodine"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with persistent cough, diagnosed with Asthma. Routine observation. Bronchodilator therapy initiated. Assess respiratory effort.",
+      "medicationSchedule": [
+        {
+          "name": "Metformin",
+          "rxnorm": "860975",
+          "dosage": "500mg",
+          "route": "PO",
+          "frequency": "BID"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Appendectomy",
+          "datetime": "2025-07-05T06:20:20.868723",
+          "status": "Completed",
+          "cpt": "44950"
+        }
+      ],
+      "dietaryRestrictions": "Diabetic"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNR"
+    },
+    "emergencyContact": {
+      "name": "Jessica Cantrell",
+      "relation": "Partner",
+      "phone": "211-404-3489"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "174440e0-da1b-4c47-8776-f19a31880116",
+    "mrn": "HE-8278-954",
+    "name": "Jos Luis Espinosa",
+    "dob": "2002-07-27",
+    "gender": "Male",
+    "age": 22,
+    "status": "Admitted - Stable",
+    "acuityLevel": 2,
+    "weight": {
+      "value": 167,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-05T02:20:20.949891",
+    "admissionReason": "Chest Pain",
+    "diagnoses": [
+      {
+        "name": "Acute Myocardial Infarction",
+        "code": "I21.9",
+        "type": "Primary"
+      },
+      {
+        "name": "Hyperlipidemia",
+        "code": "E78.5",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [
+      "Aspirin"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with chest pain, diagnosed with Acute Myocardial Infarction. Routine observation. High fall risk. Cardiology consult advised.",
+      "medicationSchedule": [
+        {
+          "name": "Metformin",
+          "rxnorm": "860975",
+          "dosage": "500mg",
+          "route": "PO",
+          "frequency": "BID"
+        },
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Knee Replacement",
+          "datetime": "2025-07-06T08:20:20.949891",
+          "status": "Scheduled",
+          "cpt": "27447"
+        }
+      ],
+      "dietaryRestrictions": "NPO until stable"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "Comfort Measures Only"
+    },
+    "emergencyContact": {
+      "name": "Kristin Maxwell",
+      "relation": "Partner",
+      "phone": "413-323-8347"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "5743264e-60d8-4e79-b4d6-a44306c1e899",
+    "mrn": "HE-4757-113",
+    "name": "\u0422\u0440\u043e\u0444\u0438\u043c\u043e\u0432\u0430 \u0413\u0430\u043b\u0438\u043d\u0430 \u0415\u0432\u0433\u0435\u043d\u044c\u0435\u0432\u043d\u0430",
+    "dob": "2001-05-25",
+    "gender": "Female",
+    "age": 24,
+    "status": "Admitted - Critical",
+    "acuityLevel": 4,
+    "weight": {
+      "value": 126,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-06T04:20:21.021111",
+    "admissionReason": "Leg Swelling",
+    "diagnoses": [
+      {
+        "name": "Congestive Heart Failure",
+        "code": "I50.9",
+        "type": "Primary"
+      },
+      {
+        "name": "Hyperlipidemia",
+        "code": "E78.5",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [],
+    "carePlan": {
+      "notes": "Patient admitted with leg swelling, diagnosed with Congestive Heart Failure. Monitor vitals closely. Continue standard supportive care.",
+      "medicationSchedule": [
+        {
+          "name": "Atorvastatin",
+          "rxnorm": "83367",
+          "dosage": "40mg",
+          "route": "PO",
+          "frequency": "QHS"
+        },
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Cardiac Catheterization",
+          "datetime": "2025-07-07T15:20:21.021111",
+          "status": "Scheduled",
+          "cpt": "93452"
+        }
+      ],
+      "dietaryRestrictions": "Cardiac Diet, Diabetic"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "Comfort Measures Only"
+    },
+    "emergencyContact": {
+      "name": "Kelly Wright",
+      "relation": "Partner",
+      "phone": "854-714-5861"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "22b8af18-aacd-4c5e-ba31-3a408f0ed6a7",
+    "mrn": "HE-3471-732",
+    "name": "\u0410\u043d\u0442\u043e\u043d\u0438\u043d\u0430 \u0410\u0440\u043a\u0430\u0434\u044c\u0435\u0432\u043d\u0430 \u0422\u0438\u0442\u043e\u0432\u0430",
+    "dob": "1955-12-28",
+    "gender": "Female",
+    "age": 69,
+    "status": "Admitted - Stable",
+    "acuityLevel": 3,
+    "weight": {
+      "value": 242,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-04T01:20:21.087509",
+    "admissionReason": "Chest Pain",
+    "diagnoses": [
+      {
+        "name": "Acute Myocardial Infarction",
+        "code": "I21.9",
+        "type": "Primary"
+      },
+      {
+        "name": "Hyperlipidemia",
+        "code": "E78.5",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [
+      "Latex"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with chest pain, diagnosed with Acute Myocardial Infarction. Routine observation. High fall risk. Cardiology consult advised.",
+      "medicationSchedule": [
+        {
+          "name": "Atorvastatin",
+          "rxnorm": "83367",
+          "dosage": "40mg",
+          "route": "PO",
+          "frequency": "QHS"
+        },
+        {
+          "name": "Metformin",
+          "rxnorm": "860975",
+          "dosage": "500mg",
+          "route": "PO",
+          "frequency": "BID"
+        },
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Knee Replacement",
+          "datetime": "2025-07-04T11:20:21.087509",
+          "status": "Scheduled",
+          "cpt": "27447"
+        }
+      ],
+      "dietaryRestrictions": "Cardiac Diet, Diabetic"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNI"
+    },
+    "emergencyContact": {
+      "name": "Benjamin Phelps Jr.",
+      "relation": "Spouse",
+      "phone": "530-994-1336"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "6f00680a-14c7-4e4b-9dcb-965731cf0169",
+    "mrn": "HE-8653-619",
+    "name": "Michael Lewis",
+    "dob": "1947-05-31",
+    "gender": "Male",
+    "age": 78,
+    "status": "Admitted - Stable",
+    "acuityLevel": 2,
+    "weight": {
+      "value": 198,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-06T04:20:21.169056",
+    "admissionReason": "Vomiting",
+    "diagnoses": [
+      {
+        "name": "Gastroenteritis",
+        "code": "A09",
+        "type": "Primary"
+      }
+    ],
+    "allergies": [
+      "Shellfish",
+      "Iodine"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with vomiting, diagnosed with Gastroenteritis. Routine observation. Fluid replacement ongoing. Watch for signs of dehydration.",
+      "medicationSchedule": [
+        {
+          "name": "Metformin",
+          "rxnorm": "860975",
+          "dosage": "500mg",
+          "route": "PO",
+          "frequency": "BID"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Knee Replacement",
+          "datetime": "2025-07-08T03:20:21.169056",
+          "status": "Scheduled",
+          "cpt": "27447"
+        }
+      ],
+      "dietaryRestrictions": "Cardiac Diet, Clear Liquids"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "Comfort Measures Only"
+    },
+    "emergencyContact": {
+      "name": "Frank Travis",
+      "relation": "Partner",
+      "phone": "007-446-7051"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "bced1f4d-4d5e-457a-bf2a-2ca76a048144",
+    "mrn": "HE-5802-682",
+    "name": "\u674e\u6587",
+    "dob": "2006-09-16",
+    "gender": "Female",
+    "age": 18,
+    "status": "Admitted - Stable",
+    "acuityLevel": 1,
+    "weight": {
+      "value": 214,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-04T23:20:21.231399",
+    "admissionReason": "Dizziness",
+    "diagnoses": [
+      {
+        "name": "Hypertension",
+        "code": "I10",
+        "type": "Primary"
+      }
+    ],
+    "allergies": [],
+    "carePlan": {
+      "notes": "Patient admitted with dizziness, diagnosed with Hypertension. Routine observation. High fall risk. Cardiology consult advised.",
+      "medicationSchedule": [
+        {
+          "name": "Heparin Drip",
+          "rxnorm": "5224",
+          "dosage": "5000 units/hr",
+          "route": "IV",
+          "frequency": "Continuous"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Knee Replacement",
+          "datetime": "2025-07-06T06:20:21.231399",
+          "status": "Scheduled",
+          "cpt": "27447"
+        }
+      ],
+      "dietaryRestrictions": "NPO until stable"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "Full Code"
+    },
+    "emergencyContact": {
+      "name": "Melissa Montgomery",
+      "relation": "Friend",
+      "phone": "257-162-0441"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "432100f3-1c99-4399-a61d-41e9d3abf451",
+    "mrn": "HE-1831-425",
+    "name": "Eva Bath",
+    "dob": "1970-11-14",
+    "gender": "Male",
+    "age": 54,
+    "status": "Admitted - Stable",
+    "acuityLevel": 2,
+    "weight": {
+      "value": 129,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-05T01:20:21.303504",
+    "admissionReason": "Chest Pain",
+    "diagnoses": [
+      {
+        "name": "Acute Myocardial Infarction",
+        "code": "I21.9",
+        "type": "Primary"
+      }
+    ],
+    "allergies": [
+      "Penicillin",
+      "Aspirin"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with chest pain, diagnosed with Acute Myocardial Infarction. Routine observation. High fall risk. Cardiology consult advised.",
+      "medicationSchedule": [
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Appendectomy",
+          "datetime": "2025-07-05T14:20:21.303504",
+          "status": "Scheduled",
+          "cpt": "44950"
+        }
+      ],
+      "dietaryRestrictions": "Clear Liquids"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNI"
+    },
+    "emergencyContact": {
+      "name": "Shawn Smith",
+      "relation": "Friend",
+      "phone": "219-463-5599"
+    },
+    "admissionHistory": [
+      {
+        "admission": "2025-06-08T01:20:21.303504",
+        "discharge": "2025-06-11T01:20:21.303504",
+        "reason": "Fever and Fatigue",
+        "diagnosis": "Pneumonia",
+        "status": "Discharged"
+      }
+    ]
+  },
+  {
+    "_id": "45568b50-b8f3-49ca-8749-d77cacd9d64e",
+    "mrn": "HE-8015-782",
+    "name": "Jaime Gray",
+    "dob": "2005-06-10",
+    "gender": "Female",
+    "age": 20,
+    "status": "Admitted - Stable",
+    "acuityLevel": 1,
+    "weight": {
+      "value": 226,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-04T04:20:21.393015",
+    "admissionReason": "Leg Swelling",
+    "diagnoses": [
+      {
+        "name": "Congestive Heart Failure",
+        "code": "I50.9",
+        "type": "Primary"
+      }
+    ],
+    "allergies": [
+      "Shellfish"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with leg swelling, diagnosed with Congestive Heart Failure. Routine observation. Continue standard supportive care.",
+      "medicationSchedule": [
+        {
+          "name": "Heparin Drip",
+          "rxnorm": "5224",
+          "dosage": "5000 units/hr",
+          "route": "IV",
+          "frequency": "Continuous"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Cardiac Catheterization",
+          "datetime": "2025-07-05T09:20:21.393015",
+          "status": "Scheduled",
+          "cpt": "93452"
+        }
+      ],
+      "dietaryRestrictions": "Diabetic"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "Comfort Measures Only"
+    },
+    "emergencyContact": {
+      "name": "Kathy Davis",
+      "relation": "Parent",
+      "phone": "030-236-0191"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "4f33f398-5c48-4708-ad4a-1ed92750c34a",
+    "mrn": "HE-6437-313",
+    "name": "Aurelio Cardona Mateo",
+    "dob": "2002-07-04",
+    "gender": "Female",
+    "age": 23,
+    "status": "Admitted - Stable",
+    "acuityLevel": 3,
+    "weight": {
+      "value": 128,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-05T00:20:21.506652",
+    "admissionReason": "Chest Pain",
+    "diagnoses": [
+      {
+        "name": "Acute Myocardial Infarction",
+        "code": "I21.9",
+        "type": "Primary"
+      }
+    ],
+    "allergies": [
+      "Penicillin",
+      "Iodine"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with chest pain, diagnosed with Acute Myocardial Infarction. Routine observation. High fall risk. Cardiology consult advised.",
+      "medicationSchedule": [
+        {
+          "name": "Heparin Drip",
+          "rxnorm": "5224",
+          "dosage": "5000 units/hr",
+          "route": "IV",
+          "frequency": "Continuous"
+        },
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Appendectomy",
+          "datetime": "2025-07-05T13:20:21.506652",
+          "status": "Completed",
+          "cpt": "44950"
+        }
+      ],
+      "dietaryRestrictions": "NPO until stable, Clear Liquids"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "Comfort Measures Only"
+    },
+    "emergencyContact": {
+      "name": "Carolyn Burke",
+      "relation": "Parent",
+      "phone": "497-689-7910"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "ad268e48-21d4-4898-b113-9ac4c655fedb",
+    "mrn": "HE-1273-319",
+    "name": "Elias Alonzo S\u00e1nchez",
+    "dob": "1941-08-30",
+    "gender": "Female",
+    "age": 83,
+    "status": "Admitted - Stable",
+    "acuityLevel": 3,
+    "weight": {
+      "value": 215,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-07T02:20:21.595399",
+    "admissionReason": "Shortness of Breath",
+    "diagnoses": [
+      {
+        "name": "COPD",
+        "code": "J44.9",
+        "type": "Primary"
+      },
+      {
+        "name": "Anemia",
+        "code": "D64.9",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [
+      "Iodine",
+      "Latex"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with shortness of breath, diagnosed with COPD. Routine observation. Continue standard supportive care.",
+      "medicationSchedule": [
+        {
+          "name": "Atorvastatin",
+          "rxnorm": "83367",
+          "dosage": "40mg",
+          "route": "PO",
+          "frequency": "QHS"
+        },
+        {
+          "name": "Metformin",
+          "rxnorm": "860975",
+          "dosage": "500mg",
+          "route": "PO",
+          "frequency": "BID"
+        },
+        {
+          "name": "Heparin Drip",
+          "rxnorm": "5224",
+          "dosage": "5000 units/hr",
+          "route": "IV",
+          "frequency": "Continuous"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "MRI Brain",
+          "datetime": "2025-07-09T01:20:21.595399",
+          "status": "Completed",
+          "cpt": "70551"
+        }
+      ],
+      "dietaryRestrictions": "Low Sodium, Diabetic"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "Comfort Measures Only"
+    },
+    "emergencyContact": {
+      "name": "Bradley Lane",
+      "relation": "Spouse",
+      "phone": "848-012-9654"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "d626e450-69e0-452c-a681-3f42c6223979",
+    "mrn": "HE-6175-152",
+    "name": "Alejandra Zo\u00e9 Madera",
+    "dob": "1999-09-16",
+    "gender": "Female",
+    "age": 25,
+    "status": "Admitted - Stable",
+    "acuityLevel": 3,
+    "weight": {
+      "value": 242,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-04T23:20:21.655108",
+    "admissionReason": "Chest Pain",
+    "diagnoses": [
+      {
+        "name": "Acute Myocardial Infarction",
+        "code": "I21.9",
+        "type": "Primary"
+      }
+    ],
+    "allergies": [
+      "Iodine"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with chest pain, diagnosed with Acute Myocardial Infarction. Routine observation. High fall risk. Cardiology consult advised.",
+      "medicationSchedule": [
+        {
+          "name": "Atorvastatin",
+          "rxnorm": "83367",
+          "dosage": "40mg",
+          "route": "PO",
+          "frequency": "QHS"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Knee Replacement",
+          "datetime": "2025-07-06T02:20:21.655108",
+          "status": "Completed",
+          "cpt": "27447"
+        }
+      ],
+      "dietaryRestrictions": "Low Sodium"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "Comfort Measures Only"
+    },
+    "emergencyContact": {
+      "name": "Tabitha Hunt",
+      "relation": "Sibling",
+      "phone": "189-959-8625"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "2e0f9928-2f8b-4559-bd8f-b13293705445",
+    "mrn": "HE-1162-782",
+    "name": "Stephen Buck",
+    "dob": "1999-03-28",
+    "gender": "Male",
+    "age": 26,
+    "status": "Admitted - Critical",
+    "acuityLevel": 4,
+    "weight": {
+      "value": 136,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-04T03:20:21.722074",
+    "admissionReason": "Dizziness",
+    "diagnoses": [
+      {
+        "name": "Hypertension",
+        "code": "I10",
+        "type": "Primary"
+      }
+    ],
+    "allergies": [
+      "Shellfish",
+      "Penicillin"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with dizziness, diagnosed with Hypertension. Monitor vitals closely. High fall risk. Cardiology consult advised.",
+      "medicationSchedule": [
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        },
+        {
+          "name": "Heparin Drip",
+          "rxnorm": "5224",
+          "dosage": "5000 units/hr",
+          "route": "IV",
+          "frequency": "Continuous"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Knee Replacement",
+          "datetime": "2025-07-05T15:20:21.722074",
+          "status": "Completed",
+          "cpt": "27447"
+        }
+      ],
+      "dietaryRestrictions": "Diabetic"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNI"
+    },
+    "emergencyContact": {
+      "name": "Ethan Holmes",
+      "relation": "Partner",
+      "phone": "670-247-6691"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "38ee86ba-ead8-4d85-b299-9a9d55471a29",
+    "mrn": "HE-7001-217",
+    "name": "Pablo Norma Olivares Padr\u00f3n",
+    "dob": "1940-12-26",
+    "gender": "Male",
+    "age": 84,
+    "status": "Admitted - Stable",
+    "acuityLevel": 1,
+    "weight": {
+      "value": 198,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-07T01:20:21.801835",
+    "admissionReason": "Fever and Fatigue",
+    "diagnoses": [
+      {
+        "name": "Pneumonia",
+        "code": "J18.9",
+        "type": "Primary"
+      }
+    ],
+    "allergies": [
+      "Aspirin",
+      "Iodine"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with fever and fatigue, diagnosed with Pneumonia. Routine observation. Monitor oxygen saturation. Start antibiotic protocol.",
+      "medicationSchedule": [
+        {
+          "name": "Atorvastatin",
+          "rxnorm": "83367",
+          "dosage": "40mg",
+          "route": "PO",
+          "frequency": "QHS"
+        },
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        },
+        {
+          "name": "Metformin",
+          "rxnorm": "860975",
+          "dosage": "500mg",
+          "route": "PO",
+          "frequency": "BID"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "MRI Brain",
+          "datetime": "2025-07-07T20:20:21.801835",
+          "status": "Completed",
+          "cpt": "70551"
+        }
+      ],
+      "dietaryRestrictions": "Diabetic, NPO until stable"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNR"
+    },
+    "emergencyContact": {
+      "name": "Donald Castaneda",
+      "relation": "Friend",
+      "phone": "465-623-6603"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "37462413-f679-4063-96c6-3f4cf327d377",
+    "mrn": "HE-6784-837",
+    "name": "\u4f55\u5f3a",
+    "dob": "1936-03-26",
+    "gender": "Female",
+    "age": 89,
+    "status": "Admitted - Stable",
+    "acuityLevel": 3,
+    "weight": {
+      "value": 185,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-04T00:20:21.878352",
+    "admissionReason": "Dizziness",
+    "diagnoses": [
+      {
+        "name": "Hypertension",
+        "code": "I10",
+        "type": "Primary"
+      }
+    ],
+    "allergies": [],
+    "carePlan": {
+      "notes": "Patient admitted with dizziness, diagnosed with Hypertension. Routine observation. High fall risk. Cardiology consult advised.",
+      "medicationSchedule": [
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Cardiac Catheterization",
+          "datetime": "2025-07-04T09:20:21.878352",
+          "status": "Completed",
+          "cpt": "93452"
+        }
+      ],
+      "dietaryRestrictions": "Cardiac Diet"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "Full Code"
+    },
+    "emergencyContact": {
+      "name": "Robert Gonzales",
+      "relation": "Friend",
+      "phone": "418-494-8112"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "7881ff0b-5eeb-4c50-89b0-ff89abf82677",
+    "mrn": "HE-2974-488",
+    "name": "Hilda Delgadillo J\u00e1quez",
+    "dob": "1983-01-10",
+    "gender": "Male",
+    "age": 42,
+    "status": "Admitted - Stable",
+    "acuityLevel": 2,
+    "weight": {
+      "value": 205,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-05T04:20:21.950238",
+    "admissionReason": "Shortness of Breath",
+    "diagnoses": [
+      {
+        "name": "COPD",
+        "code": "J44.9",
+        "type": "Primary"
+      },
+      {
+        "name": "Anemia",
+        "code": "D64.9",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [],
+    "carePlan": {
+      "notes": "Patient admitted with shortness of breath, diagnosed with COPD. Routine observation. Continue standard supportive care.",
+      "medicationSchedule": [
+        {
+          "name": "Metformin",
+          "rxnorm": "860975",
+          "dosage": "500mg",
+          "route": "PO",
+          "frequency": "BID"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Appendectomy",
+          "datetime": "2025-07-05T09:20:21.950238",
+          "status": "Scheduled",
+          "cpt": "44950"
+        }
+      ],
+      "dietaryRestrictions": "Diabetic, Low Sodium"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "Full Code"
+    },
+    "emergencyContact": {
+      "name": "Jason Mullins",
+      "relation": "Partner",
+      "phone": "396-136-6170"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "2efd7131-31fa-48a4-800d-3ef1fe07b8f6",
+    "mrn": "HE-8348-699",
+    "name": "\u0422\u0443\u0440\u043e\u0432\u0430 \u042e\u043b\u0438\u044f \u0410\u043d\u0434\u0440\u0435\u0435\u0432\u043d\u0430",
+    "dob": "2006-07-28",
+    "gender": "Female",
+    "age": 18,
+    "status": "Admitted - Critical",
+    "acuityLevel": 5,
+    "weight": {
+      "value": 133,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-06T03:20:22.039418",
+    "admissionReason": "Chest Pain",
+    "diagnoses": [
+      {
+        "name": "Acute Myocardial Infarction",
+        "code": "I21.9",
+        "type": "Primary"
+      }
+    ],
+    "allergies": [],
+    "carePlan": {
+      "notes": "Patient admitted with chest pain, diagnosed with Acute Myocardial Infarction. Monitor vitals closely. High fall risk. Cardiology consult advised.",
+      "medicationSchedule": [
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Knee Replacement",
+          "datetime": "2025-07-06T21:20:22.039418",
+          "status": "Scheduled",
+          "cpt": "27447"
+        }
+      ],
+      "dietaryRestrictions": "Cardiac Diet, Diabetic"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNR"
+    },
+    "emergencyContact": {
+      "name": "Jeffrey Clements",
+      "relation": "Sibling",
+      "phone": "418-734-6872"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "ebc13e31-485a-4207-93e8-f9acf66782d5",
+    "mrn": "HE-2426-551",
+    "name": "Mauricio Ojeda Alfaro",
+    "dob": "1946-05-06",
+    "gender": "Female",
+    "age": 79,
+    "status": "Admitted - Stable",
+    "acuityLevel": 1,
+    "weight": {
+      "value": 193,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-06T03:20:22.103976",
+    "admissionReason": "Chest Pain",
+    "diagnoses": [
+      {
+        "name": "Acute Myocardial Infarction",
+        "code": "I21.9",
+        "type": "Primary"
+      },
+      {
+        "name": "Obesity",
+        "code": "E66.9",
+        "type": "Secondary"
+      },
+      {
+        "name": "Anemia",
+        "code": "D64.9",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [
+      "Shellfish"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with chest pain, diagnosed with Acute Myocardial Infarction. Routine observation. High fall risk. Cardiology consult advised.",
+      "medicationSchedule": [
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        },
+        {
+          "name": "Heparin Drip",
+          "rxnorm": "5224",
+          "dosage": "5000 units/hr",
+          "route": "IV",
+          "frequency": "Continuous"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "MRI Brain",
+          "datetime": "2025-07-07T07:20:22.103976",
+          "status": "Scheduled",
+          "cpt": "70551"
+        }
+      ],
+      "dietaryRestrictions": "Clear Liquids"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNR"
+    },
+    "emergencyContact": {
+      "name": "Christina Gibson",
+      "relation": "Sibling",
+      "phone": "855-695-0711"
+    },
+    "admissionHistory": [
+      {
+        "admission": "2024-09-09T03:20:22.103976",
+        "discharge": "2024-09-15T03:20:22.103976",
+        "reason": "Vomiting",
+        "diagnosis": "Pneumonia",
+        "status": "Discharged"
+      }
+    ]
+  },
+  {
+    "_id": "b1edb4d5-17f6-454b-b98c-659331974f81",
+    "mrn": "HE-3863-834",
+    "name": "\u6768\u82f1",
+    "dob": "1982-06-17",
+    "gender": "Female",
+    "age": 43,
+    "status": "Admitted - Stable",
+    "acuityLevel": 1,
+    "weight": {
+      "value": 168,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-04T01:20:22.167945",
+    "admissionReason": "Shortness of Breath",
+    "diagnoses": [
+      {
+        "name": "COPD",
+        "code": "J44.9",
+        "type": "Primary"
+      },
+      {
+        "name": "Hyperlipidemia",
+        "code": "E78.5",
+        "type": "Secondary"
+      },
+      {
+        "name": "Type 2 Diabetes",
+        "code": "E11.9",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [
+      "Iodine"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with shortness of breath, diagnosed with COPD. Routine observation. Continue standard supportive care.",
+      "medicationSchedule": [
+        {
+          "name": "Atorvastatin",
+          "rxnorm": "83367",
+          "dosage": "40mg",
+          "route": "PO",
+          "frequency": "QHS"
+        },
+        {
+          "name": "Metformin",
+          "rxnorm": "860975",
+          "dosage": "500mg",
+          "route": "PO",
+          "frequency": "BID"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "MRI Brain",
+          "datetime": "2025-07-04T10:20:22.167945",
+          "status": "Scheduled",
+          "cpt": "70551"
+        }
+      ],
+      "dietaryRestrictions": "Clear Liquids"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "Comfort Measures Only"
+    },
+    "emergencyContact": {
+      "name": "Stephanie Berry",
+      "relation": "Parent",
+      "phone": "715-315-0573"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "d0ccc97d-bc8b-4b73-90ed-c30fbd146bb7",
+    "mrn": "HE-8386-290",
+    "name": "Ricardo Villa Rosado",
+    "dob": "1985-05-08",
+    "gender": "Male",
+    "age": 40,
+    "status": "Admitted - Critical",
+    "acuityLevel": 5,
+    "weight": {
+      "value": 175,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-05T04:20:22.243227",
+    "admissionReason": "Dizziness",
+    "diagnoses": [
+      {
+        "name": "Hypertension",
+        "code": "I10",
+        "type": "Primary"
+      },
+      {
+        "name": "Obesity",
+        "code": "E66.9",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [],
+    "carePlan": {
+      "notes": "Patient admitted with dizziness, diagnosed with Hypertension. Monitor vitals closely. High fall risk. Cardiology consult advised.",
+      "medicationSchedule": [
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        },
+        {
+          "name": "Metformin",
+          "rxnorm": "860975",
+          "dosage": "500mg",
+          "route": "PO",
+          "frequency": "BID"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Cardiac Catheterization",
+          "datetime": "2025-07-06T16:20:22.243227",
+          "status": "Scheduled",
+          "cpt": "93452"
+        }
+      ],
+      "dietaryRestrictions": "NPO until stable, Low Sodium"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNR"
+    },
+    "emergencyContact": {
+      "name": "Joshua Tran",
+      "relation": "Friend",
+      "phone": "187-277-9446"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "a7d89578-f49c-422d-bea3-68eeff059564",
+    "mrn": "HE-1519-258",
+    "name": "\u6c5f\u8389",
+    "dob": "1948-09-17",
+    "gender": "Female",
+    "age": 76,
+    "status": "Admitted - Stable",
+    "acuityLevel": 3,
+    "weight": {
+      "value": 217,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-07T02:20:22.326865",
+    "admissionReason": "Fever and Fatigue",
+    "diagnoses": [
+      {
+        "name": "Pneumonia",
+        "code": "J18.9",
+        "type": "Primary"
+      },
+      {
+        "name": "Anemia",
+        "code": "D64.9",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [
+      "Latex"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with fever and fatigue, diagnosed with Pneumonia. Routine observation. Monitor oxygen saturation. Start antibiotic protocol.",
+      "medicationSchedule": [
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        },
+        {
+          "name": "Metformin",
+          "rxnorm": "860975",
+          "dosage": "500mg",
+          "route": "PO",
+          "frequency": "BID"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Knee Replacement",
+          "datetime": "2025-07-08T16:20:22.326865",
+          "status": "Completed",
+          "cpt": "27447"
+        }
+      ],
+      "dietaryRestrictions": "Low Sodium"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "Comfort Measures Only"
+    },
+    "emergencyContact": {
+      "name": "Cindy Pope",
+      "relation": "Parent",
+      "phone": "457-105-8760"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "f5c3a35d-958a-4e4e-8be9-5e2a3f490277",
+    "mrn": "HE-6012-807",
+    "name": "\u042e\u0434\u0438\u043d\u0430 \u0410\u0433\u0430\u0444\u044c\u044f \u042d\u0434\u0443\u0430\u0440\u0434\u043e\u0432\u043d\u0430",
+    "dob": "1961-05-06",
+    "gender": "Female",
+    "age": 64,
+    "status": "Admitted - Stable",
+    "acuityLevel": 3,
+    "weight": {
+      "value": 183,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-07T03:20:22.386233",
+    "admissionReason": "Leg Swelling",
+    "diagnoses": [
+      {
+        "name": "Congestive Heart Failure",
+        "code": "I50.9",
+        "type": "Primary"
+      },
+      {
+        "name": "Hyperlipidemia",
+        "code": "E78.5",
+        "type": "Secondary"
+      },
+      {
+        "name": "Obesity",
+        "code": "E66.9",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [],
+    "carePlan": {
+      "notes": "Patient admitted with leg swelling, diagnosed with Congestive Heart Failure. Routine observation. Continue standard supportive care.",
+      "medicationSchedule": [
+        {
+          "name": "Metformin",
+          "rxnorm": "860975",
+          "dosage": "500mg",
+          "route": "PO",
+          "frequency": "BID"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "MRI Brain",
+          "datetime": "2025-07-08T17:20:22.386233",
+          "status": "Scheduled",
+          "cpt": "70551"
+        }
+      ],
+      "dietaryRestrictions": "Clear Liquids, Low Sodium"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNI"
+    },
+    "emergencyContact": {
+      "name": "Dustin Olson",
+      "relation": "Spouse",
+      "phone": "775-874-8815"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "e9214135-3c1c-4633-b447-6b7de79e684d",
+    "mrn": "HE-9472-769",
+    "name": "\u6881\u5175",
+    "dob": "1943-02-20",
+    "gender": "Female",
+    "age": 82,
+    "status": "Admitted - Critical",
+    "acuityLevel": 5,
+    "weight": {
+      "value": 178,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-06T02:20:22.442884",
+    "admissionReason": "Leg Swelling",
+    "diagnoses": [
+      {
+        "name": "Congestive Heart Failure",
+        "code": "I50.9",
+        "type": "Primary"
+      },
+      {
+        "name": "Anemia",
+        "code": "D64.9",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [
+      "Penicillin"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with leg swelling, diagnosed with Congestive Heart Failure. Monitor vitals closely. Continue standard supportive care.",
+      "medicationSchedule": [
+        {
+          "name": "Atorvastatin",
+          "rxnorm": "83367",
+          "dosage": "40mg",
+          "route": "PO",
+          "frequency": "QHS"
+        },
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        },
+        {
+          "name": "Heparin Drip",
+          "rxnorm": "5224",
+          "dosage": "5000 units/hr",
+          "route": "IV",
+          "frequency": "Continuous"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Appendectomy",
+          "datetime": "2025-07-06T08:20:22.442884",
+          "status": "Scheduled",
+          "cpt": "44950"
+        }
+      ],
+      "dietaryRestrictions": "Diabetic, Low Sodium"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "Comfort Measures Only"
+    },
+    "emergencyContact": {
+      "name": "Laura Miller",
+      "relation": "Spouse",
+      "phone": "721-947-7051"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "d818cf33-0220-4cf2-bc73-22447845ebe6",
+    "mrn": "HE-1723-307",
+    "name": "Camilo Abrego",
+    "dob": "1949-05-28",
+    "gender": "Male",
+    "age": 76,
+    "status": "Admitted - Critical",
+    "acuityLevel": 4,
+    "weight": {
+      "value": 214,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-07T04:20:22.496206",
+    "admissionReason": "Fever and Fatigue",
+    "diagnoses": [
+      {
+        "name": "Pneumonia",
+        "code": "J18.9",
+        "type": "Primary"
+      },
+      {
+        "name": "Hyperlipidemia",
+        "code": "E78.5",
+        "type": "Secondary"
+      },
+      {
+        "name": "Obesity",
+        "code": "E66.9",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [
+      "Shellfish",
+      "Latex"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with fever and fatigue, diagnosed with Pneumonia. Monitor vitals closely. Monitor oxygen saturation. Start antibiotic protocol.",
+      "medicationSchedule": [
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        },
+        {
+          "name": "Metformin",
+          "rxnorm": "860975",
+          "dosage": "500mg",
+          "route": "PO",
+          "frequency": "BID"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "MRI Brain",
+          "datetime": "2025-07-07T22:20:22.496206",
+          "status": "Completed",
+          "cpt": "70551"
+        }
+      ],
+      "dietaryRestrictions": "NPO until stable, Cardiac Diet"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNI"
+    },
+    "emergencyContact": {
+      "name": "Elizabeth Rodriguez",
+      "relation": "Spouse",
+      "phone": "009-678-1206"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "3a2f349a-ac74-40f1-984d-bbae28834b76",
+    "mrn": "HE-8745-268",
+    "name": "\u7f57\u51ef",
+    "dob": "1983-05-08",
+    "gender": "Male",
+    "age": 42,
+    "status": "Admitted - Stable",
+    "acuityLevel": 3,
+    "weight": {
+      "value": 121,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-05T00:20:22.564167",
+    "admissionReason": "Vomiting",
+    "diagnoses": [
+      {
+        "name": "Gastroenteritis",
+        "code": "A09",
+        "type": "Primary"
+      }
+    ],
+    "allergies": [
+      "Latex"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with vomiting, diagnosed with Gastroenteritis. Routine observation. Fluid replacement ongoing. Watch for signs of dehydration.",
+      "medicationSchedule": [
+        {
+          "name": "Heparin Drip",
+          "rxnorm": "5224",
+          "dosage": "5000 units/hr",
+          "route": "IV",
+          "frequency": "Continuous"
+        },
+        {
+          "name": "Atorvastatin",
+          "rxnorm": "83367",
+          "dosage": "40mg",
+          "route": "PO",
+          "frequency": "QHS"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Knee Replacement",
+          "datetime": "2025-07-05T22:20:22.564167",
+          "status": "Completed",
+          "cpt": "27447"
+        }
+      ],
+      "dietaryRestrictions": "Low Sodium, Cardiac Diet"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNI"
+    },
+    "emergencyContact": {
+      "name": "Charles Jackson",
+      "relation": "Spouse",
+      "phone": "200-383-3155"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "90e0b129-f88e-46b9-8bd1-d408f65ab553",
+    "mrn": "HE-1736-317",
+    "name": "Citlali Alberto Canales",
+    "dob": "1962-07-04",
+    "gender": "Male",
+    "age": 63,
+    "status": "Admitted - Critical",
+    "acuityLevel": 5,
+    "weight": {
+      "value": 170,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-04T01:20:22.624760",
+    "admissionReason": "Leg Swelling",
+    "diagnoses": [
+      {
+        "name": "Congestive Heart Failure",
+        "code": "I50.9",
+        "type": "Primary"
+      },
+      {
+        "name": "Hyperlipidemia",
+        "code": "E78.5",
+        "type": "Secondary"
+      },
+      {
+        "name": "Obesity",
+        "code": "E66.9",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [
+      "Aspirin",
+      "Penicillin"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with leg swelling, diagnosed with Congestive Heart Failure. Monitor vitals closely. Continue standard supportive care.",
+      "medicationSchedule": [
+        {
+          "name": "Heparin Drip",
+          "rxnorm": "5224",
+          "dosage": "5000 units/hr",
+          "route": "IV",
+          "frequency": "Continuous"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Cardiac Catheterization",
+          "datetime": "2025-07-04T08:20:22.624760",
+          "status": "Scheduled",
+          "cpt": "93452"
+        }
+      ],
+      "dietaryRestrictions": "Diabetic, NPO until stable"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNR"
+    },
+    "emergencyContact": {
+      "name": "Kristopher Cohen",
+      "relation": "Spouse",
+      "phone": "151-417-9487"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "1366794b-dcb2-4117-ad17-00fffd12a01e",
+    "mrn": "HE-4618-248",
+    "name": "Ayesha Mammen",
+    "dob": "1941-12-12",
+    "gender": "Male",
+    "age": 83,
+    "status": "Admitted - Critical",
+    "acuityLevel": 4,
+    "weight": {
+      "value": 136,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-05T02:20:22.676849",
+    "admissionReason": "Chest Pain",
+    "diagnoses": [
+      {
+        "name": "Acute Myocardial Infarction",
+        "code": "I21.9",
+        "type": "Primary"
+      },
+      {
+        "name": "Obesity",
+        "code": "E66.9",
+        "type": "Secondary"
+      },
+      {
+        "name": "Anemia",
+        "code": "D64.9",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [
+      "Iodine",
+      "Aspirin"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with chest pain, diagnosed with Acute Myocardial Infarction. Monitor vitals closely. High fall risk. Cardiology consult advised.",
+      "medicationSchedule": [
+        {
+          "name": "Metformin",
+          "rxnorm": "860975",
+          "dosage": "500mg",
+          "route": "PO",
+          "frequency": "BID"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Cardiac Catheterization",
+          "datetime": "2025-07-05T19:20:22.676849",
+          "status": "Completed",
+          "cpt": "93452"
+        }
+      ],
+      "dietaryRestrictions": "Low Sodium, NPO until stable"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "Comfort Measures Only"
+    },
+    "emergencyContact": {
+      "name": "Ryan Henry",
+      "relation": "Friend",
+      "phone": "227-241-6437"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "a4189b90-a543-445c-ae0d-1ba934ad9250",
+    "mrn": "HE-8385-622",
+    "name": "Gabriela Silvia Lucio",
+    "dob": "2004-09-11",
+    "gender": "Male",
+    "age": 20,
+    "status": "Admitted - Critical",
+    "acuityLevel": 5,
+    "weight": {
+      "value": 227,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-06T01:20:22.739853",
+    "admissionReason": "Dizziness",
+    "diagnoses": [
+      {
+        "name": "Hypertension",
+        "code": "I10",
+        "type": "Primary"
+      },
+      {
+        "name": "Obesity",
+        "code": "E66.9",
+        "type": "Secondary"
+      },
+      {
+        "name": "Type 2 Diabetes",
+        "code": "E11.9",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [
+      "Latex"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with dizziness, diagnosed with Hypertension. Monitor vitals closely. High fall risk. Cardiology consult advised.",
+      "medicationSchedule": [
+        {
+          "name": "Heparin Drip",
+          "rxnorm": "5224",
+          "dosage": "5000 units/hr",
+          "route": "IV",
+          "frequency": "Continuous"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "MRI Brain",
+          "datetime": "2025-07-06T13:20:22.739853",
+          "status": "Scheduled",
+          "cpt": "70551"
+        }
+      ],
+      "dietaryRestrictions": "Diabetic, NPO until stable"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "Full Code"
+    },
+    "emergencyContact": {
+      "name": "Jason Keller",
+      "relation": "Spouse",
+      "phone": "898-289-5929"
+    },
+    "admissionHistory": [
+      {
+        "admission": "2024-12-10T01:20:22.739853",
+        "discharge": "2024-12-14T01:20:22.739853",
+        "reason": "Dizziness",
+        "diagnosis": "Hypertension",
+        "status": "Discharged"
+      }
+    ]
+  },
+  {
+    "_id": "2b862e72-259d-484c-ba8a-be7ed0512af1",
+    "mrn": "HE-7082-529",
+    "name": "\u0433-\u043d \u041f\u043e\u043b\u044f\u043a\u043e\u0432 \u0421\u0432\u044f\u0442\u043e\u043f\u043e\u043b\u043a \u0415\u0444\u0441\u0442\u0430\u0444\u044c\u0435\u0432\u0438\u0447",
+    "dob": "1948-01-21",
+    "gender": "Male",
+    "age": 77,
+    "status": "Admitted - Critical",
+    "acuityLevel": 4,
+    "weight": {
+      "value": 164,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-05T00:20:22.801647",
+    "admissionReason": "Dizziness",
+    "diagnoses": [
+      {
+        "name": "Hypertension",
+        "code": "I10",
+        "type": "Primary"
+      },
+      {
+        "name": "Hyperlipidemia",
+        "code": "E78.5",
+        "type": "Secondary"
+      },
+      {
+        "name": "Obesity",
+        "code": "E66.9",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [],
+    "carePlan": {
+      "notes": "Patient admitted with dizziness, diagnosed with Hypertension. Monitor vitals closely. High fall risk. Cardiology consult advised.",
+      "medicationSchedule": [
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Appendectomy",
+          "datetime": "2025-07-05T08:20:22.801647",
+          "status": "Scheduled",
+          "cpt": "44950"
+        }
+      ],
+      "dietaryRestrictions": "Cardiac Diet, Diabetic"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "Comfort Measures Only"
+    },
+    "emergencyContact": {
+      "name": "Carol Nelson",
+      "relation": "Spouse",
+      "phone": "596-880-0692"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "553d33d3-99ac-467a-9d01-7fca70cabc7f",
+    "mrn": "HE-7012-178",
+    "name": "\u041d\u0430\u0434\u0435\u0436\u0434\u0430 \u0412\u0430\u043b\u0435\u0440\u0438\u0435\u0432\u043d\u0430 \u0423\u0441\u0442\u0438\u043d\u043e\u0432\u0430",
+    "dob": "1943-03-30",
+    "gender": "Female",
+    "age": 82,
+    "status": "Admitted - Critical",
+    "acuityLevel": 4,
+    "weight": {
+      "value": 241,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-04T23:20:22.865097",
+    "admissionReason": "Leg Swelling",
+    "diagnoses": [
+      {
+        "name": "Congestive Heart Failure",
+        "code": "I50.9",
+        "type": "Primary"
+      },
+      {
+        "name": "Hyperlipidemia",
+        "code": "E78.5",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [],
+    "carePlan": {
+      "notes": "Patient admitted with leg swelling, diagnosed with Congestive Heart Failure. Monitor vitals closely. Continue standard supportive care.",
+      "medicationSchedule": [
+        {
+          "name": "Atorvastatin",
+          "rxnorm": "83367",
+          "dosage": "40mg",
+          "route": "PO",
+          "frequency": "QHS"
+        },
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        },
+        {
+          "name": "Metformin",
+          "rxnorm": "860975",
+          "dosage": "500mg",
+          "route": "PO",
+          "frequency": "BID"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Knee Replacement",
+          "datetime": "2025-07-06T23:20:22.865097",
+          "status": "Completed",
+          "cpt": "27447"
+        }
+      ],
+      "dietaryRestrictions": "Cardiac Diet"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "Full Code"
+    },
+    "emergencyContact": {
+      "name": "Dr. Anne Holmes",
+      "relation": "Friend",
+      "phone": "023-829-7884"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "12d554ab-a40c-493a-8271-d013b4944487",
+    "mrn": "HE-5146-406",
+    "name": "Ronnie Cooper",
+    "dob": "1953-11-01",
+    "gender": "Male",
+    "age": 71,
+    "status": "Admitted - Critical",
+    "acuityLevel": 5,
+    "weight": {
+      "value": 153,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-04T03:20:22.923889",
+    "admissionReason": "Shortness of Breath",
+    "diagnoses": [
+      {
+        "name": "COPD",
+        "code": "J44.9",
+        "type": "Primary"
+      },
+      {
+        "name": "Anemia",
+        "code": "D64.9",
+        "type": "Secondary"
+      },
+      {
+        "name": "Hyperlipidemia",
+        "code": "E78.5",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [],
+    "carePlan": {
+      "notes": "Patient admitted with shortness of breath, diagnosed with COPD. Monitor vitals closely. Continue standard supportive care.",
+      "medicationSchedule": [
+        {
+          "name": "Atorvastatin",
+          "rxnorm": "83367",
+          "dosage": "40mg",
+          "route": "PO",
+          "frequency": "QHS"
+        },
+        {
+          "name": "Metformin",
+          "rxnorm": "860975",
+          "dosage": "500mg",
+          "route": "PO",
+          "frequency": "BID"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Appendectomy",
+          "datetime": "2025-07-04T09:20:22.923889",
+          "status": "Scheduled",
+          "cpt": "44950"
+        }
+      ],
+      "dietaryRestrictions": "NPO until stable"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "Full Code"
+    },
+    "emergencyContact": {
+      "name": "Jessica Smith",
+      "relation": "Sibling",
+      "phone": "043-621-5088"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "521531ef-01d6-47c5-a99d-903b18ca8a29",
+    "mrn": "HE-5545-130",
+    "name": "Stephanie Powell",
+    "dob": "1951-12-18",
+    "gender": "Female",
+    "age": 73,
+    "status": "Admitted - Stable",
+    "acuityLevel": 1,
+    "weight": {
+      "value": 208,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-04T02:20:22.984302",
+    "admissionReason": "Vomiting",
+    "diagnoses": [
+      {
+        "name": "Gastroenteritis",
+        "code": "A09",
+        "type": "Primary"
+      },
+      {
+        "name": "Hyperlipidemia",
+        "code": "E78.5",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [
+      "Penicillin"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with vomiting, diagnosed with Gastroenteritis. Routine observation. Fluid replacement ongoing. Watch for signs of dehydration.",
+      "medicationSchedule": [
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Knee Replacement",
+          "datetime": "2025-07-05T13:20:22.984302",
+          "status": "Completed",
+          "cpt": "27447"
+        }
+      ],
+      "dietaryRestrictions": "Diabetic, Low Sodium"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNI"
+    },
+    "emergencyContact": {
+      "name": "Sarah Larson",
+      "relation": "Friend",
+      "phone": "553-012-1728"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "cf71b96f-c9ac-486f-bd75-ddaa808fa39c",
+    "mrn": "HE-3625-582",
+    "name": "Brandy Fisher",
+    "dob": "1977-01-20",
+    "gender": "Female",
+    "age": 48,
+    "status": "Admitted - Stable",
+    "acuityLevel": 2,
+    "weight": {
+      "value": 184,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-07T00:20:23.052942",
+    "admissionReason": "Vomiting",
+    "diagnoses": [
+      {
+        "name": "Gastroenteritis",
+        "code": "A09",
+        "type": "Primary"
+      },
+      {
+        "name": "Hyperlipidemia",
+        "code": "E78.5",
+        "type": "Secondary"
+      },
+      {
+        "name": "Anemia",
+        "code": "D64.9",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [
+      "Iodine",
+      "Shellfish"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with vomiting, diagnosed with Gastroenteritis. Routine observation. Fluid replacement ongoing. Watch for signs of dehydration.",
+      "medicationSchedule": [
+        {
+          "name": "Heparin Drip",
+          "rxnorm": "5224",
+          "dosage": "5000 units/hr",
+          "route": "IV",
+          "frequency": "Continuous"
+        },
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Cardiac Catheterization",
+          "datetime": "2025-07-08T11:20:23.052942",
+          "status": "Completed",
+          "cpt": "93452"
+        }
+      ],
+      "dietaryRestrictions": "Diabetic, Cardiac Diet"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNR"
+    },
+    "emergencyContact": {
+      "name": "Anne Mitchell",
+      "relation": "Parent",
+      "phone": "622-025-7464"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "ba9fca53-4b5b-4ac4-8f86-eaff62c2eb1d",
+    "mrn": "HE-4753-407",
+    "name": "\u5b8b\u745c",
+    "dob": "1981-09-15",
+    "gender": "Female",
+    "age": 43,
+    "status": "Admitted - Stable",
+    "acuityLevel": 3,
+    "weight": {
+      "value": 217,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-04T02:20:23.141248",
+    "admissionReason": "Chest Pain",
+    "diagnoses": [
+      {
+        "name": "Acute Myocardial Infarction",
+        "code": "I21.9",
+        "type": "Primary"
+      },
+      {
+        "name": "Type 2 Diabetes",
+        "code": "E11.9",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [
+      "Iodine"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with chest pain, diagnosed with Acute Myocardial Infarction. Routine observation. High fall risk. Cardiology consult advised.",
+      "medicationSchedule": [
+        {
+          "name": "Atorvastatin",
+          "rxnorm": "83367",
+          "dosage": "40mg",
+          "route": "PO",
+          "frequency": "QHS"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Appendectomy",
+          "datetime": "2025-07-05T10:20:23.141248",
+          "status": "Completed",
+          "cpt": "44950"
+        }
+      ],
+      "dietaryRestrictions": "Cardiac Diet, Low Sodium"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "Full Code"
+    },
+    "emergencyContact": {
+      "name": "Jimmy Johnson",
+      "relation": "Friend",
+      "phone": "556-465-7877"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "de66580c-0dae-42db-b57b-5f7606141745",
+    "mrn": "HE-8169-722",
+    "name": "Kabir Ahluwalia",
+    "dob": "2004-05-19",
+    "gender": "Female",
+    "age": 21,
+    "status": "Admitted - Critical",
+    "acuityLevel": 5,
+    "weight": {
+      "value": 143,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-06T00:20:23.214959",
+    "admissionReason": "Chest Pain",
+    "diagnoses": [
+      {
+        "name": "Acute Myocardial Infarction",
+        "code": "I21.9",
+        "type": "Primary"
+      },
+      {
+        "name": "Type 2 Diabetes",
+        "code": "E11.9",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [
+      "Latex",
+      "Penicillin"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with chest pain, diagnosed with Acute Myocardial Infarction. Monitor vitals closely. High fall risk. Cardiology consult advised.",
+      "medicationSchedule": [
+        {
+          "name": "Atorvastatin",
+          "rxnorm": "83367",
+          "dosage": "40mg",
+          "route": "PO",
+          "frequency": "QHS"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "MRI Brain",
+          "datetime": "2025-07-06T10:20:23.214959",
+          "status": "Scheduled",
+          "cpt": "70551"
+        }
+      ],
+      "dietaryRestrictions": "Clear Liquids, Diabetic"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNR"
+    },
+    "emergencyContact": {
+      "name": "Tina Carter",
+      "relation": "Sibling",
+      "phone": "860-207-6381"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "2a30517b-b9e7-4094-9996-a0e773c5005c",
+    "mrn": "HE-8849-159",
+    "name": "Gabriela Ocampo Uribe",
+    "dob": "2002-05-21",
+    "gender": "Male",
+    "age": 23,
+    "status": "Admitted - Critical",
+    "acuityLevel": 4,
+    "weight": {
+      "value": 128,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-06T04:20:23.304767",
+    "admissionReason": "Dizziness",
+    "diagnoses": [
+      {
+        "name": "Hypertension",
+        "code": "I10",
+        "type": "Primary"
+      },
+      {
+        "name": "Anemia",
+        "code": "D64.9",
+        "type": "Secondary"
+      },
+      {
+        "name": "Type 2 Diabetes",
+        "code": "E11.9",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [
+      "Penicillin",
+      "Shellfish"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with dizziness, diagnosed with Hypertension. Monitor vitals closely. High fall risk. Cardiology consult advised.",
+      "medicationSchedule": [
+        {
+          "name": "Metformin",
+          "rxnorm": "860975",
+          "dosage": "500mg",
+          "route": "PO",
+          "frequency": "BID"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Appendectomy",
+          "datetime": "2025-07-06T20:20:23.304767",
+          "status": "Completed",
+          "cpt": "44950"
+        }
+      ],
+      "dietaryRestrictions": "Clear Liquids"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNI"
+    },
+    "emergencyContact": {
+      "name": "Cindy Edwards",
+      "relation": "Friend",
+      "phone": "590-064-2217"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "0206e3af-9081-409b-9ae3-e1c5cdf93312",
+    "mrn": "HE-5367-409",
+    "name": "Dylan Armstrong",
+    "dob": "1936-09-05",
+    "gender": "Male",
+    "age": 88,
+    "status": "Admitted - Stable",
+    "acuityLevel": 2,
+    "weight": {
+      "value": 182,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-06T00:20:23.402724",
+    "admissionReason": "Shortness of Breath",
+    "diagnoses": [
+      {
+        "name": "COPD",
+        "code": "J44.9",
+        "type": "Primary"
+      },
+      {
+        "name": "Anemia",
+        "code": "D64.9",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [
+      "Shellfish"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with shortness of breath, diagnosed with COPD. Routine observation. Continue standard supportive care.",
+      "medicationSchedule": [
+        {
+          "name": "Heparin Drip",
+          "rxnorm": "5224",
+          "dosage": "5000 units/hr",
+          "route": "IV",
+          "frequency": "Continuous"
+        },
+        {
+          "name": "Metformin",
+          "rxnorm": "860975",
+          "dosage": "500mg",
+          "route": "PO",
+          "frequency": "BID"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Cardiac Catheterization",
+          "datetime": "2025-07-06T05:20:23.402724",
+          "status": "Scheduled",
+          "cpt": "93452"
+        }
+      ],
+      "dietaryRestrictions": "Low Sodium"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNI"
+    },
+    "emergencyContact": {
+      "name": "Michael Lopez",
+      "relation": "Partner",
+      "phone": "078-445-8489"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "bf9aa22c-a444-4a8a-9e09-90fa8f55ede6",
+    "mrn": "HE-8042-666",
+    "name": "Roberto Barraza Aguilera",
+    "dob": "1969-08-17",
+    "gender": "Male",
+    "age": 55,
+    "status": "Admitted - Critical",
+    "acuityLevel": 5,
+    "weight": {
+      "value": 166,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-04T00:20:23.472809",
+    "admissionReason": "Chest Pain",
+    "diagnoses": [
+      {
+        "name": "Acute Myocardial Infarction",
+        "code": "I21.9",
+        "type": "Primary"
+      },
+      {
+        "name": "Anemia",
+        "code": "D64.9",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [
+      "Latex"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with chest pain, diagnosed with Acute Myocardial Infarction. Monitor vitals closely. High fall risk. Cardiology consult advised.",
+      "medicationSchedule": [
+        {
+          "name": "Atorvastatin",
+          "rxnorm": "83367",
+          "dosage": "40mg",
+          "route": "PO",
+          "frequency": "QHS"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Cardiac Catheterization",
+          "datetime": "2025-07-04T16:20:23.472809",
+          "status": "Scheduled",
+          "cpt": "93452"
+        }
+      ],
+      "dietaryRestrictions": "Cardiac Diet, Clear Liquids"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNR"
+    },
+    "emergencyContact": {
+      "name": "William Williams",
+      "relation": "Sibling",
+      "phone": "671-773-6190"
+    },
+    "admissionHistory": [
+      {
+        "admission": "2024-10-15T00:20:23.472809",
+        "discharge": "2024-10-17T00:20:23.472809",
+        "reason": "Shortness of Breath",
+        "diagnosis": "COPD",
+        "status": "Discharged"
+      }
+    ]
+  },
+  {
+    "_id": "68c0ab53-d932-4e9d-83da-e078e8f93fdc",
+    "mrn": "HE-1663-319",
+    "name": "Alexa Bishop",
+    "dob": "1985-05-03",
+    "gender": "Female",
+    "age": 40,
+    "status": "Admitted - Critical",
+    "acuityLevel": 5,
+    "weight": {
+      "value": 216,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-04T03:20:23.551444",
+    "admissionReason": "Persistent Cough",
+    "diagnoses": [
+      {
+        "name": "Asthma",
+        "code": "J45.909",
+        "type": "Primary"
+      }
+    ],
+    "allergies": [],
+    "carePlan": {
+      "notes": "Patient admitted with persistent cough, diagnosed with Asthma. Monitor vitals closely. Bronchodilator therapy initiated. Assess respiratory effort.",
+      "medicationSchedule": [
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Knee Replacement",
+          "datetime": "2025-07-05T12:20:23.551444",
+          "status": "Completed",
+          "cpt": "27447"
+        }
+      ],
+      "dietaryRestrictions": "NPO until stable, Diabetic"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "Full Code"
+    },
+    "emergencyContact": {
+      "name": "Diamond James",
+      "relation": "Partner",
+      "phone": "870-981-7105"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "81ba702d-578a-41b5-b671-243ecadfb689",
+    "mrn": "HE-1935-522",
+    "name": "Kristina Smith",
+    "dob": "1975-10-25",
+    "gender": "Female",
+    "age": 49,
+    "status": "Admitted - Critical",
+    "acuityLevel": 5,
+    "weight": {
+      "value": 187,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-06T02:20:23.648274",
+    "admissionReason": "Shortness of Breath",
+    "diagnoses": [
+      {
+        "name": "COPD",
+        "code": "J44.9",
+        "type": "Primary"
+      },
+      {
+        "name": "Hyperlipidemia",
+        "code": "E78.5",
+        "type": "Secondary"
+      },
+      {
+        "name": "Obesity",
+        "code": "E66.9",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [
+      "Penicillin"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with shortness of breath, diagnosed with COPD. Monitor vitals closely. Continue standard supportive care.",
+      "medicationSchedule": [
+        {
+          "name": "Heparin Drip",
+          "rxnorm": "5224",
+          "dosage": "5000 units/hr",
+          "route": "IV",
+          "frequency": "Continuous"
+        },
+        {
+          "name": "Atorvastatin",
+          "rxnorm": "83367",
+          "dosage": "40mg",
+          "route": "PO",
+          "frequency": "QHS"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "MRI Brain",
+          "datetime": "2025-07-08T01:20:23.648274",
+          "status": "Completed",
+          "cpt": "70551"
+        }
+      ],
+      "dietaryRestrictions": "Diabetic, Low Sodium"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "Full Code"
+    },
+    "emergencyContact": {
+      "name": "Benjamin Webster",
+      "relation": "Sibling",
+      "phone": "831-604-9975"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "d40325aa-e381-44eb-94f4-a9fc023276b5",
+    "mrn": "HE-1251-759",
+    "name": "\u90ed\u5764",
+    "dob": "1965-04-14",
+    "gender": "Male",
+    "age": 60,
+    "status": "Admitted - Stable",
+    "acuityLevel": 3,
+    "weight": {
+      "value": 219,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-05T02:20:23.740430",
+    "admissionReason": "Persistent Cough",
+    "diagnoses": [
+      {
+        "name": "Asthma",
+        "code": "J45.909",
+        "type": "Primary"
+      }
+    ],
+    "allergies": [
+      "Shellfish"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with persistent cough, diagnosed with Asthma. Routine observation. Bronchodilator therapy initiated. Assess respiratory effort.",
+      "medicationSchedule": [
+        {
+          "name": "Metformin",
+          "rxnorm": "860975",
+          "dosage": "500mg",
+          "route": "PO",
+          "frequency": "BID"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Knee Replacement",
+          "datetime": "2025-07-05T14:20:23.740430",
+          "status": "Scheduled",
+          "cpt": "27447"
+        }
+      ],
+      "dietaryRestrictions": "Cardiac Diet"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "Full Code"
+    },
+    "emergencyContact": {
+      "name": "John Moore",
+      "relation": "Spouse",
+      "phone": "836-863-3133"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "c6d02120-3c84-49f5-8905-f0b42b3317fc",
+    "mrn": "HE-8838-145",
+    "name": "Roy Miles",
+    "dob": "1989-08-07",
+    "gender": "Male",
+    "age": 35,
+    "status": "Admitted - Critical",
+    "acuityLevel": 4,
+    "weight": {
+      "value": 153,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-04T04:20:23.828675",
+    "admissionReason": "Chest Pain",
+    "diagnoses": [
+      {
+        "name": "Acute Myocardial Infarction",
+        "code": "I21.9",
+        "type": "Primary"
+      },
+      {
+        "name": "Anemia",
+        "code": "D64.9",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [],
+    "carePlan": {
+      "notes": "Patient admitted with chest pain, diagnosed with Acute Myocardial Infarction. Monitor vitals closely. High fall risk. Cardiology consult advised.",
+      "medicationSchedule": [
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        },
+        {
+          "name": "Atorvastatin",
+          "rxnorm": "83367",
+          "dosage": "40mg",
+          "route": "PO",
+          "frequency": "QHS"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Knee Replacement",
+          "datetime": "2025-07-05T00:20:23.828675",
+          "status": "Scheduled",
+          "cpt": "27447"
+        }
+      ],
+      "dietaryRestrictions": "Low Sodium"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "Full Code"
+    },
+    "emergencyContact": {
+      "name": "Jose Phillips",
+      "relation": "Friend",
+      "phone": "305-901-7867"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "ff47bb41-cec8-4560-b4c9-ad16820c690d",
+    "mrn": "HE-6784-274",
+    "name": "\u0410\u0432\u0442\u043e\u043d\u043e\u043c \u0412\u0430\u043b\u0435\u0440\u0438\u0430\u043d\u043e\u0432\u0438\u0447 \u0415\u043b\u0438\u0441\u0435\u0435\u0432",
+    "dob": "1947-02-12",
+    "gender": "Male",
+    "age": 78,
+    "status": "Admitted - Stable",
+    "acuityLevel": 3,
+    "weight": {
+      "value": 153,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-04T23:20:23.920637",
+    "admissionReason": "Leg Swelling",
+    "diagnoses": [
+      {
+        "name": "Congestive Heart Failure",
+        "code": "I50.9",
+        "type": "Primary"
+      }
+    ],
+    "allergies": [
+      "Penicillin"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with leg swelling, diagnosed with Congestive Heart Failure. Routine observation. Continue standard supportive care.",
+      "medicationSchedule": [
+        {
+          "name": "Atorvastatin",
+          "rxnorm": "83367",
+          "dosage": "40mg",
+          "route": "PO",
+          "frequency": "QHS"
+        },
+        {
+          "name": "Metformin",
+          "rxnorm": "860975",
+          "dosage": "500mg",
+          "route": "PO",
+          "frequency": "BID"
+        },
+        {
+          "name": "Heparin Drip",
+          "rxnorm": "5224",
+          "dosage": "5000 units/hr",
+          "route": "IV",
+          "frequency": "Continuous"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Appendectomy",
+          "datetime": "2025-07-05T14:20:23.920637",
+          "status": "Completed",
+          "cpt": "44950"
+        }
+      ],
+      "dietaryRestrictions": "Diabetic"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNI"
+    },
+    "emergencyContact": {
+      "name": "Whitney Gonzalez",
+      "relation": "Sibling",
+      "phone": "043-855-8310"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "3f04bd28-01a7-4bf9-8a5d-61e19a4d077f",
+    "mrn": "HE-5741-204",
+    "name": "Alec Mccormick",
+    "dob": "1992-11-21",
+    "gender": "Male",
+    "age": 32,
+    "status": "Admitted - Stable",
+    "acuityLevel": 1,
+    "weight": {
+      "value": 224,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-04T00:20:24.005105",
+    "admissionReason": "Dizziness",
+    "diagnoses": [
+      {
+        "name": "Hypertension",
+        "code": "I10",
+        "type": "Primary"
+      },
+      {
+        "name": "Obesity",
+        "code": "E66.9",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [],
+    "carePlan": {
+      "notes": "Patient admitted with dizziness, diagnosed with Hypertension. Routine observation. High fall risk. Cardiology consult advised.",
+      "medicationSchedule": [
+        {
+          "name": "Heparin Drip",
+          "rxnorm": "5224",
+          "dosage": "5000 units/hr",
+          "route": "IV",
+          "frequency": "Continuous"
+        },
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "MRI Brain",
+          "datetime": "2025-07-04T14:20:24.005105",
+          "status": "Completed",
+          "cpt": "70551"
+        }
+      ],
+      "dietaryRestrictions": "Cardiac Diet"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNI"
+    },
+    "emergencyContact": {
+      "name": "Julie Taylor",
+      "relation": "Friend",
+      "phone": "574-133-9011"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "d613a02b-6b23-438f-9655-e39bfbced69a",
+    "mrn": "HE-3265-433",
+    "name": "Steven Bishop",
+    "dob": "1943-01-31",
+    "gender": "Male",
+    "age": 82,
+    "status": "Admitted - Stable",
+    "acuityLevel": 2,
+    "weight": {
+      "value": 119,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-06T02:20:24.121617",
+    "admissionReason": "Leg Swelling",
+    "diagnoses": [
+      {
+        "name": "Congestive Heart Failure",
+        "code": "I50.9",
+        "type": "Primary"
+      }
+    ],
+    "allergies": [
+      "Aspirin"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with leg swelling, diagnosed with Congestive Heart Failure. Routine observation. Continue standard supportive care.",
+      "medicationSchedule": [
+        {
+          "name": "Heparin Drip",
+          "rxnorm": "5224",
+          "dosage": "5000 units/hr",
+          "route": "IV",
+          "frequency": "Continuous"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Knee Replacement",
+          "datetime": "2025-07-06T22:20:24.121617",
+          "status": "Scheduled",
+          "cpt": "27447"
+        }
+      ],
+      "dietaryRestrictions": "NPO until stable"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNR"
+    },
+    "emergencyContact": {
+      "name": "Daniel Bennett",
+      "relation": "Partner",
+      "phone": "445-272-3407"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "8d2a4a47-08d6-485e-9374-3e421c0bda08",
+    "mrn": "HE-7579-764",
+    "name": "Benjamin Diaz",
+    "dob": "1941-10-08",
+    "gender": "Male",
+    "age": 83,
+    "status": "Admitted - Critical",
+    "acuityLevel": 4,
+    "weight": {
+      "value": 118,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-06T04:20:24.202691",
+    "admissionReason": "Dizziness",
+    "diagnoses": [
+      {
+        "name": "Hypertension",
+        "code": "I10",
+        "type": "Primary"
+      }
+    ],
+    "allergies": [],
+    "carePlan": {
+      "notes": "Patient admitted with dizziness, diagnosed with Hypertension. Monitor vitals closely. High fall risk. Cardiology consult advised.",
+      "medicationSchedule": [
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        },
+        {
+          "name": "Atorvastatin",
+          "rxnorm": "83367",
+          "dosage": "40mg",
+          "route": "PO",
+          "frequency": "QHS"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Cardiac Catheterization",
+          "datetime": "2025-07-07T15:20:24.202691",
+          "status": "Completed",
+          "cpt": "93452"
+        }
+      ],
+      "dietaryRestrictions": "Low Sodium"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNR"
+    },
+    "emergencyContact": {
+      "name": "Erik Ingram",
+      "relation": "Spouse",
+      "phone": "859-049-6786"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "f64c292a-970d-46f8-ae50-c84e80a10758",
+    "mrn": "HE-8530-980",
+    "name": "Justin Wallace",
+    "dob": "1995-02-01",
+    "gender": "Male",
+    "age": 30,
+    "status": "Admitted - Critical",
+    "acuityLevel": 4,
+    "weight": {
+      "value": 111,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-04T02:20:24.292977",
+    "admissionReason": "Chest Pain",
+    "diagnoses": [
+      {
+        "name": "Acute Myocardial Infarction",
+        "code": "I21.9",
+        "type": "Primary"
+      },
+      {
+        "name": "Obesity",
+        "code": "E66.9",
+        "type": "Secondary"
+      },
+      {
+        "name": "Type 2 Diabetes",
+        "code": "E11.9",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [],
+    "carePlan": {
+      "notes": "Patient admitted with chest pain, diagnosed with Acute Myocardial Infarction. Monitor vitals closely. High fall risk. Cardiology consult advised.",
+      "medicationSchedule": [
+        {
+          "name": "Atorvastatin",
+          "rxnorm": "83367",
+          "dosage": "40mg",
+          "route": "PO",
+          "frequency": "QHS"
+        },
+        {
+          "name": "Heparin Drip",
+          "rxnorm": "5224",
+          "dosage": "5000 units/hr",
+          "route": "IV",
+          "frequency": "Continuous"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Cardiac Catheterization",
+          "datetime": "2025-07-05T11:20:24.292977",
+          "status": "Completed",
+          "cpt": "93452"
+        }
+      ],
+      "dietaryRestrictions": "Clear Liquids, Cardiac Diet"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNI"
+    },
+    "emergencyContact": {
+      "name": "Carrie Holland",
+      "relation": "Friend",
+      "phone": "622-645-8054"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "450a4d42-fde1-4a3c-b50e-f2cffab8d499",
+    "mrn": "HE-3190-494",
+    "name": "\u041f\u0440\u043e\u0445\u043e\u0440 \u041c\u0430\u0440\u0441\u043e\u0432\u0438\u0447 \u041c\u0435\u043b\u044c\u043d\u0438\u043a\u043e\u0432",
+    "dob": "1960-10-12",
+    "gender": "Male",
+    "age": 64,
+    "status": "Admitted - Critical",
+    "acuityLevel": 5,
+    "weight": {
+      "value": 218,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-07T02:20:24.377416",
+    "admissionReason": "Shortness of Breath",
+    "diagnoses": [
+      {
+        "name": "COPD",
+        "code": "J44.9",
+        "type": "Primary"
+      }
+    ],
+    "allergies": [
+      "Penicillin",
+      "Aspirin"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with shortness of breath, diagnosed with COPD. Monitor vitals closely. Continue standard supportive care.",
+      "medicationSchedule": [
+        {
+          "name": "Heparin Drip",
+          "rxnorm": "5224",
+          "dosage": "5000 units/hr",
+          "route": "IV",
+          "frequency": "Continuous"
+        },
+        {
+          "name": "Metformin",
+          "rxnorm": "860975",
+          "dosage": "500mg",
+          "route": "PO",
+          "frequency": "BID"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "MRI Brain",
+          "datetime": "2025-07-08T01:20:24.377416",
+          "status": "Scheduled",
+          "cpt": "70551"
+        }
+      ],
+      "dietaryRestrictions": "Diabetic"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNR"
+    },
+    "emergencyContact": {
+      "name": "Timothy Nelson",
+      "relation": "Partner",
+      "phone": "084-617-6774"
+    },
+    "admissionHistory": [
+      {
+        "admission": "2025-04-24T02:20:24.377416",
+        "discharge": "2025-04-30T02:20:24.377416",
+        "reason": "Persistent Cough",
+        "diagnosis": "Asthma",
+        "status": "Discharged"
+      }
+    ]
+  },
+  {
+    "_id": "a44b284d-5d22-41bd-830b-a5a30c6f87bf",
+    "mrn": "HE-1943-426",
+    "name": "Ing. Ricardo Vera",
+    "dob": "1970-07-31",
+    "gender": "Female",
+    "age": 54,
+    "status": "Admitted - Stable",
+    "acuityLevel": 3,
+    "weight": {
+      "value": 119,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-04T04:20:24.461451",
+    "admissionReason": "Fever and Fatigue",
+    "diagnoses": [
+      {
+        "name": "Pneumonia",
+        "code": "J18.9",
+        "type": "Primary"
+      },
+      {
+        "name": "Type 2 Diabetes",
+        "code": "E11.9",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [
+      "Iodine"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with fever and fatigue, diagnosed with Pneumonia. Routine observation. Monitor oxygen saturation. Start antibiotic protocol.",
+      "medicationSchedule": [
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        },
+        {
+          "name": "Heparin Drip",
+          "rxnorm": "5224",
+          "dosage": "5000 units/hr",
+          "route": "IV",
+          "frequency": "Continuous"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Cardiac Catheterization",
+          "datetime": "2025-07-05T18:20:24.461451",
+          "status": "Completed",
+          "cpt": "93452"
+        }
+      ],
+      "dietaryRestrictions": "Low Sodium, Cardiac Diet"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNR"
+    },
+    "emergencyContact": {
+      "name": "Kathleen Cohen",
+      "relation": "Parent",
+      "phone": "899-819-7714"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "9514ffaf-159c-41dc-bbcb-c1c70beff860",
+    "mrn": "HE-3451-127",
+    "name": "\u0442\u043e\u0432. \u0417\u0430\u0439\u0446\u0435\u0432\u0430 \u041a\u0438\u0440\u0430 \u042f\u043a\u043e\u0432\u043b\u0435\u0432\u043d\u0430",
+    "dob": "1970-06-15",
+    "gender": "Female",
+    "age": 55,
+    "status": "Admitted - Stable",
+    "acuityLevel": 3,
+    "weight": {
+      "value": 173,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-04T03:20:24.539850",
+    "admissionReason": "Dizziness",
+    "diagnoses": [
+      {
+        "name": "Hypertension",
+        "code": "I10",
+        "type": "Primary"
+      },
+      {
+        "name": "Hyperlipidemia",
+        "code": "E78.5",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [
+      "Latex",
+      "Penicillin"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with dizziness, diagnosed with Hypertension. Routine observation. High fall risk. Cardiology consult advised.",
+      "medicationSchedule": [
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        },
+        {
+          "name": "Atorvastatin",
+          "rxnorm": "83367",
+          "dosage": "40mg",
+          "route": "PO",
+          "frequency": "QHS"
+        },
+        {
+          "name": "Heparin Drip",
+          "rxnorm": "5224",
+          "dosage": "5000 units/hr",
+          "route": "IV",
+          "frequency": "Continuous"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "MRI Brain",
+          "datetime": "2025-07-04T19:20:24.539850",
+          "status": "Completed",
+          "cpt": "70551"
+        }
+      ],
+      "dietaryRestrictions": "Diabetic, NPO until stable"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNI"
+    },
+    "emergencyContact": {
+      "name": "Diana Carr",
+      "relation": "Friend",
+      "phone": "494-977-1840"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "4eccd511-e561-4e23-895b-1c1f147d3726",
+    "mrn": "HE-1622-514",
+    "name": "\u5deb\u9633",
+    "dob": "1958-04-06",
+    "gender": "Male",
+    "age": 67,
+    "status": "Admitted - Stable",
+    "acuityLevel": 3,
+    "weight": {
+      "value": 199,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-05T04:20:24.628090",
+    "admissionReason": "Persistent Cough",
+    "diagnoses": [
+      {
+        "name": "Asthma",
+        "code": "J45.909",
+        "type": "Primary"
+      }
+    ],
+    "allergies": [],
+    "carePlan": {
+      "notes": "Patient admitted with persistent cough, diagnosed with Asthma. Routine observation. Bronchodilator therapy initiated. Assess respiratory effort.",
+      "medicationSchedule": [
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        },
+        {
+          "name": "Heparin Drip",
+          "rxnorm": "5224",
+          "dosage": "5000 units/hr",
+          "route": "IV",
+          "frequency": "Continuous"
+        },
+        {
+          "name": "Metformin",
+          "rxnorm": "860975",
+          "dosage": "500mg",
+          "route": "PO",
+          "frequency": "BID"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Cardiac Catheterization",
+          "datetime": "2025-07-07T01:20:24.628090",
+          "status": "Completed",
+          "cpt": "93452"
+        }
+      ],
+      "dietaryRestrictions": "Diabetic, Low Sodium"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNI"
+    },
+    "emergencyContact": {
+      "name": "Katelyn Summers",
+      "relation": "Partner",
+      "phone": "384-115-8851"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "3bcbf4e4-74af-4343-9e5e-938b00a1f9e7",
+    "mrn": "HE-2604-520",
+    "name": "Sr(a). Mariana Alejandro",
+    "dob": "1976-11-05",
+    "gender": "Male",
+    "age": 48,
+    "status": "Admitted - Stable",
+    "acuityLevel": 3,
+    "weight": {
+      "value": 230,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-04T03:20:24.712863",
+    "admissionReason": "Fever and Fatigue",
+    "diagnoses": [
+      {
+        "name": "Pneumonia",
+        "code": "J18.9",
+        "type": "Primary"
+      },
+      {
+        "name": "Hyperlipidemia",
+        "code": "E78.5",
+        "type": "Secondary"
+      },
+      {
+        "name": "Type 2 Diabetes",
+        "code": "E11.9",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [
+      "Penicillin",
+      "Aspirin"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with fever and fatigue, diagnosed with Pneumonia. Routine observation. Monitor oxygen saturation. Start antibiotic protocol.",
+      "medicationSchedule": [
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Appendectomy",
+          "datetime": "2025-07-04T13:20:24.712863",
+          "status": "Scheduled",
+          "cpt": "44950"
+        }
+      ],
+      "dietaryRestrictions": "Clear Liquids, Cardiac Diet"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNI"
+    },
+    "emergencyContact": {
+      "name": "Adriana Davis",
+      "relation": "Sibling",
+      "phone": "463-738-7446"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "9159b54d-346a-4502-acb1-37c84fdfca7a",
+    "mrn": "HE-8914-746",
+    "name": "Danny Vargas",
+    "dob": "2005-05-24",
+    "gender": "Male",
+    "age": 20,
+    "status": "Admitted - Stable",
+    "acuityLevel": 2,
+    "weight": {
+      "value": 153,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-05T02:20:24.780605",
+    "admissionReason": "Persistent Cough",
+    "diagnoses": [
+      {
+        "name": "Asthma",
+        "code": "J45.909",
+        "type": "Primary"
+      },
+      {
+        "name": "Anemia",
+        "code": "D64.9",
+        "type": "Secondary"
+      },
+      {
+        "name": "Type 2 Diabetes",
+        "code": "E11.9",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [
+      "Iodine"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with persistent cough, diagnosed with Asthma. Routine observation. Bronchodilator therapy initiated. Assess respiratory effort.",
+      "medicationSchedule": [
+        {
+          "name": "Heparin Drip",
+          "rxnorm": "5224",
+          "dosage": "5000 units/hr",
+          "route": "IV",
+          "frequency": "Continuous"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Cardiac Catheterization",
+          "datetime": "2025-07-05T20:20:24.780605",
+          "status": "Scheduled",
+          "cpt": "93452"
+        }
+      ],
+      "dietaryRestrictions": "Clear Liquids, NPO until stable"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNR"
+    },
+    "emergencyContact": {
+      "name": "Tonya Cervantes",
+      "relation": "Parent",
+      "phone": "679-452-3912"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "93418afc-f666-420e-b518-9a5175c37a86",
+    "mrn": "HE-3000-432",
+    "name": "\u6bdb\u7ea2\u6885",
+    "dob": "2006-08-01",
+    "gender": "Female",
+    "age": 18,
+    "status": "Admitted - Critical",
+    "acuityLevel": 5,
+    "weight": {
+      "value": 216,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-06T01:20:24.848828",
+    "admissionReason": "Shortness of Breath",
+    "diagnoses": [
+      {
+        "name": "COPD",
+        "code": "J44.9",
+        "type": "Primary"
+      }
+    ],
+    "allergies": [],
+    "carePlan": {
+      "notes": "Patient admitted with shortness of breath, diagnosed with COPD. Monitor vitals closely. Continue standard supportive care.",
+      "medicationSchedule": [
+        {
+          "name": "Metformin",
+          "rxnorm": "860975",
+          "dosage": "500mg",
+          "route": "PO",
+          "frequency": "BID"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Cardiac Catheterization",
+          "datetime": "2025-07-07T19:20:24.848828",
+          "status": "Scheduled",
+          "cpt": "93452"
+        }
+      ],
+      "dietaryRestrictions": "Clear Liquids, Diabetic"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNR"
+    },
+    "emergencyContact": {
+      "name": "Jamie Hughes",
+      "relation": "Sibling",
+      "phone": "907-895-1488"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "173e4eba-db7d-48ac-9cad-ba1e98f6ad98",
+    "mrn": "HE-5579-106",
+    "name": "Jayan Cheema",
+    "dob": "1960-10-11",
+    "gender": "Male",
+    "age": 64,
+    "status": "Admitted - Stable",
+    "acuityLevel": 3,
+    "weight": {
+      "value": 130,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-06T03:20:24.934721",
+    "admissionReason": "Vomiting",
+    "diagnoses": [
+      {
+        "name": "Gastroenteritis",
+        "code": "A09",
+        "type": "Primary"
+      }
+    ],
+    "allergies": [
+      "Latex"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with vomiting, diagnosed with Gastroenteritis. Routine observation. Fluid replacement ongoing. Watch for signs of dehydration.",
+      "medicationSchedule": [
+        {
+          "name": "Heparin Drip",
+          "rxnorm": "5224",
+          "dosage": "5000 units/hr",
+          "route": "IV",
+          "frequency": "Continuous"
+        },
+        {
+          "name": "Atorvastatin",
+          "rxnorm": "83367",
+          "dosage": "40mg",
+          "route": "PO",
+          "frequency": "QHS"
+        },
+        {
+          "name": "Metformin",
+          "rxnorm": "860975",
+          "dosage": "500mg",
+          "route": "PO",
+          "frequency": "BID"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Cardiac Catheterization",
+          "datetime": "2025-07-06T15:20:24.934721",
+          "status": "Completed",
+          "cpt": "93452"
+        }
+      ],
+      "dietaryRestrictions": "NPO until stable, Low Sodium"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNI"
+    },
+    "emergencyContact": {
+      "name": "Jodi Huynh",
+      "relation": "Partner",
+      "phone": "405-794-4936"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "08fe4306-2e8a-4001-8ecd-bae15f9b6845",
+    "mrn": "HE-5108-307",
+    "name": "Laurie West",
+    "dob": "2000-03-18",
+    "gender": "Female",
+    "age": 25,
+    "status": "Admitted - Critical",
+    "acuityLevel": 5,
+    "weight": {
+      "value": 191,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-06T00:20:25.030308",
+    "admissionReason": "Leg Swelling",
+    "diagnoses": [
+      {
+        "name": "Congestive Heart Failure",
+        "code": "I50.9",
+        "type": "Primary"
+      }
+    ],
+    "allergies": [
+      "Aspirin",
+      "Iodine"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with leg swelling, diagnosed with Congestive Heart Failure. Monitor vitals closely. Continue standard supportive care.",
+      "medicationSchedule": [
+        {
+          "name": "Heparin Drip",
+          "rxnorm": "5224",
+          "dosage": "5000 units/hr",
+          "route": "IV",
+          "frequency": "Continuous"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Appendectomy",
+          "datetime": "2025-07-07T14:20:25.030308",
+          "status": "Completed",
+          "cpt": "44950"
+        }
+      ],
+      "dietaryRestrictions": "Clear Liquids"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNR"
+    },
+    "emergencyContact": {
+      "name": "Brittany Burns",
+      "relation": "Spouse",
+      "phone": "265-307-1535"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "e07d610f-83fb-40d5-81fc-a76963e0cb34",
+    "mrn": "HE-3193-624",
+    "name": "Eric Mercado",
+    "dob": "1984-06-22",
+    "gender": "Male",
+    "age": 41,
+    "status": "Admitted - Critical",
+    "acuityLevel": 5,
+    "weight": {
+      "value": 151,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-05T03:20:25.115560",
+    "admissionReason": "Vomiting",
+    "diagnoses": [
+      {
+        "name": "Gastroenteritis",
+        "code": "A09",
+        "type": "Primary"
+      }
+    ],
+    "allergies": [
+      "Shellfish",
+      "Latex"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with vomiting, diagnosed with Gastroenteritis. Monitor vitals closely. Fluid replacement ongoing. Watch for signs of dehydration.",
+      "medicationSchedule": [
+        {
+          "name": "Metformin",
+          "rxnorm": "860975",
+          "dosage": "500mg",
+          "route": "PO",
+          "frequency": "BID"
+        },
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Appendectomy",
+          "datetime": "2025-07-05T19:20:25.115560",
+          "status": "Completed",
+          "cpt": "44950"
+        }
+      ],
+      "dietaryRestrictions": "Cardiac Diet"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNR"
+    },
+    "emergencyContact": {
+      "name": "Lauren Davis",
+      "relation": "Sibling",
+      "phone": "013-227-0474"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "b617b012-42f1-4513-bf43-b3ed6ef77a25",
+    "mrn": "HE-7008-140",
+    "name": "Ojas Walla",
+    "dob": "1988-06-10",
+    "gender": "Male",
+    "age": 37,
+    "status": "Admitted - Critical",
+    "acuityLevel": 5,
+    "weight": {
+      "value": 217,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-07T01:20:25.182229",
+    "admissionReason": "Vomiting",
+    "diagnoses": [
+      {
+        "name": "Gastroenteritis",
+        "code": "A09",
+        "type": "Primary"
+      },
+      {
+        "name": "Type 2 Diabetes",
+        "code": "E11.9",
+        "type": "Secondary"
+      },
+      {
+        "name": "Hyperlipidemia",
+        "code": "E78.5",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [
+      "Iodine",
+      "Shellfish"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with vomiting, diagnosed with Gastroenteritis. Monitor vitals closely. Fluid replacement ongoing. Watch for signs of dehydration.",
+      "medicationSchedule": [
+        {
+          "name": "Heparin Drip",
+          "rxnorm": "5224",
+          "dosage": "5000 units/hr",
+          "route": "IV",
+          "frequency": "Continuous"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Cardiac Catheterization",
+          "datetime": "2025-07-08T08:20:25.182229",
+          "status": "Scheduled",
+          "cpt": "93452"
+        }
+      ],
+      "dietaryRestrictions": "NPO until stable"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNI"
+    },
+    "emergencyContact": {
+      "name": "Claudia Dodson",
+      "relation": "Friend",
+      "phone": "361-861-1908"
+    },
+    "admissionHistory": [
+      {
+        "admission": "2025-04-08T01:20:25.182229",
+        "discharge": "2025-04-13T01:20:25.182229",
+        "reason": "Leg Swelling",
+        "diagnosis": "COPD",
+        "status": "Discharged"
+      }
+    ]
+  },
+  {
+    "_id": "00579646-6d4a-460a-bae8-b1b1b9e2858c",
+    "mrn": "HE-6137-420",
+    "name": "Kathleen Lewis",
+    "dob": "1981-01-14",
+    "gender": "Female",
+    "age": 44,
+    "status": "Admitted - Stable",
+    "acuityLevel": 3,
+    "weight": {
+      "value": 150,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-06T02:20:25.252905",
+    "admissionReason": "Fever and Fatigue",
+    "diagnoses": [
+      {
+        "name": "Pneumonia",
+        "code": "J18.9",
+        "type": "Primary"
+      },
+      {
+        "name": "Type 2 Diabetes",
+        "code": "E11.9",
+        "type": "Secondary"
+      },
+      {
+        "name": "Obesity",
+        "code": "E66.9",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [
+      "Aspirin"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with fever and fatigue, diagnosed with Pneumonia. Routine observation. Monitor oxygen saturation. Start antibiotic protocol.",
+      "medicationSchedule": [
+        {
+          "name": "Heparin Drip",
+          "rxnorm": "5224",
+          "dosage": "5000 units/hr",
+          "route": "IV",
+          "frequency": "Continuous"
+        },
+        {
+          "name": "Atorvastatin",
+          "rxnorm": "83367",
+          "dosage": "40mg",
+          "route": "PO",
+          "frequency": "QHS"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Knee Replacement",
+          "datetime": "2025-07-06T22:20:25.252905",
+          "status": "Completed",
+          "cpt": "27447"
+        }
+      ],
+      "dietaryRestrictions": "Clear Liquids"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNR"
+    },
+    "emergencyContact": {
+      "name": "Danielle Garcia",
+      "relation": "Sibling",
+      "phone": "893-555-9989"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "2a910246-0aa2-41ce-b5ac-2065a0b9a765",
+    "mrn": "HE-1403-137",
+    "name": "\u9a6c\u5e06",
+    "dob": "1947-09-11",
+    "gender": "Male",
+    "age": 77,
+    "status": "Admitted - Critical",
+    "acuityLevel": 4,
+    "weight": {
+      "value": 198,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-06T01:20:25.354816",
+    "admissionReason": "Persistent Cough",
+    "diagnoses": [
+      {
+        "name": "Asthma",
+        "code": "J45.909",
+        "type": "Primary"
+      },
+      {
+        "name": "Anemia",
+        "code": "D64.9",
+        "type": "Secondary"
+      },
+      {
+        "name": "Hyperlipidemia",
+        "code": "E78.5",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [],
+    "carePlan": {
+      "notes": "Patient admitted with persistent cough, diagnosed with Asthma. Monitor vitals closely. Bronchodilator therapy initiated. Assess respiratory effort.",
+      "medicationSchedule": [
+        {
+          "name": "Metformin",
+          "rxnorm": "860975",
+          "dosage": "500mg",
+          "route": "PO",
+          "frequency": "BID"
+        },
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        },
+        {
+          "name": "Atorvastatin",
+          "rxnorm": "83367",
+          "dosage": "40mg",
+          "route": "PO",
+          "frequency": "QHS"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "MRI Brain",
+          "datetime": "2025-07-07T11:20:25.354816",
+          "status": "Scheduled",
+          "cpt": "70551"
+        }
+      ],
+      "dietaryRestrictions": "Cardiac Diet"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNI"
+    },
+    "emergencyContact": {
+      "name": "Zachary Barron",
+      "relation": "Partner",
+      "phone": "190-738-3130"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "8f79baf7-a859-4ab0-abe2-8dbfae6a06b7",
+    "mrn": "HE-2409-536",
+    "name": "Ana Burgos",
+    "dob": "1973-11-26",
+    "gender": "Male",
+    "age": 51,
+    "status": "Admitted - Stable",
+    "acuityLevel": 3,
+    "weight": {
+      "value": 157,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-06T03:20:25.453603",
+    "admissionReason": "Shortness of Breath",
+    "diagnoses": [
+      {
+        "name": "COPD",
+        "code": "J44.9",
+        "type": "Primary"
+      },
+      {
+        "name": "Anemia",
+        "code": "D64.9",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [],
+    "carePlan": {
+      "notes": "Patient admitted with shortness of breath, diagnosed with COPD. Routine observation. Continue standard supportive care.",
+      "medicationSchedule": [
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        },
+        {
+          "name": "Atorvastatin",
+          "rxnorm": "83367",
+          "dosage": "40mg",
+          "route": "PO",
+          "frequency": "QHS"
+        },
+        {
+          "name": "Heparin Drip",
+          "rxnorm": "5224",
+          "dosage": "5000 units/hr",
+          "route": "IV",
+          "frequency": "Continuous"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Appendectomy",
+          "datetime": "2025-07-06T20:20:25.453603",
+          "status": "Scheduled",
+          "cpt": "44950"
+        }
+      ],
+      "dietaryRestrictions": "Clear Liquids"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "Full Code"
+    },
+    "emergencyContact": {
+      "name": "Amanda Armstrong",
+      "relation": "Sibling",
+      "phone": "433-944-1473"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "bb336359-092c-4d5b-a10d-097ca71b6043",
+    "mrn": "HE-9575-919",
+    "name": "Anne Molina",
+    "dob": "1973-02-19",
+    "gender": "Female",
+    "age": 52,
+    "status": "Admitted - Stable",
+    "acuityLevel": 2,
+    "weight": {
+      "value": 222,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-06T01:20:25.541993",
+    "admissionReason": "Dizziness",
+    "diagnoses": [
+      {
+        "name": "Hypertension",
+        "code": "I10",
+        "type": "Primary"
+      },
+      {
+        "name": "Type 2 Diabetes",
+        "code": "E11.9",
+        "type": "Secondary"
+      },
+      {
+        "name": "Hyperlipidemia",
+        "code": "E78.5",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [
+      "Iodine",
+      "Latex"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with dizziness, diagnosed with Hypertension. Routine observation. High fall risk. Cardiology consult advised.",
+      "medicationSchedule": [
+        {
+          "name": "Atorvastatin",
+          "rxnorm": "83367",
+          "dosage": "40mg",
+          "route": "PO",
+          "frequency": "QHS"
+        },
+        {
+          "name": "Metformin",
+          "rxnorm": "860975",
+          "dosage": "500mg",
+          "route": "PO",
+          "frequency": "BID"
+        },
+        {
+          "name": "Heparin Drip",
+          "rxnorm": "5224",
+          "dosage": "5000 units/hr",
+          "route": "IV",
+          "frequency": "Continuous"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Cardiac Catheterization",
+          "datetime": "2025-07-07T18:20:25.541993",
+          "status": "Scheduled",
+          "cpt": "93452"
+        }
+      ],
+      "dietaryRestrictions": "Clear Liquids"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "Comfort Measures Only"
+    },
+    "emergencyContact": {
+      "name": "Vicki Butler",
+      "relation": "Spouse",
+      "phone": "497-013-8386"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "dad6d964-0145-4181-87ed-3feb480dc5c6",
+    "mrn": "HE-7770-871",
+    "name": "Carlos Carbajal",
+    "dob": "1953-06-14",
+    "gender": "Male",
+    "age": 72,
+    "status": "Admitted - Stable",
+    "acuityLevel": 2,
+    "weight": {
+      "value": 120,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-07T00:20:25.657136",
+    "admissionReason": "Vomiting",
+    "diagnoses": [
+      {
+        "name": "Gastroenteritis",
+        "code": "A09",
+        "type": "Primary"
+      },
+      {
+        "name": "Obesity",
+        "code": "E66.9",
+        "type": "Secondary"
+      },
+      {
+        "name": "Type 2 Diabetes",
+        "code": "E11.9",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [
+      "Shellfish",
+      "Iodine"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with vomiting, diagnosed with Gastroenteritis. Routine observation. Fluid replacement ongoing. Watch for signs of dehydration.",
+      "medicationSchedule": [
+        {
+          "name": "Heparin Drip",
+          "rxnorm": "5224",
+          "dosage": "5000 units/hr",
+          "route": "IV",
+          "frequency": "Continuous"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Knee Replacement",
+          "datetime": "2025-07-07T13:20:25.657136",
+          "status": "Scheduled",
+          "cpt": "27447"
+        }
+      ],
+      "dietaryRestrictions": "NPO until stable, Diabetic"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNR"
+    },
+    "emergencyContact": {
+      "name": "Joseph Parker",
+      "relation": "Partner",
+      "phone": "603-985-2033"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "1d22e855-7731-4f15-a973-55e10001cb49",
+    "mrn": "HE-2421-824",
+    "name": "Yeni V\u00e9liz",
+    "dob": "1950-05-30",
+    "gender": "Male",
+    "age": 75,
+    "status": "Admitted - Stable",
+    "acuityLevel": 3,
+    "weight": {
+      "value": 166,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-06T04:20:25.763589",
+    "admissionReason": "Leg Swelling",
+    "diagnoses": [
+      {
+        "name": "Congestive Heart Failure",
+        "code": "I50.9",
+        "type": "Primary"
+      },
+      {
+        "name": "Hyperlipidemia",
+        "code": "E78.5",
+        "type": "Secondary"
+      },
+      {
+        "name": "Type 2 Diabetes",
+        "code": "E11.9",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [],
+    "carePlan": {
+      "notes": "Patient admitted with leg swelling, diagnosed with Congestive Heart Failure. Routine observation. Continue standard supportive care.",
+      "medicationSchedule": [
+        {
+          "name": "Heparin Drip",
+          "rxnorm": "5224",
+          "dosage": "5000 units/hr",
+          "route": "IV",
+          "frequency": "Continuous"
+        },
+        {
+          "name": "Metformin",
+          "rxnorm": "860975",
+          "dosage": "500mg",
+          "route": "PO",
+          "frequency": "BID"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Appendectomy",
+          "datetime": "2025-07-07T13:20:25.763589",
+          "status": "Completed",
+          "cpt": "44950"
+        }
+      ],
+      "dietaryRestrictions": "Low Sodium, NPO until stable"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "Comfort Measures Only"
+    },
+    "emergencyContact": {
+      "name": "William Collins",
+      "relation": "Sibling",
+      "phone": "651-876-7089"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "3b7cf149-066b-4543-b73f-506354c31730",
+    "mrn": "HE-5848-520",
+    "name": "Richard Wilson",
+    "dob": "1957-04-04",
+    "gender": "Male",
+    "age": 68,
+    "status": "Admitted - Stable",
+    "acuityLevel": 3,
+    "weight": {
+      "value": 237,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-05T02:20:25.903367",
+    "admissionReason": "Fever and Fatigue",
+    "diagnoses": [
+      {
+        "name": "Pneumonia",
+        "code": "J18.9",
+        "type": "Primary"
+      }
+    ],
+    "allergies": [
+      "Shellfish"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with fever and fatigue, diagnosed with Pneumonia. Routine observation. Monitor oxygen saturation. Start antibiotic protocol.",
+      "medicationSchedule": [
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        },
+        {
+          "name": "Atorvastatin",
+          "rxnorm": "83367",
+          "dosage": "40mg",
+          "route": "PO",
+          "frequency": "QHS"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "MRI Brain",
+          "datetime": "2025-07-05T22:20:25.903367",
+          "status": "Scheduled",
+          "cpt": "70551"
+        }
+      ],
+      "dietaryRestrictions": "Low Sodium"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "Comfort Measures Only"
+    },
+    "emergencyContact": {
+      "name": "Andrew Cannon",
+      "relation": "Parent",
+      "phone": "376-466-6013"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "274b76b1-f08e-42ba-bc96-8e31f1683c13",
+    "mrn": "HE-3751-774",
+    "name": "Kenneth Vance",
+    "dob": "1961-08-17",
+    "gender": "Male",
+    "age": 63,
+    "status": "Admitted - Stable",
+    "acuityLevel": 2,
+    "weight": {
+      "value": 235,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-06T01:20:25.990184",
+    "admissionReason": "Chest Pain",
+    "diagnoses": [
+      {
+        "name": "Acute Myocardial Infarction",
+        "code": "I21.9",
+        "type": "Primary"
+      }
+    ],
+    "allergies": [],
+    "carePlan": {
+      "notes": "Patient admitted with chest pain, diagnosed with Acute Myocardial Infarction. Routine observation. High fall risk. Cardiology consult advised.",
+      "medicationSchedule": [
+        {
+          "name": "Heparin Drip",
+          "rxnorm": "5224",
+          "dosage": "5000 units/hr",
+          "route": "IV",
+          "frequency": "Continuous"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "MRI Brain",
+          "datetime": "2025-07-07T04:20:25.990184",
+          "status": "Completed",
+          "cpt": "70551"
+        }
+      ],
+      "dietaryRestrictions": "Clear Liquids"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNR"
+    },
+    "emergencyContact": {
+      "name": "Nathan Johnson",
+      "relation": "Spouse",
+      "phone": "664-773-5774"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "be17e566-4994-4040-8db5-ece3c66f8e0d",
+    "mrn": "HE-3028-967",
+    "name": "Rebecca Smith",
+    "dob": "1968-04-13",
+    "gender": "Female",
+    "age": 57,
+    "status": "Admitted - Critical",
+    "acuityLevel": 5,
+    "weight": {
+      "value": 247,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-04T23:20:26.131602",
+    "admissionReason": "Leg Swelling",
+    "diagnoses": [
+      {
+        "name": "Congestive Heart Failure",
+        "code": "I50.9",
+        "type": "Primary"
+      }
+    ],
+    "allergies": [
+      "Aspirin",
+      "Shellfish"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with leg swelling, diagnosed with Congestive Heart Failure. Monitor vitals closely. Continue standard supportive care.",
+      "medicationSchedule": [
+        {
+          "name": "Atorvastatin",
+          "rxnorm": "83367",
+          "dosage": "40mg",
+          "route": "PO",
+          "frequency": "QHS"
+        },
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "MRI Brain",
+          "datetime": "2025-07-05T06:20:26.131602",
+          "status": "Completed",
+          "cpt": "70551"
+        }
+      ],
+      "dietaryRestrictions": "Clear Liquids"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "Full Code"
+    },
+    "emergencyContact": {
+      "name": "Nicole Rose",
+      "relation": "Friend",
+      "phone": "008-891-1985"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "ddd619fc-fa95-473d-b581-7c59988da825",
+    "mrn": "HE-8638-395",
+    "name": "Rolando Cornejo N\u00e1jera",
+    "dob": "1989-07-05",
+    "gender": "Male",
+    "age": 36,
+    "status": "Admitted - Stable",
+    "acuityLevel": 2,
+    "weight": {
+      "value": 154,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-05T00:20:26.221594",
+    "admissionReason": "Dizziness",
+    "diagnoses": [
+      {
+        "name": "Hypertension",
+        "code": "I10",
+        "type": "Primary"
+      },
+      {
+        "name": "Anemia",
+        "code": "D64.9",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [
+      "Iodine"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with dizziness, diagnosed with Hypertension. Routine observation. High fall risk. Cardiology consult advised.",
+      "medicationSchedule": [
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        },
+        {
+          "name": "Atorvastatin",
+          "rxnorm": "83367",
+          "dosage": "40mg",
+          "route": "PO",
+          "frequency": "QHS"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "MRI Brain",
+          "datetime": "2025-07-06T14:20:26.221594",
+          "status": "Scheduled",
+          "cpt": "70551"
+        }
+      ],
+      "dietaryRestrictions": "Low Sodium, Cardiac Diet"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "Comfort Measures Only"
+    },
+    "emergencyContact": {
+      "name": "Cynthia Mccann",
+      "relation": "Partner",
+      "phone": "711-751-6385"
+    },
+    "admissionHistory": [
+      {
+        "admission": "2025-01-27T00:20:26.221594",
+        "discharge": "2025-02-01T00:20:26.221594",
+        "reason": "Leg Swelling",
+        "diagnosis": "Asthma",
+        "status": "Discharged"
+      }
+    ]
+  },
+  {
+    "_id": "873bd16b-0c7e-4136-b7f9-962a85827581",
+    "mrn": "HE-5972-822",
+    "name": "Whitney Miller",
+    "dob": "1979-07-11",
+    "gender": "Female",
+    "age": 45,
+    "status": "Admitted - Stable",
+    "acuityLevel": 2,
+    "weight": {
+      "value": 214,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-06T00:20:26.315335",
+    "admissionReason": "Fever and Fatigue",
+    "diagnoses": [
+      {
+        "name": "Pneumonia",
+        "code": "J18.9",
+        "type": "Primary"
+      },
+      {
+        "name": "Obesity",
+        "code": "E66.9",
+        "type": "Secondary"
+      },
+      {
+        "name": "Anemia",
+        "code": "D64.9",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [],
+    "carePlan": {
+      "notes": "Patient admitted with fever and fatigue, diagnosed with Pneumonia. Routine observation. Monitor oxygen saturation. Start antibiotic protocol.",
+      "medicationSchedule": [
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        },
+        {
+          "name": "Heparin Drip",
+          "rxnorm": "5224",
+          "dosage": "5000 units/hr",
+          "route": "IV",
+          "frequency": "Continuous"
+        },
+        {
+          "name": "Metformin",
+          "rxnorm": "860975",
+          "dosage": "500mg",
+          "route": "PO",
+          "frequency": "BID"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Appendectomy",
+          "datetime": "2025-07-07T07:20:26.315335",
+          "status": "Completed",
+          "cpt": "44950"
+        }
+      ],
+      "dietaryRestrictions": "NPO until stable, Low Sodium"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "Full Code"
+    },
+    "emergencyContact": {
+      "name": "Jaclyn Martin",
+      "relation": "Friend",
+      "phone": "643-583-0367"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "497510f5-900f-4c5f-a285-828d0d77c9f8",
+    "mrn": "HE-6105-801",
+    "name": "Rasha Arya",
+    "dob": "1962-02-15",
+    "gender": "Male",
+    "age": 63,
+    "status": "Admitted - Stable",
+    "acuityLevel": 2,
+    "weight": {
+      "value": 111,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-05T01:20:26.396761",
+    "admissionReason": "Dizziness",
+    "diagnoses": [
+      {
+        "name": "Hypertension",
+        "code": "I10",
+        "type": "Primary"
+      },
+      {
+        "name": "Type 2 Diabetes",
+        "code": "E11.9",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [],
+    "carePlan": {
+      "notes": "Patient admitted with dizziness, diagnosed with Hypertension. Routine observation. High fall risk. Cardiology consult advised.",
+      "medicationSchedule": [
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        },
+        {
+          "name": "Metformin",
+          "rxnorm": "860975",
+          "dosage": "500mg",
+          "route": "PO",
+          "frequency": "BID"
+        },
+        {
+          "name": "Heparin Drip",
+          "rxnorm": "5224",
+          "dosage": "5000 units/hr",
+          "route": "IV",
+          "frequency": "Continuous"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Knee Replacement",
+          "datetime": "2025-07-06T22:20:26.396761",
+          "status": "Scheduled",
+          "cpt": "27447"
+        }
+      ],
+      "dietaryRestrictions": "Clear Liquids"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNI"
+    },
+    "emergencyContact": {
+      "name": "Taylor Lee",
+      "relation": "Partner",
+      "phone": "952-462-5656"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "d48e5029-c6bc-4195-8df4-3b3975557273",
+    "mrn": "HE-8247-299",
+    "name": "Phillip Lee",
+    "dob": "1947-03-09",
+    "gender": "Male",
+    "age": 78,
+    "status": "Admitted - Stable",
+    "acuityLevel": 3,
+    "weight": {
+      "value": 206,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-07T02:20:26.508959",
+    "admissionReason": "Leg Swelling",
+    "diagnoses": [
+      {
+        "name": "Congestive Heart Failure",
+        "code": "I50.9",
+        "type": "Primary"
+      },
+      {
+        "name": "Type 2 Diabetes",
+        "code": "E11.9",
+        "type": "Secondary"
+      },
+      {
+        "name": "Hyperlipidemia",
+        "code": "E78.5",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [
+      "Penicillin"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with leg swelling, diagnosed with Congestive Heart Failure. Routine observation. Continue standard supportive care.",
+      "medicationSchedule": [
+        {
+          "name": "Atorvastatin",
+          "rxnorm": "83367",
+          "dosage": "40mg",
+          "route": "PO",
+          "frequency": "QHS"
+        },
+        {
+          "name": "Heparin Drip",
+          "rxnorm": "5224",
+          "dosage": "5000 units/hr",
+          "route": "IV",
+          "frequency": "Continuous"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "MRI Brain",
+          "datetime": "2025-07-08T21:20:26.508959",
+          "status": "Scheduled",
+          "cpt": "70551"
+        }
+      ],
+      "dietaryRestrictions": "Cardiac Diet, NPO until stable"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "Full Code"
+    },
+    "emergencyContact": {
+      "name": "Jack Harris",
+      "relation": "Partner",
+      "phone": "050-565-7361"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "18c6f092-f1b1-4721-905d-d4f6ec9c0b37",
+    "mrn": "HE-4903-847",
+    "name": "\u9b4f\u52c7",
+    "dob": "1939-01-15",
+    "gender": "Male",
+    "age": 86,
+    "status": "Admitted - Stable",
+    "acuityLevel": 2,
+    "weight": {
+      "value": 199,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-04T04:20:26.602140",
+    "admissionReason": "Leg Swelling",
+    "diagnoses": [
+      {
+        "name": "Congestive Heart Failure",
+        "code": "I50.9",
+        "type": "Primary"
+      }
+    ],
+    "allergies": [],
+    "carePlan": {
+      "notes": "Patient admitted with leg swelling, diagnosed with Congestive Heart Failure. Routine observation. Continue standard supportive care.",
+      "medicationSchedule": [
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        },
+        {
+          "name": "Atorvastatin",
+          "rxnorm": "83367",
+          "dosage": "40mg",
+          "route": "PO",
+          "frequency": "QHS"
+        },
+        {
+          "name": "Metformin",
+          "rxnorm": "860975",
+          "dosage": "500mg",
+          "route": "PO",
+          "frequency": "BID"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Cardiac Catheterization",
+          "datetime": "2025-07-05T12:20:26.602140",
+          "status": "Completed",
+          "cpt": "93452"
+        }
+      ],
+      "dietaryRestrictions": "Clear Liquids"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "Full Code"
+    },
+    "emergencyContact": {
+      "name": "Spencer Herrera",
+      "relation": "Friend",
+      "phone": "938-800-5714"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "412eafcc-bc74-4d12-97ac-fb1576c8f8ce",
+    "mrn": "HE-7314-571",
+    "name": "Curtis Morse",
+    "dob": "1988-03-15",
+    "gender": "Male",
+    "age": 37,
+    "status": "Admitted - Stable",
+    "acuityLevel": 2,
+    "weight": {
+      "value": 247,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-06T00:20:26.729039",
+    "admissionReason": "Vomiting",
+    "diagnoses": [
+      {
+        "name": "Gastroenteritis",
+        "code": "A09",
+        "type": "Primary"
+      },
+      {
+        "name": "Obesity",
+        "code": "E66.9",
+        "type": "Secondary"
+      },
+      {
+        "name": "Hyperlipidemia",
+        "code": "E78.5",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [
+      "Latex"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with vomiting, diagnosed with Gastroenteritis. Routine observation. Fluid replacement ongoing. Watch for signs of dehydration.",
+      "medicationSchedule": [
+        {
+          "name": "Metformin",
+          "rxnorm": "860975",
+          "dosage": "500mg",
+          "route": "PO",
+          "frequency": "BID"
+        },
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        },
+        {
+          "name": "Atorvastatin",
+          "rxnorm": "83367",
+          "dosage": "40mg",
+          "route": "PO",
+          "frequency": "QHS"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Knee Replacement",
+          "datetime": "2025-07-07T14:20:26.729039",
+          "status": "Scheduled",
+          "cpt": "27447"
+        }
+      ],
+      "dietaryRestrictions": "Diabetic"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNI"
+    },
+    "emergencyContact": {
+      "name": "Denise James",
+      "relation": "Spouse",
+      "phone": "513-316-3473"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "5b3c8892-f99f-4ec1-ba77-bf9a5d66ee72",
+    "mrn": "HE-5542-758",
+    "name": "Lori Alexander",
+    "dob": "1986-07-13",
+    "gender": "Female",
+    "age": 38,
+    "status": "Admitted - Stable",
+    "acuityLevel": 2,
+    "weight": {
+      "value": 181,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-04T04:20:26.836777",
+    "admissionReason": "Persistent Cough",
+    "diagnoses": [
+      {
+        "name": "Asthma",
+        "code": "J45.909",
+        "type": "Primary"
+      },
+      {
+        "name": "Type 2 Diabetes",
+        "code": "E11.9",
+        "type": "Secondary"
+      },
+      {
+        "name": "Obesity",
+        "code": "E66.9",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [
+      "Iodine"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with persistent cough, diagnosed with Asthma. Routine observation. Bronchodilator therapy initiated. Assess respiratory effort.",
+      "medicationSchedule": [
+        {
+          "name": "Metformin",
+          "rxnorm": "860975",
+          "dosage": "500mg",
+          "route": "PO",
+          "frequency": "BID"
+        },
+        {
+          "name": "Atorvastatin",
+          "rxnorm": "83367",
+          "dosage": "40mg",
+          "route": "PO",
+          "frequency": "QHS"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Cardiac Catheterization",
+          "datetime": "2025-07-04T08:20:26.836777",
+          "status": "Completed",
+          "cpt": "93452"
+        }
+      ],
+      "dietaryRestrictions": "Diabetic, NPO until stable"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNI"
+    },
+    "emergencyContact": {
+      "name": "Sarah Alexander",
+      "relation": "Parent",
+      "phone": "493-317-6958"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "8eede735-d630-4cb1-b1dc-9b4a85ccf083",
+    "mrn": "HE-6829-303",
+    "name": "Jeffrey Obrien",
+    "dob": "1987-03-13",
+    "gender": "Male",
+    "age": 38,
+    "status": "Admitted - Stable",
+    "acuityLevel": 3,
+    "weight": {
+      "value": 203,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-07T03:20:26.934842",
+    "admissionReason": "Chest Pain",
+    "diagnoses": [
+      {
+        "name": "Acute Myocardial Infarction",
+        "code": "I21.9",
+        "type": "Primary"
+      },
+      {
+        "name": "Hyperlipidemia",
+        "code": "E78.5",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [],
+    "carePlan": {
+      "notes": "Patient admitted with chest pain, diagnosed with Acute Myocardial Infarction. Routine observation. High fall risk. Cardiology consult advised.",
+      "medicationSchedule": [
+        {
+          "name": "Atorvastatin",
+          "rxnorm": "83367",
+          "dosage": "40mg",
+          "route": "PO",
+          "frequency": "QHS"
+        },
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        },
+        {
+          "name": "Heparin Drip",
+          "rxnorm": "5224",
+          "dosage": "5000 units/hr",
+          "route": "IV",
+          "frequency": "Continuous"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Cardiac Catheterization",
+          "datetime": "2025-07-08T20:20:26.934842",
+          "status": "Completed",
+          "cpt": "93452"
+        }
+      ],
+      "dietaryRestrictions": "Diabetic"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNR"
+    },
+    "emergencyContact": {
+      "name": "Madeline Johnson",
+      "relation": "Friend",
+      "phone": "965-391-2298"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "ab235535-2f71-4f4a-91c1-d0c091ea35f9",
+    "mrn": "HE-4561-353",
+    "name": "\u738b\u745c",
+    "dob": "1964-10-12",
+    "gender": "Male",
+    "age": 60,
+    "status": "Admitted - Stable",
+    "acuityLevel": 2,
+    "weight": {
+      "value": 115,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-06T00:20:27.047910",
+    "admissionReason": "Leg Swelling",
+    "diagnoses": [
+      {
+        "name": "Congestive Heart Failure",
+        "code": "I50.9",
+        "type": "Primary"
+      },
+      {
+        "name": "Hyperlipidemia",
+        "code": "E78.5",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [],
+    "carePlan": {
+      "notes": "Patient admitted with leg swelling, diagnosed with Congestive Heart Failure. Routine observation. Continue standard supportive care.",
+      "medicationSchedule": [
+        {
+          "name": "Metformin",
+          "rxnorm": "860975",
+          "dosage": "500mg",
+          "route": "PO",
+          "frequency": "BID"
+        },
+        {
+          "name": "Heparin Drip",
+          "rxnorm": "5224",
+          "dosage": "5000 units/hr",
+          "route": "IV",
+          "frequency": "Continuous"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Cardiac Catheterization",
+          "datetime": "2025-07-06T20:20:27.047910",
+          "status": "Scheduled",
+          "cpt": "93452"
+        }
+      ],
+      "dietaryRestrictions": "Cardiac Diet, Low Sodium"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "Full Code"
+    },
+    "emergencyContact": {
+      "name": "Douglas Davis",
+      "relation": "Sibling",
+      "phone": "172-134-4174"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "63163f68-029d-47ba-bd4b-3492a90a1d6b",
+    "mrn": "HE-9596-723",
+    "name": "\u0418\u044f \u0415\u0433\u043e\u0440\u043e\u0432\u043d\u0430 \u0413\u043e\u0440\u0434\u0435\u0435\u0432\u0430",
+    "dob": "1962-05-09",
+    "gender": "Female",
+    "age": 63,
+    "status": "Admitted - Stable",
+    "acuityLevel": 2,
+    "weight": {
+      "value": 187,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-07T03:20:27.133058",
+    "admissionReason": "Shortness of Breath",
+    "diagnoses": [
+      {
+        "name": "COPD",
+        "code": "J44.9",
+        "type": "Primary"
+      },
+      {
+        "name": "Anemia",
+        "code": "D64.9",
+        "type": "Secondary"
+      },
+      {
+        "name": "Hyperlipidemia",
+        "code": "E78.5",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [],
+    "carePlan": {
+      "notes": "Patient admitted with shortness of breath, diagnosed with COPD. Routine observation. Continue standard supportive care.",
+      "medicationSchedule": [
+        {
+          "name": "Metformin",
+          "rxnorm": "860975",
+          "dosage": "500mg",
+          "route": "PO",
+          "frequency": "BID"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Knee Replacement",
+          "datetime": "2025-07-08T05:20:27.133058",
+          "status": "Completed",
+          "cpt": "27447"
+        }
+      ],
+      "dietaryRestrictions": "NPO until stable, Clear Liquids"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNR"
+    },
+    "emergencyContact": {
+      "name": "Melanie Hutchinson",
+      "relation": "Parent",
+      "phone": "129-687-6871"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "df01446d-4ec2-41ff-ae3e-7d4bc77a6f2b",
+    "mrn": "HE-8645-547",
+    "name": "Daniela Mauro de la Cr\u00faz Osorio",
+    "dob": "1963-11-03",
+    "gender": "Male",
+    "age": 61,
+    "status": "Admitted - Stable",
+    "acuityLevel": 3,
+    "weight": {
+      "value": 193,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-07T01:20:27.234155",
+    "admissionReason": "Chest Pain",
+    "diagnoses": [
+      {
+        "name": "Acute Myocardial Infarction",
+        "code": "I21.9",
+        "type": "Primary"
+      }
+    ],
+    "allergies": [],
+    "carePlan": {
+      "notes": "Patient admitted with chest pain, diagnosed with Acute Myocardial Infarction. Routine observation. High fall risk. Cardiology consult advised.",
+      "medicationSchedule": [
+        {
+          "name": "Heparin Drip",
+          "rxnorm": "5224",
+          "dosage": "5000 units/hr",
+          "route": "IV",
+          "frequency": "Continuous"
+        },
+        {
+          "name": "Metformin",
+          "rxnorm": "860975",
+          "dosage": "500mg",
+          "route": "PO",
+          "frequency": "BID"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Knee Replacement",
+          "datetime": "2025-07-07T06:20:27.234155",
+          "status": "Scheduled",
+          "cpt": "27447"
+        }
+      ],
+      "dietaryRestrictions": "Clear Liquids, Diabetic"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNI"
+    },
+    "emergencyContact": {
+      "name": "Stephen Villa",
+      "relation": "Friend",
+      "phone": "370-026-5753"
+    },
+    "admissionHistory": [
+      {
+        "admission": "2025-04-29T01:20:27.234155",
+        "discharge": "2025-05-01T01:20:27.234155",
+        "reason": "Chest Pain",
+        "diagnosis": "Gastroenteritis",
+        "status": "Discharged"
+      }
+    ]
+  },
+  {
+    "_id": "4098b606-c39d-4e04-8ddf-f5813d042fc1",
+    "mrn": "HE-3347-178",
+    "name": "Julie Thompson",
+    "dob": "2004-09-08",
+    "gender": "Female",
+    "age": 20,
+    "status": "Admitted - Stable",
+    "acuityLevel": 2,
+    "weight": {
+      "value": 126,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-07T00:20:27.337966",
+    "admissionReason": "Leg Swelling",
+    "diagnoses": [
+      {
+        "name": "Congestive Heart Failure",
+        "code": "I50.9",
+        "type": "Primary"
+      }
+    ],
+    "allergies": [
+      "Latex"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with leg swelling, diagnosed with Congestive Heart Failure. Routine observation. Continue standard supportive care.",
+      "medicationSchedule": [
+        {
+          "name": "Metformin",
+          "rxnorm": "860975",
+          "dosage": "500mg",
+          "route": "PO",
+          "frequency": "BID"
+        },
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "MRI Brain",
+          "datetime": "2025-07-07T06:20:27.337966",
+          "status": "Scheduled",
+          "cpt": "70551"
+        }
+      ],
+      "dietaryRestrictions": "Cardiac Diet, NPO until stable"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "Full Code"
+    },
+    "emergencyContact": {
+      "name": "Heather Palmer",
+      "relation": "Spouse",
+      "phone": "386-389-2949"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "42975ab2-37c2-435a-b3a0-962a964e9522",
+    "mrn": "HE-8825-267",
+    "name": "Keya Raju",
+    "dob": "1954-01-12",
+    "gender": "Male",
+    "age": 71,
+    "status": "Admitted - Critical",
+    "acuityLevel": 4,
+    "weight": {
+      "value": 231,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-04T02:20:27.458425",
+    "admissionReason": "Persistent Cough",
+    "diagnoses": [
+      {
+        "name": "Asthma",
+        "code": "J45.909",
+        "type": "Primary"
+      }
+    ],
+    "allergies": [],
+    "carePlan": {
+      "notes": "Patient admitted with persistent cough, diagnosed with Asthma. Monitor vitals closely. Bronchodilator therapy initiated. Assess respiratory effort.",
+      "medicationSchedule": [
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Knee Replacement",
+          "datetime": "2025-07-05T07:20:27.458425",
+          "status": "Scheduled",
+          "cpt": "27447"
+        }
+      ],
+      "dietaryRestrictions": "NPO until stable"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "Comfort Measures Only"
+    },
+    "emergencyContact": {
+      "name": "Elaine Morgan",
+      "relation": "Parent",
+      "phone": "639-003-6483"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "3e2bc06c-4959-4050-94c4-05ce03c45c7a",
+    "mrn": "HE-2632-737",
+    "name": "Ashley Garcia",
+    "dob": "1976-04-15",
+    "gender": "Female",
+    "age": 49,
+    "status": "Admitted - Stable",
+    "acuityLevel": 3,
+    "weight": {
+      "value": 206,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-06T03:20:27.596719",
+    "admissionReason": "Dizziness",
+    "diagnoses": [
+      {
+        "name": "Hypertension",
+        "code": "I10",
+        "type": "Primary"
+      },
+      {
+        "name": "Hyperlipidemia",
+        "code": "E78.5",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [
+      "Latex"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with dizziness, diagnosed with Hypertension. Routine observation. High fall risk. Cardiology consult advised.",
+      "medicationSchedule": [
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        },
+        {
+          "name": "Metformin",
+          "rxnorm": "860975",
+          "dosage": "500mg",
+          "route": "PO",
+          "frequency": "BID"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Appendectomy",
+          "datetime": "2025-07-06T15:20:27.596719",
+          "status": "Scheduled",
+          "cpt": "44950"
+        }
+      ],
+      "dietaryRestrictions": "NPO until stable"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "Comfort Measures Only"
+    },
+    "emergencyContact": {
+      "name": "Cameron Jarvis",
+      "relation": "Spouse",
+      "phone": "857-429-5984"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "70771857-d861-4065-988a-d8baded69d96",
+    "mrn": "HE-3667-365",
+    "name": "Joshua Wood",
+    "dob": "1980-09-20",
+    "gender": "Male",
+    "age": 44,
+    "status": "Admitted - Stable",
+    "acuityLevel": 3,
+    "weight": {
+      "value": 151,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-06T01:20:27.688994",
+    "admissionReason": "Chest Pain",
+    "diagnoses": [
+      {
+        "name": "Acute Myocardial Infarction",
+        "code": "I21.9",
+        "type": "Primary"
+      },
+      {
+        "name": "Anemia",
+        "code": "D64.9",
+        "type": "Secondary"
+      },
+      {
+        "name": "Hyperlipidemia",
+        "code": "E78.5",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [
+      "Aspirin",
+      "Iodine"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with chest pain, diagnosed with Acute Myocardial Infarction. Routine observation. High fall risk. Cardiology consult advised.",
+      "medicationSchedule": [
+        {
+          "name": "Metformin",
+          "rxnorm": "860975",
+          "dosage": "500mg",
+          "route": "PO",
+          "frequency": "BID"
+        },
+        {
+          "name": "Atorvastatin",
+          "rxnorm": "83367",
+          "dosage": "40mg",
+          "route": "PO",
+          "frequency": "QHS"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Knee Replacement",
+          "datetime": "2025-07-06T14:20:27.688994",
+          "status": "Scheduled",
+          "cpt": "27447"
+        }
+      ],
+      "dietaryRestrictions": "Diabetic, Cardiac Diet"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "Full Code"
+    },
+    "emergencyContact": {
+      "name": "David Pope",
+      "relation": "Partner",
+      "phone": "395-029-3999"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "b0657591-e8b6-4bde-9428-00e1de2112c5",
+    "mrn": "HE-6742-492",
+    "name": "\u0421\u0430\u0432\u0432\u0430 \u0410\u0440\u0445\u0438\u043f\u043e\u0432\u0438\u0447 \u0416\u0443\u0440\u0430\u0432\u043b\u0435\u0432",
+    "dob": "2005-03-13",
+    "gender": "Male",
+    "age": 20,
+    "status": "Admitted - Stable",
+    "acuityLevel": 2,
+    "weight": {
+      "value": 236,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-06T23:20:27.782890",
+    "admissionReason": "Persistent Cough",
+    "diagnoses": [
+      {
+        "name": "Asthma",
+        "code": "J45.909",
+        "type": "Primary"
+      },
+      {
+        "name": "Obesity",
+        "code": "E66.9",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [
+      "Penicillin",
+      "Aspirin"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with persistent cough, diagnosed with Asthma. Routine observation. Bronchodilator therapy initiated. Assess respiratory effort.",
+      "medicationSchedule": [
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        },
+        {
+          "name": "Heparin Drip",
+          "rxnorm": "5224",
+          "dosage": "5000 units/hr",
+          "route": "IV",
+          "frequency": "Continuous"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "MRI Brain",
+          "datetime": "2025-07-07T08:20:27.782890",
+          "status": "Scheduled",
+          "cpt": "70551"
+        }
+      ],
+      "dietaryRestrictions": "Cardiac Diet"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "Full Code"
+    },
+    "emergencyContact": {
+      "name": "Jessica Scott",
+      "relation": "Partner",
+      "phone": "754-844-9484"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "290091bb-c0e5-4518-ab2b-f597a380f1af",
+    "mrn": "HE-7321-562",
+    "name": "Sr(a). Felix Alonzo",
+    "dob": "1971-04-17",
+    "gender": "Male",
+    "age": 54,
+    "status": "Admitted - Critical",
+    "acuityLevel": 4,
+    "weight": {
+      "value": 128,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-05T03:20:27.886844",
+    "admissionReason": "Chest Pain",
+    "diagnoses": [
+      {
+        "name": "Acute Myocardial Infarction",
+        "code": "I21.9",
+        "type": "Primary"
+      }
+    ],
+    "allergies": [],
+    "carePlan": {
+      "notes": "Patient admitted with chest pain, diagnosed with Acute Myocardial Infarction. Monitor vitals closely. High fall risk. Cardiology consult advised.",
+      "medicationSchedule": [
+        {
+          "name": "Metformin",
+          "rxnorm": "860975",
+          "dosage": "500mg",
+          "route": "PO",
+          "frequency": "BID"
+        },
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        },
+        {
+          "name": "Heparin Drip",
+          "rxnorm": "5224",
+          "dosage": "5000 units/hr",
+          "route": "IV",
+          "frequency": "Continuous"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Knee Replacement",
+          "datetime": "2025-07-05T15:20:27.886844",
+          "status": "Completed",
+          "cpt": "27447"
+        }
+      ],
+      "dietaryRestrictions": "Low Sodium"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "Full Code"
+    },
+    "emergencyContact": {
+      "name": "Luke Valenzuela",
+      "relation": "Parent",
+      "phone": "323-402-8250"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "f0c04003-163b-4bca-a362-136caa89c548",
+    "mrn": "HE-1181-256",
+    "name": "Dar\u00edo Abel Rasc\u00f3n",
+    "dob": "1961-11-21",
+    "gender": "Female",
+    "age": 63,
+    "status": "Admitted - Critical",
+    "acuityLevel": 5,
+    "weight": {
+      "value": 138,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-06T23:20:28.019120",
+    "admissionReason": "Persistent Cough",
+    "diagnoses": [
+      {
+        "name": "Asthma",
+        "code": "J45.909",
+        "type": "Primary"
+      }
+    ],
+    "allergies": [
+      "Shellfish",
+      "Iodine"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with persistent cough, diagnosed with Asthma. Monitor vitals closely. Bronchodilator therapy initiated. Assess respiratory effort.",
+      "medicationSchedule": [
+        {
+          "name": "Metformin",
+          "rxnorm": "860975",
+          "dosage": "500mg",
+          "route": "PO",
+          "frequency": "BID"
+        },
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        },
+        {
+          "name": "Atorvastatin",
+          "rxnorm": "83367",
+          "dosage": "40mg",
+          "route": "PO",
+          "frequency": "QHS"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Appendectomy",
+          "datetime": "2025-07-07T11:20:28.019120",
+          "status": "Completed",
+          "cpt": "44950"
+        }
+      ],
+      "dietaryRestrictions": "Diabetic"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNR"
+    },
+    "emergencyContact": {
+      "name": "Andrew Zimmerman",
+      "relation": "Spouse",
+      "phone": "547-438-7600"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "f4dd8087-603c-489a-93d6-ab376c3e1a51",
+    "mrn": "HE-6691-688",
+    "name": "Veer Loke",
+    "dob": "1949-03-03",
+    "gender": "Female",
+    "age": 76,
+    "status": "Admitted - Stable",
+    "acuityLevel": 1,
+    "weight": {
+      "value": 161,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-04T23:20:28.121645",
+    "admissionReason": "Shortness of Breath",
+    "diagnoses": [
+      {
+        "name": "COPD",
+        "code": "J44.9",
+        "type": "Primary"
+      }
+    ],
+    "allergies": [],
+    "carePlan": {
+      "notes": "Patient admitted with shortness of breath, diagnosed with COPD. Routine observation. Continue standard supportive care.",
+      "medicationSchedule": [
+        {
+          "name": "Atorvastatin",
+          "rxnorm": "83367",
+          "dosage": "40mg",
+          "route": "PO",
+          "frequency": "QHS"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "Appendectomy",
+          "datetime": "2025-07-06T15:20:28.121645",
+          "status": "Scheduled",
+          "cpt": "44950"
+        }
+      ],
+      "dietaryRestrictions": "NPO until stable"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "Comfort Measures Only"
+    },
+    "emergencyContact": {
+      "name": "Brittany Morgan",
+      "relation": "Spouse",
+      "phone": "975-518-1059"
+    },
+    "admissionHistory": []
+  },
+  {
+    "_id": "8d2fe2fc-9ccf-40f4-a1aa-0ff99f23046c",
+    "mrn": "HE-7519-933",
+    "name": "Michael Haynes",
+    "dob": "1967-01-22",
+    "gender": "Male",
+    "age": 58,
+    "status": "Admitted - Stable",
+    "acuityLevel": 2,
+    "weight": {
+      "value": 202,
+      "unit": "lbs"
+    },
+    "admissionDate": "2025-07-04T00:20:28.210285",
+    "admissionReason": "Fever and Fatigue",
+    "diagnoses": [
+      {
+        "name": "Pneumonia",
+        "code": "J18.9",
+        "type": "Primary"
+      },
+      {
+        "name": "Anemia",
+        "code": "D64.9",
+        "type": "Secondary"
+      },
+      {
+        "name": "Obesity",
+        "code": "E66.9",
+        "type": "Secondary"
+      }
+    ],
+    "allergies": [
+      "Aspirin",
+      "Iodine"
+    ],
+    "carePlan": {
+      "notes": "Patient admitted with fever and fatigue, diagnosed with Pneumonia. Routine observation. Monitor oxygen saturation. Start antibiotic protocol.",
+      "medicationSchedule": [
+        {
+          "name": "Atorvastatin",
+          "rxnorm": "83367",
+          "dosage": "40mg",
+          "route": "PO",
+          "frequency": "QHS"
+        },
+        {
+          "name": "Heparin Drip",
+          "rxnorm": "5224",
+          "dosage": "5000 units/hr",
+          "route": "IV",
+          "frequency": "Continuous"
+        },
+        {
+          "name": "Lisinopril",
+          "rxnorm": "318434",
+          "dosage": "10mg",
+          "route": "PO",
+          "frequency": "QD"
+        }
+      ],
+      "scheduledProcedures": [
+        {
+          "name": "MRI Brain",
+          "datetime": "2025-07-05T13:20:28.210285",
+          "status": "Completed",
+          "cpt": "70551"
+        }
+      ],
+      "dietaryRestrictions": "Diabetic, NPO until stable"
+    },
+    "documentation": {
+      "consentForTreatment": "Signed",
+      "hipaaNotice": "Signed",
+      "advanceDirective": "On-File",
+      "dnrStatus": "DNI"
+    },
+    "emergencyContact": {
+      "name": "Connie Russell",
+      "relation": "Sibling",
+      "phone": "022-152-1182"
+    },
+    "admissionHistory": []
+  }
+]
