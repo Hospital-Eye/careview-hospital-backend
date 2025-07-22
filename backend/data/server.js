@@ -1,15 +1,38 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const dotenv = require('dotenv'); 
-dotenv.config({ path: '../.env' }); 
 const connectDB = require('./config/db');
 console.log('🧪 Loaded URI:', process.env.MONGODB_URI);
 connectDB();
 
-
 const app = express();
-app.use(cors());
 app.use(express.json());
+app.use(cors({origin: '*'}));
+
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
+const GOOGLE_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI;
+const FRONTEND_BASE_URL = process.env.FRONTEND_BASE_URL;
+const JWT_SECRET = process.env.JWT_SECRET;
+const MONGODB_URI = process.env.MONGODB_URI;
+
+
+// variable validation
+if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET || !GOOGLE_REDIRECT_URI || !FRONTEND_BASE_URL || !JWT_SECRET || !MONGODB_URI) {
+    console.error("CRITICAL ERROR: One or more required environment variables are missing!");
+    process.exit(1); // Exit the application if critical variables are missing
+}
+
+
+const authRoutes = require('./routes/authRoutes')(
+    GOOGLE_CLIENT_ID,
+    GOOGLE_CLIENT_SECRET,
+    GOOGLE_REDIRECT_URI,
+    FRONTEND_BASE_URL,
+    JWT_SECRET 
+);
+app.use('/api/authRoutes', authRoutes);
+
 
 app.get('/', (req, res) => res.send('Hospital Eye API Running'));
 
