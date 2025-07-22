@@ -31,11 +31,10 @@ const authRoutes = require('./routes/authRoutes')(
     FRONTEND_BASE_URL,
     JWT_SECRET 
 );
-app.use('/api/authRoutes', authRoutes);
-
 
 app.get('/', (req, res) => res.send('Hospital Eye API Running'));
 
+app.use('/api/authRoutes', authRoutes);
 app.use('/api/users', require('./routes/users'));
 app.use('/api/patients', require('./routes/patients'));
 app.use('/api/tasks', require('./routes/tasks'));
