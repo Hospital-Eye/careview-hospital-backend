@@ -23,7 +23,7 @@ if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET || !GOOGLE_REDIRECT_URI || !FRONT
     process.exit(1); // Exit the application if critical variables are missing
 }
 
-
+//to pass env variables to authRoutes
 const authRoutes = require('./routes/authRoutes')(
     GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET,

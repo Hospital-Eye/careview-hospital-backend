@@ -10,7 +10,7 @@ const protect = async (req, res, next) => {
         try {
             token = req.headers.authorization.split(' ')[1];
 
-            const decoded = jwt.verify(token, process.env.JWT_SECRET); // Use your JWT_SECRET from .env
+            const decoded = jwt.verify(token, process.env.JWT_SECRET); 
 
             // Attach user data from the decoded token to the request
             req.user = decoded;

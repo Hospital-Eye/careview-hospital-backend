@@ -1,8 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { createUser, getUsers, updateUser, deleteUser } = require('../controllers/userController');
-const { protect, authorize } = require('../middleware/authMiddleware'); // Import your middleware
-
+const { protect, authorize } = require('../middleware/authMiddleware'); 
 
 router.post('/', protect, authorize('admin'), createUser); // Only admins can create users
 
