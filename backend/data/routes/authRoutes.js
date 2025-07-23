@@ -1,7 +1,7 @@
 const express = require('express');
 const axios = require('axios');
 const jwt = require('jsonwebtoken');
-const User = require('../models/User'); // Your Mongoose User Model
+const User = require('../models/User'); 
 
 //This function will be called by server.js, passing the variables
 module.exports = (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI, FRONTEND_BASE_URL, JWT_SECRET) => {
