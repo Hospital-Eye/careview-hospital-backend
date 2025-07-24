@@ -46,7 +46,7 @@ module.exports = (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI, F
                     }
                     user = new User({
                         googleId: profile.id, email: userEmail, name: profile.name,
-                        profilePicture: profile.picture, role: 'member', isActive: true
+                        profilePicture: profile.picture, role: 'admin', isActive: true
                     });
                     await user.save();
                     console.log(`New user registered and logged in: ${userEmail}`);
