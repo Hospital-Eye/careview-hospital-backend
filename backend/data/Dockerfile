@@ -1,24 +1,19 @@
-# Use a Node.js base image. Using a specific version (20) and a smaller variant (alpine) is good practice.
-FROM node:20-alpine
+# Use official Node.js base image
+FROM node:18
 
-# Set the working directory inside the container. All subsequent commands will run from here.
+# Create and set working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json first. This allows Docker to cache the npm install step.
-# If only your source code changes, this layer won't need to be rebuilt.
+# Copy package.json and install dependencies
 COPY package*.json ./
+RUN npm install
 
-# Install application dependencies
-RUN npm install --production # --production flag installs only production dependencies
-
-# Copy the rest of your application code into the container
+# Copy the rest of the application code
 COPY . .
 
-# Expose the port your Express app listens on.
-# Cloud Run (and many other platforms) expects applications to listen on port 8080 by default.
-# Ensure your Node.js app is configured to listen on process.env.PORT or 8080.
+# Expose port (Cloud Run expects 8080)
+ENV PORT=8080
 EXPOSE 8080
 
-# Define the command to run your application when the container starts.
-# Ensure you have a "start" script in your package.json (e.g., "start": "node server.js").
+# Start the server
 CMD ["npm", "start"]
