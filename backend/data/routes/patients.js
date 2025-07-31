@@ -11,7 +11,7 @@ const {
 router.post('/', createPatient);
 router.get('/', getPatients);
 router.get('/:mrn', getPatientByMRN);
-router.put('/:mrn', updatePatientByMRN);
+router.patch('/:mrn', updatePatientByMRN);
 router.delete('/:mrn', deletePatientByMRN);
 
 module.exports = router;

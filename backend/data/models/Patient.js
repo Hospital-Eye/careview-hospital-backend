@@ -9,25 +9,13 @@ const patientSchema = new mongoose.Schema({
     value: Number,
     unit: String
   },
+  precautions: {
+    type: String
+  },
   emergencyContact: {
     name: String,
     relation: String,
     phone: String
-  },
-  admissionDate: Date,
-  dischargeDate: Date,
-  roomId: { type: mongoose.Schema.Types.ObjectId, ref: 'Room' },
-  admissionReason: String,
-  diagnoses: [String],
-  attendingPhysicianId: { type: mongoose.Schema.Types.ObjectId, ref: 'Staff' },
-  acuityLevel: Number,
-  status: String,
-  carePlan: {
-    assignedStaffIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Staff' }],
-    notes: String,
-    scheduledProcedures: [String],
-    medicationSchedule: [String],
-    dietaryRestrictions: String
   }
 });
 

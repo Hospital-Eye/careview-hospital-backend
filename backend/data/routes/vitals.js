@@ -5,7 +5,8 @@ const {
   getVitals,
   getVitalById,
   updateVital,
-  deleteVital
+  deleteVital,
+  getVitalsHistoryByPatientId
 } = require('../controllers/vitalController');
 
 router.post('/', createVital);
@@ -13,5 +14,7 @@ router.get('/', getVitals);
 router.get('/:id', getVitalById);
 router.put('/:id', updateVital);
 router.delete('/:id', deleteVital);
+//to display line chart
+router.get('/history/:patientId', getVitalsHistoryByPatientId);
 
 module.exports = router;

@@ -1,4 +1,5 @@
 const Vital = require('../models/Vital');
+const Patient = require('../models/Patient');
 
 const createVital = async (req, res) => {
   try {
@@ -47,10 +48,49 @@ const deleteVital = async (req, res) => {
   }
 };
 
+//for displaying line chart
+const getVitalsHistoryByPatientId = async (req, res) => {
+  try {
+    const patientId = req.params.patientId; // Get patientId from the URL parameter
+
+    const patientExists = await Patient.findById(patientId);
+    if (!patientExists) {
+        return res.status(404).json({ error: 'Patient not found for this vitals history.' });
+    }
+
+    // Get date range from query parameters 
+    const { startDate, endDate } = req.query;
+
+    let query = { patientId: patientId }; // Start query with patientId
+
+    // Add timestamp filtering if startDate or endDate are provided
+    if (startDate || endDate) {
+      query.timestamp = {};
+      if (startDate) {
+        query.timestamp.$gte = new Date(startDate); 
+      }
+      if (endDate) {
+        query.timestamp.$lte = new Date(endDate);   
+      }
+    }
+
+    // Fetch vitals, sort by timestamp ascending for chart plotting
+    const vitals = await Vital.find(query)
+                               .sort({ timestamp: 1 }) // Sort ascending by timestamp for charting
+                               .populate('recordedBy'); 
+
+    res.status(200).json(vitals); // Send the filtered and sorted vitals data
+  } catch (err) {
+    console.error('Error fetching vitals history by patient ID:', err); 
+    res.status(500).json({ error: 'Server error fetching vitals history.' });
+  }
+};
+
 module.exports = {
   createVital,
   getVitals,
   getVitalById,
   updateVital,
-  deleteVital
+  deleteVital,
+  getVitalsHistoryByPatientId
 };
