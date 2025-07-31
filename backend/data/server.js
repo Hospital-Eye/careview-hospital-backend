@@ -1,10 +1,10 @@
-const express = require('express');
 const dotenv = require('dotenv');
+const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
 
-
-dotenv.config();
+require('dotenv').config();
+console.log('Value of process.env.PORT from .env:', process.env.PORT);
 connectDB();
 
 const app = express();
@@ -26,6 +26,11 @@ app.use('/api/staff', require('./routes/staff'));
 app.use('/api/vitals', require('./routes/vitals'));
 const cameraRoutes = require('./routes/cameraRoutes');
 app.use('/api/cameras', cameraRoutes.router);
+const admissionRoutes = require('./routes/admissionsRoutes');
+app.use('/api/admissions', admissionRoutes);
+// Clinic Dashboard - main dashboard
+const dashboardRoutes = require('./routes/clinicDashboardRoutes');
+app.use('/api/clinicdashboard', dashboardRoutes);
 
 // Auto-start stream
 const DEFAULT_RTSP = 'rtsp://admin:Sigma2812@47.149.131.62:554/Preview_01_main';
