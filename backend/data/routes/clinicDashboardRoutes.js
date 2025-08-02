@@ -4,6 +4,6 @@ const router = express.Router();
 const { getDashboardMetrics } = require('../controllers/clinicDashboardController');
 
 // Route to get all dashboard metrics
-router.get('/metrics', getDashboardMetrics);
+router.get('/', getDashboardMetrics);
 
 module.exports = router;

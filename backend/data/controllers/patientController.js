@@ -43,7 +43,6 @@ const getPatientByMRN = async (req, res) => {
     // Combine patient data with vitals history 
     const patientDetails = patient.toObject();
 
-    // Clean up the object to make it flatter for the frontend if needed
     if (patientDetails.currentAdmissionId) {
         patientDetails.admissionReason = patientDetails.currentAdmissionId.admissionReason;
         patientDetails.admissionDate = patientDetails.currentAdmissionId.admissionDate;
