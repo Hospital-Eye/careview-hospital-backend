@@ -1,4 +1,5 @@
 const express = require('express');
+const { protect, authorize } = require('../middleware/authMiddleware');
 const ffmpeg = require('fluent-ffmpeg');
 const ffmpegInstaller = require('@ffmpeg-installer/ffmpeg');
 const path = require('path');
