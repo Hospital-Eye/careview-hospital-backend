@@ -5,16 +5,20 @@ const User = require('../models/User');
 const protect = async (req, res, next) => {
     let token;
 
-    // Check if authorization header exists and starts with 'Bearer'
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
         try {
             token = req.headers.authorization.split(' ')[1];
 
-            const decoded = jwt.verify(token, process.env.JWT_SECRET); 
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-            req.user = await User.findById(decoded.id).select('-password'); 
+            const user = await User.findById(decoded.id).select('-password');
 
-            next(); // Proceed to the next middleware or route handler
+            if (!user) {
+                return res.status(401).json({ message: 'Not authorized, user not found.' });
+            }
+
+            req.user = user;
+            next();
 
         } catch (error) {
             console.error('Authentication Middleware Error:', error.message);
@@ -28,7 +32,6 @@ const protect = async (req, res, next) => {
         }
     }
 
-    // If no token was provided in the header
     if (!token) {
         return res.status(401).json({ message: 'Not authorized, no token provided.' });
     }
