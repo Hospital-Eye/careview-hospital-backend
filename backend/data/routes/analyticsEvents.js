@@ -5,7 +5,7 @@ const {
   getEvents
 } = require('../controllers/analyticsEventController');
 
-router.post('/', createEvent);
-router.get('/', getEvents);
+router.post('/', protect, authorize('admin'), createEvent);
+router.get('/', protect, authorize('admin'), getEvents);
 
 module.exports = router;

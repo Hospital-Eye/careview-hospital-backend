@@ -99,6 +99,6 @@ router.get('/play', (req, res) => {
 });
 
 // Serve HLS files
-router.use('/streams', express.static(streamFolder));
+router.use('/streams', protect, authorize('admin'), express.static(streamFolder));
 
 module.exports = { router, startStreamInternal };
