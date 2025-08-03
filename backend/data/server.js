@@ -30,8 +30,7 @@ const authRoutes = require('./routes/authRoutes')(
     GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET,
     GOOGLE_REDIRECT_URI,
-    FRONTEND_BASE_URL,
-    JWT_SECRET 
+    FRONTEND_BASE_URL
 );
 
 app.get('/', (req, res) => res.send('Hospital Eye API Running'));

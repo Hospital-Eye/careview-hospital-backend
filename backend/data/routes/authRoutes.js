@@ -2,10 +2,11 @@ const express = require('express');
 const axios = require('axios');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User'); 
+require('dotenv').config();
 const { protect, authorize } = require('../middleware/authMiddleware');
 
 //This function will be called by server.js, passing the variables
-module.exports = (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI, FRONTEND_BASE_URL, JWT_SECRET) => {
+module.exports = (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI, FRONTEND_BASE_URL) => {
     const router = express.Router();
 
     router.get('/auth/google', (req, res) => {
@@ -62,7 +63,7 @@ module.exports = (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI, F
                 }
 
                 const payload = { id: user._id, email: user.email, role: user.role };
-                appSpecificToken = jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' }); // Use the passed JWT_SECRET
+                const appSpecificToken = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' }); // Use the passed JWT_SECRET
                 isLoginSuccessful = true;
 
             } catch (authError) {
