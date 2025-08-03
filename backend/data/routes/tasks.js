@@ -2,16 +2,16 @@ const express = require('express');
 const router = express.Router();
 const {
   createTask,
-  getAllTasks,
+  getTasks,
   getTaskById,
   updateTask,
   deleteTask
 } = require('../controllers/taskController');
 
-router.post('/', createTask);
-router.get('/', getAllTasks);
-router.get('/:id', getTaskById);
-router.put('/:id', updateTask);
-router.delete('/:id', deleteTask);
+router.post('/', protect, authorize('admin', 'doctor', 'nurse'), createTask);
+router.get('/', protect, authorize('admin', 'doctor', 'nurse'), getTasks);
+router.get('/:id', protect, authorize('admin', 'doctor', 'nurse'), getTaskById);
+router.put('/:id', protect, authorize('admin', 'doctor', 'nurse'), updateTask);
+router.delete('/:id', protect, authorize('admin', 'doctor'), deleteTask);
 
 module.exports = router;
