@@ -63,8 +63,10 @@ module.exports = (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI, F
                 }
 
                 const payload = { id: user._id, email: user.email, role: user.role };
-                const appSpecificToken = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' }); // Use the passed JWT_SECRET
+                appSpecificToken = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' }); // Use the passed JWT_SECRET
                 isLoginSuccessful = true;
+
+                console.log(`✅ Login success for ${user.email}. Redirecting with token.`);
 
             } catch (authError) {
                 console.error('Internal authentication/authorization error:', authError);
