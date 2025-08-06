@@ -9,9 +9,20 @@ const protect = async (req, res, next) => {
         try {
             token = req.headers.authorization.split(' ')[1];
 
-            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            //const token = 'YOUR_GOOGLE_ID_TOKEN_HERE';
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(
+              atob(base64)
+                .split('')
+                .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+                .join('')
+);
 
-            const user = await User.findById(decoded.id).select('-password');
+
+            const decoded = JSON.parse(jsonPayload);
+
+            const user = await User.findOne({"email":decoded.email});
 
             if (!user) {
                 return res.status(401).json({ message: 'Not authorized, user not found.' });
