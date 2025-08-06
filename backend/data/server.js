@@ -21,9 +21,16 @@ const MONGODB_URI = process.env.MONGODB_URI;
 
 // variable validation
 if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET || !GOOGLE_REDIRECT_URI || !FRONTEND_BASE_URL || !JWT_SECRET || !MONGODB_URI) {
-    console.error("CRITICAL ERROR: One or more required environment variables are missing!");
+    console.log("GOOGLE_CLIENT_ID:", GOOGLE_CLIENT_ID);
+    console.log("GOOGLE_CLIENT_SECRET:", GOOGLE_CLIENT_SECRET);
+    console.log("GOOGLE_REDIRECT_URI:", GOOGLE_REDIRECT_URI);
+    console.log("FRONTEND_BASE_URL:", FRONTEND_BASE_URL);
+    console.log("JWT_SECRET:", JWT_SECRET);
+    console.log("MONGODB_URI:", MONGODB_URI);
+    //console.error("CRITICAL ERROR: One or more required environment variables are missing!");
     process.exit(1); // Exit the application if critical variables are missing
 }
+
 
 //to pass env variables to authRoutes
 const authRoutes = require('./routes/authRoutes')(
@@ -32,6 +39,7 @@ const authRoutes = require('./routes/authRoutes')(
     GOOGLE_REDIRECT_URI,
     FRONTEND_BASE_URL
 );
+
 
 app.get('/', (req, res) => res.send('Hospital Eye API Running'));
 
