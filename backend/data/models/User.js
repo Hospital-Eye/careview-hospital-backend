@@ -26,7 +26,7 @@ const userSchema = new Schema({
     
     role: {             
         type: String,
-        enum: ['admin', 'doctor', 'nurse'], // Define allowed roles
+        enum: ['admin', 'doctor', 'nurse', 'patient'], // Define allowed roles
         default: 'nurse', 
         required: true
     },
