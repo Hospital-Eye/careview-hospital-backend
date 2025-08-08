@@ -3,7 +3,6 @@ const axios = require('axios');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User'); 
 require('dotenv').config();
-const { protect, authorize } = require('../middleware/authMiddleware');
 
 //This function will be called by server.js, passing the variables
 module.exports = (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI, FRONTEND_BASE_URL) => {
@@ -28,10 +27,20 @@ module.exports = (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI, F
             });
 
             const { access_token, id_token } = data;
+            console.log('Bearer access token: ', access_token);
 
             const { data: profile } = await axios.get('https://www.googleapis.com/oauth2/v1/userinfo', {
                 headers: { Authorization: `Bearer ${access_token}` },
             });
+
+            console.log('Token request payload:', {
+            client_id: GOOGLE_CLIENT_ID,
+            client_secret: GOOGLE_CLIENT_SECRET,
+            code,
+            redirect_uri: GOOGLE_REDIRECT_URI,
+            grant_type: 'authorization_code'
+            });
+
 
             // --- YOUR INTERNAL APPLICATION AUTHENTICATION AND AUTHORIZATION LOGIC ---
             let isLoginSuccessful = false;
@@ -43,9 +52,14 @@ module.exports = (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI, F
 
                 if (!user) {
                     if (!userEmail.endsWith('@sigmahealthsense.com')) {
-                        console.warn(`Unauthorized new user attempt: ${userEmail}`);
-                        return res.redirect(`${FRONTEND_BASE_URL}/login?error=unauthorized_domain`);
+                        user = new User({
+                        googleId: profile.id, email: userEmail, name: profile.name,
+                        profilePicture: profile.picture, role: 'patient', isActive: true
+                    });
+                    await user.save();
+                    console.log(`New user registered and logged in: ${userEmail}`);
                     }
+                    
                     user = new User({
                         googleId: profile.id, email: userEmail, name: profile.name,
                         profilePicture: profile.picture, role: 'nurse', isActive: true
@@ -63,10 +77,10 @@ module.exports = (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI, F
                 }
 
                 const payload = { id: user._id, email: user.email, role: user.role };
-                appSpecificToken = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' }); // Use the passed JWT_SECRET
+                appSpecificToken = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '24h' }); // Use the passed JWT_SECRET
                 isLoginSuccessful = true;
 
-                console.log(`✅ Login success for ${user.email}. Redirecting with token.`);
+                console.log(`✅ Login success for ${user.email}. Redirecting with token: ${appSpecificToken}`);
 
             } catch (authError) {
                 console.error('Internal authentication/authorization error:', authError);

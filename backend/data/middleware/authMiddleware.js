@@ -2,50 +2,34 @@ const jwt = require('jsonwebtoken'); // For verifying JWTs
 const User = require('../models/User'); 
 
 // Middleware to protect routes (Authentication)
-const protect = async (req, res, next) => {
-    let token;
+const protect = (req, res, next) => {
+  let token;
 
-    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-        try {
-            token = req.headers.authorization.split(' ')[1];
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer ')
+  ) {
+    try {
+      token = req.headers.authorization.split(' ')[1];
 
-            //const token = 'YOUR_GOOGLE_ID_TOKEN_HERE';
-            const base64Url = token.split('.')[1];
-            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-            const jsonPayload = decodeURIComponent(
-              atob(base64)
-                .split('')
-                .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-                .join('')
-);
+      // ✅ Verify token against your secret and check expiry
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
+      // Attach user info to request
+      req.user = decoded;
 
-            const decoded = JSON.parse(jsonPayload);
+      
 
-            const user = await User.findOne({"email":decoded.email});
-
-            if (!user) {
-                return res.status(401).json({ message: 'Not authorized, user not found.' });
-            }
-
-            req.user = user;
-            next();
-
-        } catch (error) {
-            console.error('Authentication Middleware Error:', error.message);
-            if (error.name === 'JsonWebTokenError') {
-                return res.status(401).json({ message: 'Not authorized, invalid token.' });
-            }
-            if (error.name === 'TokenExpiredError') {
-                return res.status(401).json({ message: 'Not authorized, token expired.' });
-            }
-            return res.status(401).json({ message: 'Not authorized, token validation failed.' });
-        }
+      next();
+    } catch (err) {
+      console.error('Token verification failed:', err.message);
+      return res.status(401).json({ message: 'Not authorized, token failed' });
     }
+  }
 
-    if (!token) {
-        return res.status(401).json({ message: 'Not authorized, no token provided.' });
-    }
+  if (!token) {
+    return res.status(401).json({ message: 'Not authorized, no token' });
+  }
 };
 
 // Middleware for role-based authorization
