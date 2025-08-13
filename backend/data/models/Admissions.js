@@ -8,6 +8,8 @@ const admissionSchema = new Schema({
 
     admissionDate: {type: Date, default: Date.now},
 
+    roomNumber: { type: String, required: true },
+
     reportSentTime: {type: Date, default: null},
 
     dischargeDate: {type: Date, default: null},

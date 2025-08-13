@@ -18,6 +18,7 @@ module.exports = (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI, F
         const { code } = req.query;
 
         try {
+            // token exchange
             const { data } = await axios.post('https://oauth2.googleapis.com/token', {
                 client_id: GOOGLE_CLIENT_ID,
                 client_secret: GOOGLE_CLIENT_SECRET,
@@ -28,7 +29,8 @@ module.exports = (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI, F
 
             const { access_token, id_token } = data;
             console.log('Bearer access token: ', access_token);
-
+            
+            //get google profile info
             const { data: profile } = await axios.get('https://www.googleapis.com/oauth2/v1/userinfo', {
                 headers: { Authorization: `Bearer ${access_token}` },
             });
@@ -51,27 +53,30 @@ module.exports = (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI, F
                 let user = await User.findOne({ email: userEmail });
 
                 if (!user) {
-                    if (!userEmail.endsWith('@sigmahealthsense.com')) {
-                        user = new User({
-                        googleId: profile.id, email: userEmail, name: profile.name,
-                        profilePicture: profile.picture, role: 'patient', isActive: true
-                    });
-                    await user.save();
-                    console.log(`New user registered and logged in: ${userEmail}`);
+                // Determine role based on email domain
+                const assignedRole = userEmail.endsWith('@sigmahealthsense.com') ? 'nurse' : 'patient';
+
+                // Create new user
+                user = new User({
+                    googleId: profile.id,
+                    email: userEmail,
+                    name: profile.name,
+                    profilePicture: profile.picture,
+                    role: assignedRole,
+                    isActive: true
+                });
+
+                await user.save();
+                console.log(`🆕 New ${assignedRole} registered: ${userEmail}`);
+            } else {
+                if (!user.isActive) {
+                    console.warn(`Inactive user login attempt: ${userEmail}`);
+                    return res.redirect(`${FRONTEND_BASE_URL}/login?error=account_inactive`);
                     }
                     
-                    user = new User({
-                        googleId: profile.id, email: userEmail, name: profile.name,
-                        profilePicture: profile.picture, role: 'nurse', isActive: true
-                    });
-                    await user.save();
-                    console.log(`New user registered and logged in: ${userEmail}`);
-                } else {
-                    if (!user.isActive) {
-                        console.warn(`Inactive user login attempt: ${userEmail}`);
-                        return res.redirect(`${FRONTEND_BASE_URL}/login?error=account_inactive`);
-                    }
-                    user.googleId = profile.id; user.name = profile.name; user.profilePicture = profile.picture;
+                    user.googleId = profile.id; 
+                    user.name = profile.name; 
+                    user.profilePicture = profile.picture;
                     await user.save();
                     console.log(`Existing user logged in: ${userEmail}`);
                 }

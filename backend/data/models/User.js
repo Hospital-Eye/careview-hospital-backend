@@ -27,7 +27,7 @@ const userSchema = new Schema({
     role: {             
         type: String,
         enum: ['admin', 'doctor', 'nurse', 'patient'], // Define allowed roles
-        default: 'nurse', 
+        default: 'patient', 
         required: true
     },
 
@@ -36,15 +36,6 @@ const userSchema = new Schema({
         default: true,
         required: true
     },
-
-    createdAt: {
-        type: Date,
-        default: Date.now
-    },
-    updatedAt: {
-        type: Date,
-        default: Date.now 
-    }
 
 }, { timestamps: true }); 
 
