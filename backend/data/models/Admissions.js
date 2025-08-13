@@ -48,7 +48,7 @@ const admissionSchema = new Schema({
 
     initialDiagnoses: [{type: String}],
 
-    notes: String,      
+    notes: String,   
 
 }, 
 
