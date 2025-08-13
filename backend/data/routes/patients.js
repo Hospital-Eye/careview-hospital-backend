@@ -13,7 +13,7 @@ const {
 router.post('/', protect, authorize('admin', 'doctor'), createPatient);
 router.get('/', protect, authorize('admin', 'doctor', 'nurse'), getPatients);
 router.get('/:mrn', protect, authorize('admin', 'doctor', 'nurse'), getPatientByMRN);
-router.patch('/:mrn', protect, authorize('admin', 'doctor'), updatePatientByMRN);
+router.put('/:mrn', protect, authorize('admin', 'doctor'), updatePatientByMRN);
 router.delete('/:mrn', protect, authorize('admin'), deletePatientByMRN);
 
 module.exports = router;
