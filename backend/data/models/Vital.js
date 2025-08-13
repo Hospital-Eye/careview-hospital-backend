@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const vitalSchema = new mongoose.Schema({
-  patientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Patient', required: true },
+  patientId: { type: String, ref: 'Patient' },
   timestamp: { type: Date, default: Date.now },
   measurements: {
     heartRate: Number,
@@ -25,9 +25,11 @@ const vitalSchema = new mongoose.Schema({
     weight: {
       value: Number,
       unit: String
-    }
+    },
+
+    physicalDistress: String,
   },
-  recordedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'Staff' },
+  recordedBy: { type: String, ref: 'Staff' },
   notes: String
 });
 

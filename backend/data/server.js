@@ -61,7 +61,11 @@ const admissionRoutes = require('./routes/admissionsRoutes');
 app.use('/api/admissions', admissionRoutes);
 // Clinic Dashboard - main dashboard
 const dashboardRoutes = require('./routes/clinicDashboardRoutes');
-app.use('/api/clinic-dashboard', dashboardRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+
+// User profile
+const userProfileRoutes = require('./routes/userProfiles');
+app.use('/api/profile', userProfileRoutes);
 
 // Auto-start stream
 const DEFAULT_RTSP = 'rtsp://admin:Sigma2812@47.149.131.62:554/Preview_01_main';
