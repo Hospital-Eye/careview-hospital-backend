@@ -1,0 +1,352 @@
+[
+  {
+    "roomNumber": "A-101",
+    "unit": "Cardiology",
+    "roomType": "Single",
+    "capacity": 1,
+    "equipment": [
+      "IV Pump",
+      "Bed",
+      "Ventilator"
+    ],
+    "cameraIds": [
+      "CAM-A-101-V1"
+    ],
+    "accessRestrictions": [
+      "Authorized Personnel Only"
+    ]
+  },
+  {
+    "roomNumber": "A-102",
+    "unit": "Oncology",
+    "roomType": "Double",
+    "capacity": 1,
+    "equipment": [
+      "IV Pump",
+      "Bed",
+      "Ventilator"
+    ],
+    "cameraIds": [
+      "CAM-A-102-V1",
+      "CAM-A-102-V2"
+    ],
+    "accessRestrictions": [
+      "Authorized Personnel Only"
+    ]
+  },
+  {
+    "roomNumber": "A-103",
+    "unit": "Med/Surg A",
+    "roomType": "Single",
+    "capacity": 4,
+    "equipment": [
+      "IV Pump",
+      "Ventilator",
+      "Defibrillator"
+    ],
+    "cameraIds": [
+      "CAM-A-103-V1"
+    ],
+    "accessRestrictions": [
+      "Sterile Area"
+    ]
+  },
+  {
+    "roomNumber": "A-104",
+    "unit": "Cardiology",
+    "roomType": "Double",
+    "capacity": 2,
+    "equipment": [
+      "IV Pump",
+      "Bed",
+      "Oxygen Supply"
+    ],
+    "cameraIds": [
+      "CAM-A-104-V1"
+    ],
+    "accessRestrictions": [
+      "None"
+    ]
+  },
+  {
+    "roomNumber": "A-105",
+    "unit": "ICU",
+    "roomType": "Consult Room",
+    "capacity": 1,
+    "equipment": [
+      "Oxygen Supply",
+      "Bed",
+      "IV Pump"
+    ],
+    "cameraIds": [
+      "CAM-A-105-V1"
+    ],
+    "accessRestrictions": [
+      "Sterile Area"
+    ]
+  },
+  {
+    "roomNumber": "A-106",
+    "unit": "ICU",
+    "roomType": "Double",
+    "capacity": 1,
+    "equipment": [
+      "Heart Monitor",
+      "IV Pump",
+      "Defibrillator"
+    ],
+    "cameraIds": [
+      "CAM-A-106-V1",
+      "CAM-A-106-V2"
+    ],
+    "accessRestrictions": [
+      "None"
+    ]
+  },
+  {
+    "roomNumber": "A-107",
+    "unit": "Med/Surg A",
+    "roomType": "Single",
+    "capacity": 4,
+    "equipment": [
+      "Bed",
+      "Ventilator",
+      "Oxygen Supply"
+    ],
+    "cameraIds": [
+      "CAM-A-107-V1",
+      "CAM-A-107-V2"
+    ],
+    "accessRestrictions": [
+      "Authorized Personnel Only"
+    ]
+  },
+  {
+    "roomNumber": "A-108",
+    "unit": "Cardiology",
+    "roomType": "Double",
+    "capacity": 1,
+    "equipment": [
+      "Ventilator",
+      "Heart Monitor",
+      "Defibrillator"
+    ],
+    "cameraIds": [
+      "CAM-A-108-V1",
+      "CAM-A-108-V2"
+    ],
+    "accessRestrictions": [
+      "Authorized Personnel Only"
+    ]
+  },
+  {
+    "roomNumber": "A-109",
+    "unit": "Cardiology",
+    "roomType": "Operating Room",
+    "capacity": 4,
+    "equipment": [
+      "Defibrillator",
+      "IV Pump",
+      "Ventilator"
+    ],
+    "cameraIds": [
+      "CAM-A-109-V1",
+      "CAM-A-109-V2"
+    ],
+    "accessRestrictions": [
+      "Authorized Personnel Only"
+    ]
+  },
+  {
+    "roomNumber": "A-110",
+    "unit": "ICU",
+    "roomType": "Double",
+    "capacity": 1,
+    "equipment": [
+      "Heart Monitor",
+      "IV Pump",
+      "Ventilator"
+    ],
+    "cameraIds": [
+      "CAM-A-110-V1",
+      "CAM-A-110-V2"
+    ],
+    "accessRestrictions": [
+      "Sterile Area"
+    ]
+  },
+  {
+    "roomNumber": "A-111",
+    "unit": "Oncology",
+    "roomType": "Single",
+    "capacity": 4,
+    "equipment": [
+      "IV Pump",
+      "Defibrillator",
+      "Oxygen Supply"
+    ],
+    "cameraIds": [
+      "CAM-A-111-V1",
+      "CAM-A-111-V2"
+    ],
+    "accessRestrictions": [
+      "None"
+    ]
+  },
+  {
+    "roomNumber": "A-112",
+    "unit": "Oncology",
+    "roomType": "Consult Room",
+    "capacity": 4,
+    "equipment": [
+      "Ventilator",
+      "Oxygen Supply",
+      "IV Pump"
+    ],
+    "cameraIds": [
+      "CAM-A-112-V1"
+    ],
+    "accessRestrictions": [
+      "Sterile Area"
+    ]
+  },
+  {
+    "roomNumber": "A-113",
+    "unit": "Cardiology",
+    "roomType": "Consult Room",
+    "capacity": 1,
+    "equipment": [
+      "Oxygen Supply",
+      "Defibrillator",
+      "Heart Monitor"
+    ],
+    "cameraIds": [
+      "CAM-A-113-V1",
+      "CAM-A-113-V2"
+    ],
+    "accessRestrictions": [
+      "Authorized Personnel Only"
+    ]
+  },
+  {
+    "roomNumber": "A-114",
+    "unit": "Med/Surg A",
+    "roomType": "Operating Room",
+    "capacity": 4,
+    "equipment": [
+      "Oxygen Supply",
+      "Ventilator",
+      "IV Pump"
+    ],
+    "cameraIds": [
+      "CAM-A-114-V1"
+    ],
+    "accessRestrictions": [
+      "None"
+    ]
+  },
+  {
+    "roomNumber": "A-115",
+    "unit": "Oncology",
+    "roomType": "Single",
+    "capacity": 1,
+    "equipment": [
+      "Defibrillator",
+      "Heart Monitor",
+      "Ventilator"
+    ],
+    "cameraIds": [
+      "CAM-A-115-V1",
+      "CAM-A-115-V2"
+    ],
+    "accessRestrictions": [
+      "Authorized Personnel Only"
+    ]
+  },
+  {
+    "roomNumber": "A-116",
+    "unit": "Med/Surg A",
+    "roomType": "Single",
+    "capacity": 2,
+    "equipment": [
+      "Heart Monitor",
+      "Ventilator",
+      "IV Pump"
+    ],
+    "cameraIds": [
+      "CAM-A-116-V1"
+    ],
+    "accessRestrictions": [
+      "Sterile Area"
+    ]
+  },
+  {
+    "roomNumber": "A-117",
+    "unit": "ICU",
+    "roomType": "Double",
+    "capacity": 4,
+    "equipment": [
+      "IV Pump",
+      "Heart Monitor",
+      "Bed"
+    ],
+    "cameraIds": [
+      "CAM-A-117-V1",
+      "CAM-A-117-V2"
+    ],
+    "accessRestrictions": [
+      "Authorized Personnel Only"
+    ]
+  },
+  {
+    "roomNumber": "A-118",
+    "unit": "ICU",
+    "roomType": "Single",
+    "capacity": 1,
+    "equipment": [
+      "IV Pump",
+      "Bed",
+      "Oxygen Supply"
+    ],
+    "cameraIds": [
+      "CAM-A-118-V1"
+    ],
+    "accessRestrictions": [
+      "Authorized Personnel Only"
+    ]
+  },
+  {
+    "roomNumber": "A-119",
+    "unit": "Oncology",
+    "roomType": "Double",
+    "capacity": 2,
+    "equipment": [
+      "Heart Monitor",
+      "Ventilator",
+      "Oxygen Supply"
+    ],
+    "cameraIds": [
+      "CAM-A-119-V1"
+    ],
+    "accessRestrictions": [
+      "Authorized Personnel Only"
+    ]
+  },
+  {
+    "roomNumber": "A-120",
+    "unit": "Oncology",
+    "roomType": "Consult Room",
+    "capacity": 4,
+    "equipment": [
+      "Heart Monitor",
+      "Defibrillator",
+      "IV Pump"
+    ],
+    "cameraIds": [
+      "CAM-A-120-V1"
+    ],
+    "accessRestrictions": [
+      "Sterile Area"
+    ]
+  }
+]

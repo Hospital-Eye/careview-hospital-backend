@@ -3,8 +3,20 @@ const Vital = require('../models/Vital');
 const Admission = require('../models/Admissions');
 
 // Create a new patient
+const User = require('../models/User');
+
 const createPatient = async (req, res) => {
   try {
+    let emailId = req.body.emailId;
+    if (emailId) {
+      // Check if email exists in User collection
+      const existingUser = await User.findOne({ email: emailId });
+      if (existingUser) {
+        // Use the existing email
+        req.body.emailId = existingUser.email;
+      }
+      // else, keep the new entry as provided
+    }
     const patient = new Patient(req.body);
     await patient.save();
     res.status(201).json(patient);
@@ -52,7 +64,7 @@ const getPatientByMRN = async (req, res) => {
       });
 
     // Fetch vitals history (populate recordedBy from Staff)
-    const vitalsHistory = await Vital.find({ patientId: patient.mrn }).sort({ timestamp: -1 });
+    const vitalsHistory = await Vital.find({ mrn: patient.mrn }).sort({ timestamp: -1 });
     
     const patientDetails = patient.toObject();
 
@@ -64,6 +76,10 @@ const getPatientByMRN = async (req, res) => {
       patientDetails.currentWorkflowStage = latestAdmission.currentWorkflowStage;
       patientDetails.documentation = latestAdmission.documentation || null;
       patientDetails.carePlan = latestAdmission.carePlan || null;
+      if (patient.status !== "Discharged") {
+        await Patient.findByIdAndUpdate(patient._id, { status: 'Active' });
+      }
+
     } else {
       patientDetails.admissionReason = null;
       patientDetails.admissionDate = null;
@@ -113,8 +129,8 @@ const updatePatientByMRN = async (req, res) => {
     }
 
     // Update patient data
-    const updatedPatient = await Patient.findOneAndUpdate(
-      { mrn },
+      const updatedPatient = await Patient.findOneAndUpdate(
+        { mrn: mrn },
       { $set: updateData },
       { new: true, runValidators: true }
     );

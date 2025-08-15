@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const vitalSchema = new mongoose.Schema({
   patientId: { type: String, ref: 'Patient' },
+  mrn: { type: String },
   timestamp: { type: Date, default: Date.now },
   measurements: {
     heartRate: Number,
