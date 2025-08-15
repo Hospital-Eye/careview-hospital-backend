@@ -1,0 +1,242 @@
+[
+  {
+    "mrn": "MRN-1001",
+    "name": "Patient 1",
+    "dob": "1988-06-09",
+    "gender": "Male",
+    "weight": {
+      "value": 148,
+      "unit": "lbs"
+    },
+    "precautions": "None",
+    "allergies": [
+      {
+        "substance": "Latex"
+      }
+    ],
+    "emergencyContact": {
+      "name": "Contact 1",
+      "relation": "Spouse",
+      "phone": "555-01001"
+    },
+    "status": "Discharged",
+    "emailId": "patient1@example.com",
+    "RoomNumber": "A-109"
+  },
+  {
+    "mrn": "MRN-1002",
+    "name": "Patient 2",
+    "dob": "1983-06-28",
+    "gender": "Female",
+    "weight": {
+      "value": 140,
+      "unit": "lbs"
+    },
+    "precautions": "Isolation",
+    "allergies": [
+      {
+        "substance": "Latex"
+      }
+    ],
+    "emergencyContact": {
+      "name": "Contact 2",
+      "relation": "Spouse",
+      "phone": "555-01002"
+    },
+    "status": "Active",
+    "emailId": "patient2@example.com",
+    "RoomNumber": "A-104"
+  },
+  {
+    "mrn": "MRN-1003",
+    "name": "Patient 3",
+    "dob": "1981-10-27",
+    "gender": "Male",
+    "weight": {
+      "value": 184,
+      "unit": "lbs"
+    },
+    "precautions": "Isolation",
+    "allergies": [
+      {
+        "substance": "Latex"
+      }
+    ],
+    "emergencyContact": {
+      "name": "Contact 3",
+      "relation": "Friend",
+      "phone": "555-01003"
+    },
+    "status": "Active",
+    "emailId": "patient3@example.com",
+    "RoomNumber": "A-110"
+  },
+  {
+    "mrn": "MRN-1004",
+    "name": "Patient 4",
+    "dob": "1989-05-03",
+    "gender": "Female",
+    "weight": {
+      "value": 166,
+      "unit": "lbs"
+    },
+    "precautions": "None",
+    "allergies": [
+      {
+        "substance": "Penicillin"
+      }
+    ],
+    "emergencyContact": {
+      "name": "Contact 4",
+      "relation": "Friend",
+      "phone": "555-01004"
+    },
+    "status": "Active",
+    "emailId": "patient4@example.com",
+    "RoomNumber": "A-118"
+  },
+  {
+    "mrn": "MRN-1005",
+    "name": "Patient 5",
+    "dob": "1982-03-17",
+    "gender": "Female",
+    "weight": {
+      "value": 144,
+      "unit": "lbs"
+    },
+    "precautions": "Isolation",
+    "allergies": [
+      {
+        "substance": "None"
+      }
+    ],
+    "emergencyContact": {
+      "name": "Contact 5",
+      "relation": "Sibling",
+      "phone": "555-01005"
+    },
+    "status": "Discharged",
+    "emailId": "patient5@example.com",
+    "RoomNumber": "A-111"
+  },
+  {
+    "mrn": "MRN-1006",
+    "name": "Patient 6",
+    "dob": "1987-01-22",
+    "gender": "Male",
+    "weight": {
+      "value": 172,
+      "unit": "lbs"
+    },
+    "precautions": "None",
+    "allergies": [
+      {
+        "substance": "None"
+      }
+    ],
+    "emergencyContact": {
+      "name": "Contact 6",
+      "relation": "Friend",
+      "phone": "555-01006"
+    },
+    "status": "Active",
+    "emailId": "patient6@example.com",
+    "RoomNumber": "A-101"
+  },
+  {
+    "mrn": "MRN-1007",
+    "name": "Patient 7",
+    "dob": "1982-09-12",
+    "gender": "Female",
+    "weight": {
+      "value": 139,
+      "unit": "lbs"
+    },
+    "precautions": "Fall Risk",
+    "allergies": [
+      {
+        "substance": "None"
+      }
+    ],
+    "emergencyContact": {
+      "name": "Contact 7",
+      "relation": "Parent",
+      "phone": "555-01007"
+    },
+    "status": "Active",
+    "emailId": "patient7@example.com",
+    "RoomNumber": "A-120"
+  },
+  {
+    "mrn": "MRN-1008",
+    "name": "Patient 8",
+    "dob": "1986-01-10",
+    "gender": "Female",
+    "weight": {
+      "value": 158,
+      "unit": "lbs"
+    },
+    "precautions": "Fall Risk",
+    "allergies": [
+      {
+        "substance": "Latex"
+      }
+    ],
+    "emergencyContact": {
+      "name": "Contact 8",
+      "relation": "Sibling",
+      "phone": "555-01008"
+    },
+    "status": "Discharged",
+    "emailId": "patient8@example.com",
+    "RoomNumber": "A-112"
+  },
+  {
+    "mrn": "MRN-1009",
+    "name": "Patient 9",
+    "dob": "1984-10-10",
+    "gender": "Male",
+    "weight": {
+      "value": 185,
+      "unit": "lbs"
+    },
+    "precautions": "None",
+    "allergies": [
+      {
+        "substance": "Penicillin"
+      }
+    ],
+    "emergencyContact": {
+      "name": "Contact 9",
+      "relation": "Sibling",
+      "phone": "555-01009"
+    },
+    "status": "Active",
+    "emailId": "patient9@example.com",
+    "RoomNumber": "A-103"
+  },
+  {
+    "mrn": "MRN-1010",
+    "name": "Patient 10",
+    "dob": "1981-02-17",
+    "gender": "Female",
+    "weight": {
+      "value": 124,
+      "unit": "lbs"
+    },
+    "precautions": "Isolation",
+    "allergies": [
+      {
+        "substance": "Penicillin"
+      }
+    ],
+    "emergencyContact": {
+      "name": "Contact 10",
+      "relation": "Sibling",
+      "phone": "555-01010"
+    },
+    "status": "Active",
+    "emailId": "patient10@example.com",
+    "RoomNumber": "A-106"
+  }
+]

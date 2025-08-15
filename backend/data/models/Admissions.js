@@ -8,8 +8,6 @@ const admissionSchema = new Schema({
 
     admissionDate: {type: Date, default: Date.now},
 
-    roomNumber: { type: String, required: true },
-
     reportSentTime: {type: Date, default: null},
 
     dischargeDate: {type: Date, default: null},
@@ -31,6 +29,12 @@ const admissionSchema = new Schema({
         default: 'Checked-In',
         required: true
     },
+
+    acuityLevel: {
+        type: Number,
+        required: true
+    },
+
     status: {           
         type: String,
         enum: ['Active', 'Completed', 'Canceled', 'On Hold'],
@@ -40,19 +44,45 @@ const admissionSchema = new Schema({
 
     admittedByStaffId: {type: Schema.Types.ObjectId, ref: 'Staff', default: null},
 
-    assignedRoomId: {type: Schema.Types.ObjectId, ref: 'Room', default: null},
-
     attendingPhysicianId: {type: Schema.Types.ObjectId, ref: 'Staff', default: null},
 
     admissionReason: {type: String, required: true},
 
-    initialDiagnoses: [{type: String}],
+    diagnoses: [{type: String}],
 
-    notes: String,   
+    carePlan: {
+    notes: {
+      type: String,
+    },
+    medicationSchedule: [
+      {
+        name: { type: String },
+        rxnorm: { type: String },
+        dosage: { type: String },
+        route: { type: String },
+        frequency: { type: String },
+      }
+    ],
+    scheduledProcedures: [
+      {
+        name: { type: String },
+        datetime: { type: Date },
+        status: { type: String },
+        cpt: { type: String },
+      }
+    ],
+  },
 
-}, 
+  documentation: [{
+    type: String,
+  }],
 
-{ timestamps: true }); 
+  dietaryRestrictions: {
+    type: String,
+  },
+},
+
+  {timestamps: true });
 
 // Add indexes for efficient querying for dashboard KPIs
 admissionSchema.index({ status: 1, checkInTime: -1 }); // For filtering active/completed by date

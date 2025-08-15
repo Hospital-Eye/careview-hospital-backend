@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
 const patientSchema = new mongoose.Schema({
   mrn: { type: String, required: true, unique: true },
@@ -12,13 +13,20 @@ const patientSchema = new mongoose.Schema({
   precautions: {
     type: String
   },
+
+  allergies: [{
+    substance: String,
+  }],
+
   emergencyContact: {
     name: String,
     relation: String,
     phone: String
   },
   status: { type: String, enum: ['Active', 'Discharged'], default: 'Active' },
-
+  emailId: { type: String, required: true },
+  
+  RoomNumber: { type: String, ref: 'Room' },
 });
 
 module.exports = mongoose.model('Patient', patientSchema);
