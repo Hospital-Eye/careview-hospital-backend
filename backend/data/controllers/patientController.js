@@ -113,6 +113,7 @@ const updatePatientByMRN = async (req, res) => {
 
     // If status is being changed to Discharged
     if (updateData.status && updateData.status.toLowerCase() === "discharged") {
+      updateData.status = "Discharged";
       updateData.dischargeDate = new Date();
 
       // Update latest active admission for this patient
