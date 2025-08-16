@@ -1,0 +1,322 @@
+[
+  {
+    "patientId": "4e545875-c964-45f1-b9a4-0a14bae4484c",
+    "mrn": "MRN-1001",
+    "timestamp": "2025-08-16T04:42:45.459068",
+    "measurements": {
+      "heartRate": 85,
+      "bloodPressure": {
+        "systolic": 115,
+        "diastolic": 63
+      },
+      "respiratoryRate": 14,
+      "temperature": {
+        "value": 100.1,
+        "unit": "F"
+      },
+      "oxygenSaturation": {
+        "value": 95,
+        "method": "Arterial Blood Gas"
+      },
+      "painScale": {
+        "value": 7,
+        "scale": "Numeric (0-10)"
+      },
+      "weight": {
+        "value": 158,
+        "unit": "lbs"
+      },
+      "physicalDistress": "Severe"
+    },
+    "recordedBy": "staff-1",
+    "notes": "Complains of mild pain at surgical site."
+  },
+  {
+    "patientId": "998e227b-0900-49b8-ad46-c642f0316b30",
+    "mrn": "MRN-1002",
+    "timestamp": "2025-08-16T03:42:45.459315",
+    "measurements": {
+      "heartRate": 65,
+      "bloodPressure": {
+        "systolic": 123,
+        "diastolic": 73
+      },
+      "respiratoryRate": 16,
+      "temperature": {
+        "value": 99.5,
+        "unit": "F"
+      },
+      "oxygenSaturation": {
+        "value": 98,
+        "method": "Arterial Blood Gas"
+      },
+      "painScale": {
+        "value": 10,
+        "scale": "Numeric (0-10)"
+      },
+      "weight": {
+        "value": 153,
+        "unit": "lbs"
+      },
+      "physicalDistress": "Severe"
+    },
+    "recordedBy": "staff-2",
+    "notes": "Complains of mild pain at surgical site."
+  },
+  {
+    "patientId": "de710a5e-a107-40be-8134-dee21e433b8d",
+    "mrn": "MRN-1003",
+    "timestamp": "2025-08-16T02:42:45.459799",
+    "measurements": {
+      "heartRate": 64,
+      "bloodPressure": {
+        "systolic": 120,
+        "diastolic": 74
+      },
+      "respiratoryRate": 19,
+      "temperature": {
+        "value": 97.6,
+        "unit": "F"
+      },
+      "oxygenSaturation": {
+        "value": 94,
+        "method": "Pulse Oximeter"
+      },
+      "painScale": {
+        "value": 0,
+        "scale": "Numeric (0-10)"
+      },
+      "weight": {
+        "value": 178,
+        "unit": "lbs"
+      },
+      "physicalDistress": "None"
+    },
+    "recordedBy": "staff-3",
+    "notes": "Patient stable, no acute distress."
+  },
+  {
+    "patientId": "3a79ee08-fb4f-44be-8abf-f3c87b2deee8",
+    "mrn": "MRN-1004",
+    "timestamp": "2025-08-16T01:42:45.460284",
+    "measurements": {
+      "heartRate": 87,
+      "bloodPressure": {
+        "systolic": 116,
+        "diastolic": 66
+      },
+      "respiratoryRate": 19,
+      "temperature": {
+        "value": 98.3,
+        "unit": "F"
+      },
+      "oxygenSaturation": {
+        "value": 98,
+        "method": "Pulse Oximeter"
+      },
+      "painScale": {
+        "value": 10,
+        "scale": "Numeric (0-10)"
+      },
+      "weight": {
+        "value": 177,
+        "unit": "lbs"
+      },
+      "physicalDistress": "Moderate"
+    },
+    "recordedBy": "staff-4",
+    "notes": "Patient stable, no acute distress."
+  },
+  {
+    "patientId": "e53b585a-cf11-489d-ae6a-ea5e12130d34",
+    "mrn": "MRN-1005",
+    "timestamp": "2025-08-16T00:42:45.460415",
+    "measurements": {
+      "heartRate": 65,
+      "bloodPressure": {
+        "systolic": 111,
+        "diastolic": 62
+      },
+      "respiratoryRate": 20,
+      "temperature": {
+        "value": 100.8,
+        "unit": "F"
+      },
+      "oxygenSaturation": {
+        "value": 96,
+        "method": "Arterial Blood Gas"
+      },
+      "painScale": {
+        "value": 5,
+        "scale": "Numeric (0-10)"
+      },
+      "weight": {
+        "value": 199,
+        "unit": "lbs"
+      },
+      "physicalDistress": "Severe"
+    },
+    "recordedBy": "staff-5",
+    "notes": "Monitor for signs of infection."
+  },
+  {
+    "patientId": "196a6c44-b4db-4bfc-826c-f0b60d3cef86",
+    "mrn": "MRN-1006",
+    "timestamp": "2025-08-15T23:42:45.460509",
+    "measurements": {
+      "heartRate": 91,
+      "bloodPressure": {
+        "systolic": 107,
+        "diastolic": 72
+      },
+      "respiratoryRate": 14,
+      "temperature": {
+        "value": 99.5,
+        "unit": "F"
+      },
+      "oxygenSaturation": {
+        "value": 92,
+        "method": "Arterial Blood Gas"
+      },
+      "painScale": {
+        "value": 9,
+        "scale": "Numeric (0-10)"
+      },
+      "weight": {
+        "value": 144,
+        "unit": "lbs"
+      },
+      "physicalDistress": "None"
+    },
+    "recordedBy": "staff-6",
+    "notes": "Monitor for signs of infection."
+  },
+  {
+    "patientId": "af601d71-c2f7-4c48-826a-bdbb32cd1061",
+    "mrn": "MRN-1007",
+    "timestamp": "2025-08-15T22:42:45.460615",
+    "measurements": {
+      "heartRate": 102,
+      "bloodPressure": {
+        "systolic": 118,
+        "diastolic": 85
+      },
+      "respiratoryRate": 19,
+      "temperature": {
+        "value": 98.5,
+        "unit": "F"
+      },
+      "oxygenSaturation": {
+        "value": 94,
+        "method": "Pulse Oximeter"
+      },
+      "painScale": {
+        "value": 1,
+        "scale": "Numeric (0-10)"
+      },
+      "weight": {
+        "value": 153,
+        "unit": "lbs"
+      },
+      "physicalDistress": "Severe"
+    },
+    "recordedBy": "staff-7",
+    "notes": "Monitor for signs of infection."
+  },
+  {
+    "patientId": "aaface57-e146-4e22-9605-f008685c1999",
+    "mrn": "MRN-1008",
+    "timestamp": "2025-08-15T21:42:45.460694",
+    "measurements": {
+      "heartRate": 94,
+      "bloodPressure": {
+        "systolic": 106,
+        "diastolic": 68
+      },
+      "respiratoryRate": 17,
+      "temperature": {
+        "value": 99.9,
+        "unit": "F"
+      },
+      "oxygenSaturation": {
+        "value": 100,
+        "method": "Arterial Blood Gas"
+      },
+      "painScale": {
+        "value": 6,
+        "scale": "Numeric (0-10)"
+      },
+      "weight": {
+        "value": 154,
+        "unit": "lbs"
+      },
+      "physicalDistress": "None"
+    },
+    "recordedBy": "staff-8",
+    "notes": "Encouraged mobility and hydration."
+  },
+  {
+    "patientId": "152078fb-8768-4051-8946-1860dd4754dd",
+    "mrn": "MRN-1009",
+    "timestamp": "2025-08-15T20:42:45.460747",
+    "measurements": {
+      "heartRate": 110,
+      "bloodPressure": {
+        "systolic": 116,
+        "diastolic": 80
+      },
+      "respiratoryRate": 20,
+      "temperature": {
+        "value": 99.9,
+        "unit": "F"
+      },
+      "oxygenSaturation": {
+        "value": 92,
+        "method": "Pulse Oximeter"
+      },
+      "painScale": {
+        "value": 9,
+        "scale": "Numeric (0-10)"
+      },
+      "weight": {
+        "value": 135,
+        "unit": "lbs"
+      },
+      "physicalDistress": "Mild"
+    },
+    "recordedBy": "staff-9",
+    "notes": "Patient stable, no acute distress."
+  },
+  {
+    "patientId": "739a2085-846d-4b70-96bd-a6c7194b4954",
+    "mrn": "MRN-1010",
+    "timestamp": "2025-08-15T19:42:45.460782",
+    "measurements": {
+      "heartRate": 77,
+      "bloodPressure": {
+        "systolic": 140,
+        "diastolic": 75
+      },
+      "respiratoryRate": 15,
+      "temperature": {
+        "value": 97.7,
+        "unit": "F"
+      },
+      "oxygenSaturation": {
+        "value": 92,
+        "method": "Pulse Oximeter"
+      },
+      "painScale": {
+        "value": 7,
+        "scale": "Numeric (0-10)"
+      },
+      "weight": {
+        "value": 139,
+        "unit": "lbs"
+      },
+      "physicalDistress": "Severe"
+    },
+    "recordedBy": "staff-10",
+    "notes": "Patient stable, no acute distress."
+  }
+]
