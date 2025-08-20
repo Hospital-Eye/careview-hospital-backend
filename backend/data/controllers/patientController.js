@@ -36,7 +36,7 @@ const getPatients = async (req, res) => {
       filter.status = status;
     }
 
-    const patients = await Patient.find(filter); 
+    const patients = await Patient.find(filter).populate('room', 'roomNumber unit roomType');
     res.json(patients);
   } catch (err) {
     console.error(err);
@@ -45,7 +45,7 @@ const getPatients = async (req, res) => {
 };
 
 
-// Get a patient by MRN (including vitals)
+// Get a patient by MRN (including latest admission + vitals)
 const getPatientByMRN = async (req, res) => {
   try {
     const patient = await Patient.findOne({ mrn: req.params.mrn });
@@ -55,31 +55,34 @@ const getPatientByMRN = async (req, res) => {
     const latestAdmission = await Admission.findOne({ patientId: patient._id })
       .sort({ checkInTime: -1 })
       .populate({
-        path: 'assignedRoomId',
-        select: 'roomNumber unit roomType', 
+        path: 'room',
+        select: 'roomNumber unit roomType',
       })
       .populate({
         path: 'attendingPhysicianId',
-        select: 'name', 
+        select: 'name',
       });
 
-    // Fetch vitals history (populate recordedBy from Staff)
-    const vitalsHistory = await Vital.find({ mrn: patient.mrn }).sort({ timestamp: -1 });
-    
+    // Fetch vitals history (latest first)
+    const vitalsHistory = await Vital.find({ mrn: patient.mrn })
+      .sort({ timestamp: -1 })
+      .populate({
+        path: 'recordedBy',
+        select: 'name role', // optional, if Staff is referenced
+      });
+
+    // Combine details
     const patientDetails = patient.toObject();
 
     if (latestAdmission) {
       patientDetails.admissionReason = latestAdmission.admissionReason;
       patientDetails.admissionDate = latestAdmission.admissionDate || latestAdmission.checkInTime;
-      patientDetails.assignedRoom = latestAdmission.assignedRoomId || null;
+      patientDetails.assignedRoom = latestAdmission.room || null;
       patientDetails.attendingPhysician = latestAdmission.attendingPhysicianId || null;
       patientDetails.currentWorkflowStage = latestAdmission.currentWorkflowStage;
       patientDetails.documentation = latestAdmission.documentation || null;
       patientDetails.carePlan = latestAdmission.carePlan || null;
-      if (patient.status !== "Discharged") {
-        await Patient.findByIdAndUpdate(patient._id, { status: 'Active' });
-      }
-
+      patientDetails.admissionStatus = latestAdmission.status; // NEW: track if Active/Discharged
     } else {
       patientDetails.admissionReason = null;
       patientDetails.admissionDate = null;
@@ -88,6 +91,7 @@ const getPatientByMRN = async (req, res) => {
       patientDetails.currentWorkflowStage = 'Not Admitted';
       patientDetails.documentation = null;
       patientDetails.carePlan = null;
+      patientDetails.admissionStatus = 'None';
     }
 
     patientDetails.vitalsHistory = vitalsHistory;

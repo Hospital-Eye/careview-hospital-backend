@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const staffSchema = new mongoose.Schema({
-  employeeId: { type: String, required: true, unique: true },
+  employeeId: { type: Number, required: true, unique: true },
   name: { type: String, required: true },
   contact: {
     email: { type: String },
@@ -19,4 +19,4 @@ const staffSchema = new mongoose.Schema({
   }
 });
 
-module.exports = mongoose.model('Staff', staffSchema);
+module.exports = mongoose.model('Staff', staffSchema, 'Staff');
