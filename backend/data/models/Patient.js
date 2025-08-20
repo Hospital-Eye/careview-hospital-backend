@@ -25,8 +25,7 @@ const patientSchema = new mongoose.Schema({
   },
   status: { type: String, enum: ['Active', 'Discharged'], default: 'Active' },
   emailId: { type: String, required: true },
-  
-  RoomNumber: { type: String, ref: 'Room' },
+
 });
 
 module.exports = mongoose.model('Patient', patientSchema);

@@ -21,7 +21,7 @@
     },
     "status": "Discharged",
     "emailId": "patient1@example.com",
-    "RoomNumber": "A-109"
+    "roomNumber": "A-109"
   },
   {
     "mrn": "MRN-1002",
@@ -45,7 +45,7 @@
     },
     "status": "Active",
     "emailId": "patient2@example.com",
-    "RoomNumber": "A-104"
+    "roomNumber": "A-104"
   },
   {
     "mrn": "MRN-1003",
@@ -69,7 +69,7 @@
     },
     "status": "Active",
     "emailId": "patient3@example.com",
-    "RoomNumber": "A-110"
+    "roomNumber": "A-110"
   },
   {
     "mrn": "MRN-1004",
@@ -93,7 +93,7 @@
     },
     "status": "Active",
     "emailId": "patient4@example.com",
-    "RoomNumber": "A-118"
+    "roomNumber": "A-118"
   },
   {
     "mrn": "MRN-1005",
@@ -117,7 +117,7 @@
     },
     "status": "Discharged",
     "emailId": "patient5@example.com",
-    "RoomNumber": "A-111"
+    "roomNumber": "A-111"
   },
   {
     "mrn": "MRN-1006",
@@ -141,7 +141,7 @@
     },
     "status": "Active",
     "emailId": "patient6@example.com",
-    "RoomNumber": "A-101"
+    "roomNumber": "A-101"
   },
   {
     "mrn": "MRN-1007",
@@ -165,7 +165,7 @@
     },
     "status": "Active",
     "emailId": "patient7@example.com",
-    "RoomNumber": "A-120"
+    "roomNumber": "A-120"
   },
   {
     "mrn": "MRN-1008",
@@ -189,7 +189,7 @@
     },
     "status": "Discharged",
     "emailId": "patient8@example.com",
-    "RoomNumber": "A-112"
+    "roomNumber": "A-112"
   },
   {
     "mrn": "MRN-1009",
@@ -213,7 +213,7 @@
     },
     "status": "Active",
     "emailId": "patient9@example.com",
-    "RoomNumber": "A-103"
+    "roomNumber": "A-103"
   },
   {
     "mrn": "MRN-1010",
@@ -237,6 +237,6 @@
     },
     "status": "Active",
     "emailId": "patient10@example.com",
-    "RoomNumber": "A-106"
+    "roomNumber": "A-106"
   }
 ]
