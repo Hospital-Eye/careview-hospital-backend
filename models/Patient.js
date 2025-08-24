@@ -13,19 +13,27 @@ const patientSchema = new mongoose.Schema({
   precautions: {
     type: String
   },
-
   allergies: [{
     substance: String,
   }],
-
   emergencyContact: {
     name: String,
     relation: String,
     phone: String
   },
   status: { type: String, enum: ['Active', 'Discharged'], default: 'Active' },
-  emailId: { type: String, required: true },
-
+  emailId: { type: String, required: true }
 });
+
+// ✅ Virtual relationship to admissions
+patientSchema.virtual("admissions", {
+  ref: "Admission",          // The model to use
+  localField: "_id",         // Patient._id
+  foreignField: "patientId"  // Admission.patientId
+});
+
+// ✅ Ensure virtuals show up in JSON & objects
+patientSchema.set("toObject", { virtuals: true });
+patientSchema.set("toJSON", { virtuals: true });
 
 module.exports = mongoose.model('Patient', patientSchema);

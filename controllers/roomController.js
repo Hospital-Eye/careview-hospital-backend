@@ -11,7 +11,7 @@ const createRoom = async (req, res) => {
 };
 
 const Patient = require('../models/Patient');
-const Admission = require('../models/Admissions');
+const Admission = require('../models/Admission');
 
 const getRooms = async (req, res) => {
   try {

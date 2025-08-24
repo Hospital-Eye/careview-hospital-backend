@@ -42,9 +42,9 @@ const admissionSchema = new Schema({
         required: true
     },
 
-    admittedByStaffId: {type: Schema.Types.ObjectId, ref: 'Staff', default: null},
+    admittedByStaffId: {type: String, ref: 'Staff', default: null},
 
-    attendingPhysicianId: {type: Schema.Types.ObjectId, ref: 'Staff', default: null},
+    attendingPhysicianId: {type: String, ref: 'Staff', default: null},
 
     admissionReason: {type: String, required: true},
 
