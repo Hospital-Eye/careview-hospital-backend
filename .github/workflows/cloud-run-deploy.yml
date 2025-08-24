@@ -1,66 +1,50 @@
-name: 'Build and Deploy to Cloud Run'
+name: Deploy Backend to Cloud Run
 
 on:
   push:
     branches:
       - dev
 
-env:
-  PROJECT_ID: 'sigma-healthsense'
-  REGION: 'us-central1'
-  SERVICE: 'hospital-eye-backend-dev'
-  WORKLOAD_IDENTITY_PROVIDER: 'projects/1078754960579/locations/global/workloadIdentityPools/github-pool/providers/github-provider'
-  SERVICE_ACCOUNT: 'github-deployer@sigma-healthsense.iam.gserviceaccount.com'
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: development
-
+    
+    environment: dev
+      
     permissions:
-      contents: read
-      id-token: write
+      contents: 'read'
+      id-token: 'write'  # Needed for OIDC
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - id: auth
-        name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
-        with:
-          workload_identity_provider: ${{ env.WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ env.SERVICE_ACCOUNT }}
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v2
+      with:
+        workload_identity_provider: "projects/1078754960579/locations/global/workloadIdentityPools/github-pool/providers/github-provider"
+        service_account: "github-deployer@sigma-healthsense.iam.gserviceaccount.com"
 
-      - name: Docker Auth
-        uses: docker/login-action@v3
-        with:
-          username: oauth2accesstoken
-          password: ${{ steps.auth.outputs.auth_token }}
-          registry: ${{ env.REGION }}-docker.pkg.dev
+    - name: Set up gcloud
+      uses: google-github-actions/setup-gcloud@v2
 
-      - name: Build and Push Container
-        run: |
-          DOCKER_TAG="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:${{ github.sha }}"
-          echo "DOCKER_TAG=$DOCKER_TAG" >> $GITHUB_ENV
-          docker build --tag "$DOCKER_TAG" .
-          docker push "$DOCKER_TAG"
+    - name: Build & push Docker image
+      run: |
+        IMAGE=gcr.io/sigma-healthsense/hospital-eye-backend:$GITHUB_SHA
+        gcloud builds submit --tag $IMAGE .
+        echo "IMAGE=$IMAGE" >> $GITHUB_ENV
 
-      - id: deploy
-        name: Deploy to Cloud Run
-        uses: google-github-actions/deploy-cloudrun@v2
-        with:
-          service: ${{ env.SERVICE }}
-          region: ${{ env.REGION }}
-          image: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:${{ github.sha }}
-          env_vars: |
-            NODE_ENV=development
-            MONGODB_URI=${{ secrets.MONGODB_URI }}
-            GOOGLE_REDIRECT_URI=${{ secrets.GOOGLE_REDIRECT_URI }}
-            GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
-            GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
-            JWT_SECRET=${{ secrets.JWT_SECRET }}
-            FRONTEND_BASE_URL=${{ secrets.FRONTEND_BASE_URL }}
-
-      - name: Show output
-        run: echo ${{ steps.deploy.outputs.url }}
+    - name: Deploy to Cloud Run
+      run: |
+        gcloud run deploy hospital-eye-backend \
+          --image ${{ env.IMAGE }} \
+          --platform managed \
+          --region us-central1 \
+          --allow-unauthenticated \
+          --set-env-vars MONGODB_URI=${{ secrets.MONGODB_URI }},
+                GOOGLE_REDIRECT_URI=${{ secrets.GOOGLE_REDIRECT_URI }},
+                GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }},
+                GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }},
+                FRONTEND_BASE_URL=${{ secrets.FRONTEND_BASE_URL }},
+                JWT_SECRET=${{ secrets.JWT_SECRET }},
+                NODE_ENV=${{ secrets.NODE_ENV }}

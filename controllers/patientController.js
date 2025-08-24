@@ -1,6 +1,6 @@
 const Patient = require('../models/Patient');
 const Vital = require('../models/Vital');
-const Admission = require('../models/Admissions');
+const Admission = require('../models/Admission');
 
 // Create a new patient
 const User = require('../models/User');
@@ -30,19 +30,33 @@ const getPatients = async (req, res) => {
   try {
     const { status } = req.query; // e.g., ?status=Active or ?status=Discharged
 
-    // Build filter object
-    const filter = {};
+    // Build admission filter
+    const admissionFilter = {};
     if (status) {
-      filter.status = status;
+      admissionFilter.status = status;
     }
 
-    const patients = await Patient.find(filter).populate('room', 'roomNumber unit roomType');
+    // Find all patients
+    const patients = await Patient.find()
+      .lean() // return plain JS objects (faster, lets us modify structure)
+      .populate({
+        path: "admissions",     // 👈 field must exist in Patient schema
+        match: admissionFilter, // filter admissions if status provided
+        populate: [
+          { path: "room", select: "roomNumber unit roomType" },
+          { path: "attendingPhysicianId", select: "name" }
+        ]
+      });
+
     res.json(patients);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Server error' });
+    console.error("Error fetching patients with admissions:", err);
+    res.status(500).json({ error: err.message });
   }
 };
+
+
+
 
 
 // Get a patient by MRN (including latest admission + vitals)
