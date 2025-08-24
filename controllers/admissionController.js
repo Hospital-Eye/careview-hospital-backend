@@ -93,7 +93,7 @@ const getActiveAdmissionByPatient = async (req, res) => {
     if (!admission) return res.status(404).json({ error: 'No active admission found' });
     res.json(admission);
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: 'Server error: No active admission by patient found' });
   }
 };
 
@@ -106,7 +106,7 @@ const getAdmissionsByDateRange = async (req, res) => {
     }).populate('patientId room attendingPhysicianId');
     res.json(admissions);
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: 'Server error: No admissions by date range found' });
   }
 };
 
@@ -149,7 +149,7 @@ const transferRoom = async (req, res) => {
 
     res.json({ message: 'Patient transferred successfully', admission });
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: 'Server error: Unable to transfer patient' });
   }
 };
 
@@ -167,7 +167,7 @@ const cancelAdmission = async (req, res) => {
 
     res.json({ message: 'Admission canceled successfully', admission });
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: 'Server error: Unable to cancel admission' });
   }
 };
 
@@ -181,7 +181,7 @@ const deleteAdmission = async (req, res) => {
 
     res.json({ message: 'Admission deleted successfully' });
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: 'Server error: Unable to delete admission' });
   }
 };
 
