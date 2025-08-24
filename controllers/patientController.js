@@ -110,7 +110,7 @@ const getPatientByMRN = async (req, res) => {
     res.json(patientDetails);
   } catch (err) {
     console.error('Error fetching patient by MRN with vitals and admission details:', err);
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: 'Server error: Error fetching patient by MRN with vitals and admission details' });
   }
 };
 
@@ -154,7 +154,7 @@ const updatePatientByMRN = async (req, res) => {
     res.json(updatedPatient);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error: Unable to update patient" });
   }
 };
 

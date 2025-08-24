@@ -81,8 +81,8 @@ const getVitalsHistoryByPatientId = async (req, res) => {
 
     res.status(200).json(vitals); // Send the filtered and sorted vitals data
   } catch (err) {
-    console.error('Error fetching vitals history by patient ID:', err); 
-    res.status(500).json({ error: 'Server error fetching vitals history.' });
+    console.error('Error fetching vitals history by patient ID:', err);
+    res.status(500).json({ error: 'Server error: Unable to fetch vitals history.' });
   }
 };
 
