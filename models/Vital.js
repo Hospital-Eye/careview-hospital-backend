@@ -30,7 +30,7 @@ const vitalSchema = new mongoose.Schema({
 
     physicalDistress: String,
   },
-  recordedBy: { type: String, ref: 'Staff' },
+  recordedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'Staff' },
   notes: String
 });
 

@@ -80,10 +80,7 @@ const getPatientByMRN = async (req, res) => {
     // Fetch vitals history (latest first)
     const vitalsHistory = await Vital.find({ mrn: patient.mrn })
       .sort({ timestamp: -1 })
-      .populate({
-        path: 'recordedBy',
-        select: 'name role', // optional, if Staff is referenced
-      });
+      .populate('recordedBy', 'name');
 
     // Combine details
     const patientDetails = patient.toObject();
