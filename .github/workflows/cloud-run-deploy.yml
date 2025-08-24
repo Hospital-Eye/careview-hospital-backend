@@ -24,6 +24,7 @@ jobs:
       with:
         workload_identity_provider: "projects/1078754960579/locations/global/workloadIdentityPools/github-pool/providers/github-provider"
         service_account: "github-deployer@sigma-healthsense.iam.gserviceaccount.com"
+        audience: "https://token.actions.githubusercontent.com"
 
     - name: Set up gcloud
       uses: google-github-actions/setup-gcloud@v2
