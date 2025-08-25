@@ -17,6 +17,13 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      
+      - name: Debug GitHub OIDC Token
+        run: |
+          echo "Requesting OIDC token..."
+          curl -sLS "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=https://token.actions.githubusercontent.com" \
+            -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" | jq .
+
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
