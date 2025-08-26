@@ -17,13 +17,18 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      
-      - name: Debug GitHub OIDC Token
-        run: |
-          echo "Requesting OIDC token..."
-          curl -sLS "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=https://token.actions.githubusercontent.com" \
-            -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" | jq .
 
+      - name: Remove old creds
+        run: rm -f gha-creds-*.json || true
+      
+      - name: Debug OIDC Token
+        run: |
+          echo "Requesting GitHub OIDC token..."
+          TOKEN=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+                      "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=https://token.actions.githubusercontent.com" \
+                  | jq -r .value)
+          echo "ID Token payload:"
+          echo $TOKEN | cut -d "." -f2 | base64 -d
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
@@ -31,6 +36,7 @@ jobs:
           token_format: access_token
           workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ secrets.SERVICE_ACCOUNT_EMAIL }}
+
 
       - name: Configure Docker for Artifact Registry
         run: gcloud auth configure-docker ${{ secrets.REGION }}-docker.pkg.dev --quiet
