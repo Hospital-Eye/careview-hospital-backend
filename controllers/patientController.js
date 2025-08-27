@@ -36,27 +36,44 @@ const getPatients = async (req, res) => {
       admissionFilter.status = status;
     }
 
-    // Find all patients
+    // Find all patients and populate admissions
     const patients = await Patient.find()
-      .lean() // return plain JS objects (faster, lets us modify structure)
+      .lean()
       .populate({
-        path: "admissions",     // 👈 field must exist in Patient schema
-        match: admissionFilter, // filter admissions if status provided
+        path: "admissions",
+        match: admissionFilter,
         populate: [
           { path: "room", select: "roomNumber unit roomType" },
           { path: "attendingPhysicianId", select: "name" }
         ]
       });
 
-    res.json(patients);
+    // Flatten structure: add separate fields from latest admission
+    const reshapedPatients = patients.map(p => {
+      const latestAdmission = p.admissions && p.admissions.length > 0
+        ? p.admissions[p.admissions.length - 1] // pick latest admission
+        : null;
+
+      return {
+        ...p,
+        // separate room fields
+        roomId: latestAdmission?.room?._id || null,
+        roomNumber: latestAdmission?.room?.roomNumber || null,
+        roomUnit: latestAdmission?.room?.unit || null,
+        roomType: latestAdmission?.room?.roomType || null,
+
+        // other useful fields
+        attendingPhysicianName: latestAdmission?.attendingPhysicianId?.name || null,
+        admissionStatus: latestAdmission?.status || null,
+      };
+    });
+
+    res.json(reshapedPatients);
   } catch (err) {
     console.error("Error fetching patients with admissions:", err);
     res.status(500).json({ error: err.message });
   }
 };
-
-
-
 
 
 // Get a patient by MRN (including latest admission + vitals)
