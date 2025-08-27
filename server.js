@@ -1,75 +1,107 @@
-const dotenv = require('dotenv');
-const express = require('express');
-const cors = require('cors');
+// server.js
+require('dotenv').config();
+
+const express   = require('express');
+const cors      = require('cors');
+const path      = require('path');
 const connectDB = require('./config/db');
 
-require('dotenv').config();
+// --- Load env ---
+const {
+  PORT = 5050,
+  NODE_ENV,
+  // DB
+  MONGODB_URI,
+  MONGO_URI, // in case your connectDB uses this
+  // Google OAuth (optional in dev)
+  GOOGLE_CLIENT_ID,
+  GOOGLE_CLIENT_SECRET,
+  GOOGLE_REDIRECT_URI,
+  FRONTEND_BASE_URL,
+  // Streaming analytics (optional)
+  CV_URL,
+  PUBLIC_BACKEND_URL
+} = process.env;
+
+// --- Connect DB early (after env is loaded) ---
 connectDB();
 
-
+// --- App setup ---
 const app = express();
+app.use(cors({ origin: '*' }));
 app.use(express.json());
-app.use(cors({origin: '*'}));
 
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-const GOOGLE_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI;
-const FRONTEND_BASE_URL = process.env.FRONTEND_BASE_URL;
-const JWT_SECRET = process.env.JWT_SECRET;
-const MONGODB_URI = process.env.MONGODB_URI;
+// --- Serve static UI and HLS output ---
+app.use(express.static(path.join(__dirname, 'public')));
+app.use('/streams', express.static(path.join(__dirname, 'public', 'streams')));
 
+// --- Health ---
+app.get('/', (_req, res) => res.send('Hospital Eye API Running'));
 
-// variable validation
-if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET || !GOOGLE_REDIRECT_URI || !FRONTEND_BASE_URL || !JWT_SECRET || !MONGODB_URI) {
-    console.log("GOOGLE_CLIENT_ID:", GOOGLE_CLIENT_ID);
-    console.log("GOOGLE_CLIENT_SECRET:", GOOGLE_CLIENT_SECRET);
-    console.log("GOOGLE_REDIRECT_URI:", GOOGLE_REDIRECT_URI);
-    console.log("FRONTEND_BASE_URL:", FRONTEND_BASE_URL);
-    console.log("JWT_SECRET:", JWT_SECRET);
-    console.log("MONGODB_URI:", MONGODB_URI);
-    //console.error("CRITICAL ERROR: One or more required environment variables are missing!");
-    process.exit(1); // Exit the application if critical variables are missing
+// --- Core routes ---
+app.use('/api/users',             require('./routes/users'));
+app.use('/api/patients',          require('./routes/patients'));
+app.use('/api/tasks',             require('./routes/tasks'));
+app.use('/api/notifications',     require('./routes/notifications'));
+app.use('/api/compliance-alerts', require('./routes/complianceAlerts'));
+app.use('/api/analytics-events',  require('./routes/analyticsEvents'));
+app.use('/api/cv-detections',     require('./routes/cvDetections'));
+app.use('/api/rooms',             require('./routes/rooms'));
+app.use('/api/device-logs',       require('./routes/deviceLogs'));
+app.use('/api/staff',             require('./routes/staff'));
+app.use('/api/vitals',            require('./routes/vitals'));
+
+// --- Cameras (your module exporting { router, startStreamInternal }) ---
+const cameraRoutes = require('./routes/cameraRoutes'); // keep your current file name
+app.use('/api/cameras', cameraRoutes.router);
+
+// --- CV webhooks / analytics (only if present) ---
+try {
+  app.use('/api/cv-events',    require('./routes/cvEvents'));
+} catch (_) {
+  console.warn('ℹ️  /api/cv-events route not found (skipping)');
+}
+try {
+  app.use('/api/cv-analytics', require('./routes/cvAnalytics'));
+} catch (_) {
+  console.warn('ℹ️  /api/cv-analytics route not found (skipping)');
 }
 
-
-//to pass env variables to authRoutes
-const authRoutes = require('./routes/authRoutes')(
+// --- Google OAuth routes (optional) ---
+if (GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET && GOOGLE_REDIRECT_URI && FRONTEND_BASE_URL) {
+  const authRoutes = require('./routes/authRoutes')(
     GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET,
     GOOGLE_REDIRECT_URI,
     FRONTEND_BASE_URL
-);
+  );
+  app.use('/api/authRoutes', authRoutes);
+} else {
+  console.warn('⚠️  Google OAuth env not fully set; authRoutes disabled.');
+}
 
+// --- Optional autostart of a camera stream ---
+// Set AUTOSTART_RTSP in .env to enable (avoid hard-coding inside source)
+if (process.env.AUTOSTART_RTSP) {
+  if (typeof cameraRoutes.startStreamInternal === 'function') {
+    try {
+      // TIP for Reolink: use 'h264Preview_01_sub' (H.264) for smooth direct copy.
+      cameraRoutes.startStreamInternal(process.env.AUTOSTART_RTSP);
+      console.log('▶️  Autostarting RTSP:', process.env.AUTOSTART_RTSP);
+    } catch (e) {
+      console.error('❌ Autostart failed:', e.message);
+    }
+  } else {
+    console.warn('ℹ️  cameraRoutes.startStreamInternal not exported; autostart skipped.');
+  }
+}
 
-app.get('/', (req, res) => res.send('Hospital Eye API Running'));
+// --- Warn if DB env mismatch ---
+if (!MONGODB_URI && !MONGO_URI) {
+  console.warn('⚠️  No MONGODB_URI/MONGO_URI set. connectDB() may fail.');
+}
 
-app.use('/api/authRoutes', authRoutes);
-app.use('/api/users', require('./routes/users'));
-app.use('/api/patients', require('./routes/patients'));
-app.use('/api/tasks', require('./routes/tasks'));
-app.use('/api/notifications', require('./routes/notifications'));
-app.use('/api/compliance-alerts', require('./routes/complianceAlerts'));
-app.use('/api/analytics-events', require('./routes/analyticsEvents'));
-app.use('/api/cv-detections', require('./routes/cvDetections'));
-app.use('/api/rooms', require('./routes/rooms'));
-app.use('/api/device-logs', require('./routes/deviceLogs'));
-app.use('/api/staff', require('./routes/staff'));
-app.use('/api/vitals', require('./routes/vitals'));
-const cameraRoutes = require('./routes/cameraRoutes');
-app.use('/api/cameras', cameraRoutes.router);
-const admissionRoutes = require('./routes/admissionsRoutes');
-app.use('/api/admissions', admissionRoutes);
-// Clinic Dashboard - main dashboard
-const dashboardRoutes = require('./routes/clinicDashboardRoutes');
-app.use('/api/dashboard', dashboardRoutes);
-
-// User profile
-const userProfileRoutes = require('./routes/userProfiles');
-app.use('/api/profile', userProfileRoutes);
-
-// Auto-start stream
-const DEFAULT_RTSP = 'rtsp://admin:Sigma2812@47.149.131.62:554/Preview_01_main';
-cameraRoutes.startStreamInternal(DEFAULT_RTSP);
-
-const PORT = process.env.PORT || 5050;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+// --- Start server ---
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
