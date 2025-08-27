@@ -5,14 +5,14 @@ on:
     branches:
       - dev
 
+permissions:
+  contents: read
+  id-token: write  
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     environment: development
-
-    permissions:
-      contents: 'read'
-      id-token: 'write'
 
     steps:
       - name: Checkout repository
@@ -20,15 +20,16 @@ jobs:
 
       - name: Remove old creds
         run: rm -f gha-creds-*.json || true
-      
-      - name: Debug OIDC Token
+
+      - name: Check if OIDC token variables are injected
         run: |
-          echo "Requesting GitHub OIDC token..."
-          TOKEN=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-                      "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=https://token.actions.githubusercontent.com" \
-                  | jq -r .value)
-          echo "ID Token payload:"
-          echo $TOKEN | cut -d "." -f2 | base64 -d
+          echo "Checking if GitHub injected OIDC token environment variables..."
+          echo "ACTIONS_ID_TOKEN_REQUEST_TOKEN: ${ACTIONS_ID_TOKEN_REQUEST_TOKEN:+[SET]}"
+          echo "ACTIONS_ID_TOKEN_REQUEST_URL: ${ACTIONS_ID_TOKEN_REQUEST_URL:+[SET]}"
+          if [ -z "$ACTIONS_ID_TOKEN_REQUEST_TOKEN" ] || [ -z "$ACTIONS_ID_TOKEN_REQUEST_URL" ]; then
+            echo "::error::OIDC environment variables not found. This job may be running from a fork or lacks proper permissions."
+            exit 1
+          fi
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
@@ -36,8 +37,6 @@ jobs:
           token_format: access_token
           workload_identity_provider: projects/1078754960579/locations/global/workloadIdentityPools/github-pool/providers/github-provider
           service_account: github-deployer@sigma-healthsense.iam.gserviceaccount.com
-
-
 
       - name: Configure Docker for Artifact Registry
         run: gcloud auth configure-docker ${{ secrets.REGION }}-docker.pkg.dev --quiet
