@@ -51,6 +51,10 @@ app.use('/api/device-logs',       require('./routes/deviceLogs'));
 app.use('/api/staff',             require('./routes/staff'));
 app.use('/api/vitals',            require('./routes/vitals'));
 
+//admissions
+const admissionRoutes = require('./routes/admissionsRoutes');
+app.use('/api/admissions', admissionRoutes);
+
 //dashboard metrics
 const dashboardRoutes = require('./routes/clinicDashboardRoutes');
 app.use('/api/dashboard', dashboardRoutes);
