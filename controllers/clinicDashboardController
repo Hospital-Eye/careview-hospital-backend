@@ -20,8 +20,16 @@ const getDashboardMetrics = async (req, res) => {
         }).then(uniquePatients => uniquePatients.length);
 
         // --- 2. Calculate Current Occupancy ---
-        const totalRooms = await Room.countDocuments({}); 
-        const occupiedRooms = await Patient.countDocuments({ status: 'Admitted' }); // Assuming patient status determines occupancy
+        //total number of rooms
+        const totalRooms = await Room.countDocuments({});
+
+        //rooms currently occupied, based on unique roomId documents
+        const occupiedRoomsAgg = await Admission.aggregate([
+        { $match: { dischargeDate: null } },
+        { $group: { _id: "$roomId" } }
+        ]);
+
+        const occupiedRooms = occupiedRoomsAgg.length;
 
         // --- 3. Calculate Equipment Utilization Rate ---
         const equipmentUtilizationData = [
