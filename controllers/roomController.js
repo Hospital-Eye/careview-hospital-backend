@@ -10,12 +10,6 @@ const createRoom = async (req, res) => {
   }
 };
 
-<<<<<<< HEAD
-const getRooms = async (req, res) => {
-  try {
-    const rooms = await Room.find();
-    res.json(rooms);
-=======
 const Patient = require('../models/Patient');
 const Admission = require('../models/Admission');
 
@@ -39,7 +33,6 @@ const getRooms = async (req, res) => {
       }
     }));
     res.json(roomStatuses);
->>>>>>> dev
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

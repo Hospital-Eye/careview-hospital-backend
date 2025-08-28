@@ -1,10 +1,4 @@
 const Patient = require('../models/Patient');
-<<<<<<< HEAD
-
-// Create a new patient
-const createPatient = async (req, res) => {
-  try {
-=======
 const Vital = require('../models/Vital');
 const Admission = require('../models/Admission');
 
@@ -23,7 +17,6 @@ const createPatient = async (req, res) => {
       }
       // else, keep the new entry as provided
     }
->>>>>>> dev
     const patient = new Patient(req.body);
     await patient.save();
     res.status(201).json(patient);
@@ -32,25 +25,6 @@ const createPatient = async (req, res) => {
   }
 };
 
-<<<<<<< HEAD
-// Get all patients
-const getPatients = async (req, res) => {
-  try {
-    const patients = await Patient.find();
-    res.json(patients);
-  } catch (err) {
-    res.status(500).json({ error: 'Server error' });
-  }
-};
-
-// Get a patient by MRN
-const getPatientByMRN = async (req, res) => {
-  try {
-    const patient = await Patient.findOne({ mrn: req.params.mrn });
-    if (!patient) return res.status(404).json({ error: 'Patient not found' });
-    res.json(patient);
-  } catch (err) {
-=======
 // Get all patients, optionally filtered by status
 const getPatients = async (req, res) => {
   try {
@@ -97,32 +71,10 @@ const getPatients = async (req, res) => {
     res.json(reshapedPatients);
   } catch (err) {
     console.error("Error fetching patients with admissions:", err);
->>>>>>> dev
     res.status(500).json({ error: err.message });
   }
 };
 
-<<<<<<< HEAD
-// Update a patient by MRN
-const updatePatientByMRN = async (req, res) => {
-  try {
-    const updated = await Patient.findOneAndUpdate(
-      { mrn: req.params.mrn },
-      req.body,
-      { new: true, runValidators: true }
-    );
-    if (!updated) return res.status(404).json({ error: 'Patient not found' });
-    res.json(updated);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-};
-
-// Delete a patient by MRN
-const deletePatientByMRN = async (req, res) => {
-  try {
-    const deleted = await Patient.findOneAndDelete({ mrn: req.params.mrn });
-=======
 
 // Get a patient by MRN (including latest admission + vitals)
 const getPatientByMRN = async (req, res) => {
@@ -228,7 +180,6 @@ const updatePatientByMRN = async (req, res) => {
 const deletePatientByMRN = async (req, res) => {
   try {
     const deleted = await Patient.findOneAndDelete({ mrn: String(req.params.mrn) });
->>>>>>> dev
     if (!deleted) return res.status(404).json({ error: 'Patient not found' });
     res.json({ message: 'Patient deleted successfully' });
   } catch (err) {
@@ -236,10 +187,7 @@ const deletePatientByMRN = async (req, res) => {
   }
 };
 
-<<<<<<< HEAD
-=======
 
->>>>>>> dev
 module.exports = {
   createPatient,
   getPatients,

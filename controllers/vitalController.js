@@ -1,8 +1,5 @@
 const Vital = require('../models/Vital');
-<<<<<<< HEAD
-=======
 const Patient = require('../models/Patient');
->>>>>>> dev
 
 const createVital = async (req, res) => {
   try {
@@ -51,8 +48,6 @@ const deleteVital = async (req, res) => {
   }
 };
 
-<<<<<<< HEAD
-=======
 //for displaying line chart
 const getVitalsHistoryByPatientId = async (req, res) => {
   try {
@@ -91,16 +86,11 @@ const getVitalsHistoryByPatientId = async (req, res) => {
   }
 };
 
->>>>>>> dev
 module.exports = {
   createVital,
   getVitals,
   getVitalById,
   updateVital,
-<<<<<<< HEAD
-  deleteVital
-=======
   deleteVital,
   getVitalsHistoryByPatientId
->>>>>>> dev
 };
