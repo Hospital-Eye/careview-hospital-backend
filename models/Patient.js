@@ -1,39 +1,57 @@
 const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
+const { Schema } = mongoose;
 
-const patientSchema = new mongoose.Schema({
+const patientSchema = new Schema({
   mrn: { type: String, required: true, unique: true },
   name: { type: String, required: true },
-  dob: { type: Date },
+  dob: Date,
   gender: String,
+
+  // from dev (many flows expect this)
+  emailId: { type: String, required: true },
+
   weight: {
     value: Number,
     unit: String
   },
-  precautions: {
-    type: String
-  },
-  allergies: [{
-    substance: String,
-  }],
+  precautions: String,
+  allergies: [{ substance: String }],
   emergencyContact: {
     name: String,
     relation: String,
     phone: String
   },
+
+  // from HEAD (clinical metadata kept for compatibility)
+  admissionDate: Date,
+  dischargeDate: Date,
+  roomId: { type: Schema.Types.ObjectId, ref: 'Room' },
+  admissionReason: String,
+  diagnoses: [String],
+  attendingPhysicianId: { type: Schema.Types.ObjectId, ref: 'Staff' },
+  acuityLevel: Number,
+
+  // normalize to dev’s enum
   status: { type: String, enum: ['Active', 'Discharged'], default: 'Active' },
-  emailId: { type: String, required: true }
+
+  carePlan: {
+    assignedStaffIds: [{ type: Schema.Types.ObjectId, ref: 'Staff' }],
+    notes: String,
+    scheduledProcedures: [String],
+    medicationSchedule: [String],
+    dietaryRestrictions: String
+  }
+}, { timestamps: true });
+
+// ✅ Virtual relationship to admissions (from dev)
+patientSchema.virtual('admissions', {
+  ref: 'Admission',
+  localField: '_id',
+  foreignField: 'patientId'
 });
 
-// ✅ Virtual relationship to admissions
-patientSchema.virtual("admissions", {
-  ref: "Admission",          // The model to use
-  localField: "_id",         // Patient._id
-  foreignField: "patientId"  // Admission.patientId
-});
-
-// ✅ Ensure virtuals show up in JSON & objects
-patientSchema.set("toObject", { virtuals: true });
-patientSchema.set("toJSON", { virtuals: true });
+// ✅ Ensure virtuals appear in JSON/Object
+patientSchema.set('toObject', { virtuals: true });
+patientSchema.set('toJSON', { virtuals: true });
 
 module.exports = mongoose.model('Patient', patientSchema);
