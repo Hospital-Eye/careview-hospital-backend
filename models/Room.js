@@ -1,4 +1,8 @@
 const mongoose = require('mongoose');
+<<<<<<< HEAD
+=======
+const Patient = require('./Patient');
+>>>>>>> dev
 
 const roomSchema = new mongoose.Schema({
   roomNumber: { type: String, required: true },
@@ -11,3 +15,8 @@ const roomSchema = new mongoose.Schema({
 });
 
 module.exports = mongoose.model('Room', roomSchema);
+<<<<<<< HEAD
+=======
+
+//isolation precaution as roomType
+>>>>>>> dev

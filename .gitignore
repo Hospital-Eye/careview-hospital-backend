@@ -1,3 +1,16 @@
+<<<<<<< HEAD
 node_modules/
 
 .env
+=======
+# Ignore .env files 
+.env
+node_modules
+.vscode
+
+# Secrets
+.env
+**/.env
+# HLS output
+public/streams/
+>>>>>>> dev

@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 const Alert = require('../models/complianceAlert');
+=======
+const Alert = require('../models/ComplianceAlert');
+>>>>>>> dev
 
 // Create a new alert
 const createAlert = async (req, res) => {
