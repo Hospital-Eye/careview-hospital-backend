@@ -1,4 +1,4 @@
-// server.js (merged)
+// server.js (resolved)
 require('dotenv').config();
 
 const express   = require('express');
@@ -47,20 +47,32 @@ app.use('/api/device-logs',       require('./routes/deviceLogs'));
 app.use('/api/staff',             require('./routes/staff'));
 app.use('/api/vitals',            require('./routes/vitals'));
 
-// --- Cameras: support either file name ---
-// Prefer cameraRoutes (if your module exports { router, startStreamInternal }), else fallback to older routes/cameras.js
-let cameraModule;
+// --- Admissions & dashboard (from dev) ---
+try {
+  const admissionRoutes = require('./routes/admissionsRoutes');
+  app.use('/api/admissions', admissionRoutes);
+} catch { console.warn('ℹ️  /api/admissions missing (skipped)'); }
+
+try {
+  const dashboardRoutes = require('./routes/clinicDashboardRoutes');
+  app.use('/api/dashboard', dashboardRoutes);
+} catch { console.warn('ℹ️  /api/dashboard missing (skipped)'); }
+
+// --- Cameras: prefer cameraRoutes (exports { router, startStreamInternal }), else fallback to legacy routes/cameras.js
+let cameraModule = null;
 try {
   cameraModule = require('./routes/cameraRoutes');
-  app.use('/api/cameras', cameraModule.router);
+  if (cameraModule?.router) app.use('/api/cameras', cameraModule.router);
+  else throw new Error('cameraRoutes has no .router export');
 } catch {
-  console.warn('ℹ️  routes/cameraRoutes not found, using routes/cameras');
+  console.warn('ℹ️  routes/cameraRoutes not found (falling back to routes/cameras)');
   app.use('/api/cameras', require('./routes/cameras'));
 }
 
 // --- CV webhooks / analytics (if present) ---
 try { app.use('/api/cv-events',    require('./routes/cvEvents')); } 
 catch { console.warn('ℹ️  /api/cv-events missing (skipped)'); }
+
 try { app.use('/api/cv-analytics', require('./routes/cvAnalytics')); } 
 catch { console.warn('ℹ️  /api/cv-analytics missing (skipped)'); }
 
