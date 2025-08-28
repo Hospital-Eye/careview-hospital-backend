@@ -51,6 +51,10 @@ app.use('/api/device-logs',       require('./routes/deviceLogs'));
 app.use('/api/staff',             require('./routes/staff'));
 app.use('/api/vitals',            require('./routes/vitals'));
 
+//dashboard metrics
+const dashboardRoutes = require('./routes/clinicDashboardRoutes');
+app.use('/api/dashboard', dashboardRoutes);
+
 // --- Cameras (your module exporting { router, startStreamInternal }) ---
 const cameraRoutes = require('./routes/cameraRoutes'); // keep your current file name
 app.use('/api/cameras', cameraRoutes.router);

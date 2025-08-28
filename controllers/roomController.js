@@ -13,30 +13,41 @@ const createRoom = async (req, res) => {
 const Patient = require('../models/Patient');
 const Admission = require('../models/Admission');
 
+//get all rooms
 const getRooms = async (req, res) => {
   try {
     const rooms = await Room.find();
-    // For each room, check if occupied and get patient name
-    const roomStatuses = await Promise.all(rooms.map(async (room) => {
-      // Find active admission for this room
-      const admission = await Admission.findOne({ assignedRoomId: room._id, status: 'Active' }).populate('patientId');
-      if (admission && admission.patientId && admission.patientId.name) {
+
+    const roomStatuses = await Promise.all(
+      rooms.map(async (room) => {
+        // Find all active admissions for this room
+        const admissions = await Admission.find({
+          room: room._id,
+          status: 'Active'
+        }).populate('patientId');
+
+        // Count only real admissions
+        const occupancyCount = admissions.length;
+
+        // List patients
+        const occupants = admissions
+          .map(ad => ad.patientId?.name)
+          .filter(Boolean);
+
+
         return {
           ...room.toObject(),
-          occupant: admission.patientId.name
+          occupants,  
+          occupancy: `${occupancyCount}/${room.capacity}`
         };
-      } else {
-        return {
-          ...room.toObject(),
-          occupant: 'Available'
-        };
-      }
-    }));
+      })
+    );
     res.json(roomStatuses);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
+
 
 const getRoomById = async (req, res) => {
   try {
