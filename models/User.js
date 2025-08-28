@@ -1,42 +1,19 @@
+// models/User.js
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const userSchema = new Schema({
-    // --- Google-specific Identifiers (for linking to Google account) ---
-    googleId: {         
-        type: String,
-        unique: true,   
-        sparse: true    
-    },
-    email: {            
-        type: String,
-        required: true,
-        unique: true,   
-        lowercase: true,
-        trim: true
-    },
-    name: {             
-        type: String,
-        required: true
-    },
-    profilePicture: {   
-        type: String
-    },
+  // Google OAuth linkage (optional)
+  googleId: { type: String, unique: true, sparse: true, index: true },
 
-    
-    role: {             
-        type: String,
-        enum: ['admin', 'doctor', 'nurse', 'patient'], // Define allowed roles
-        default: 'patient', 
-        required: true
-    },
+  // Identity
+  email: { type: String, required: true, unique: true, lowercase: true, trim: true },
+  name:  { type: String, required: true, trim: true },
+  profilePicture: String,
 
-    isActive: {         
-        type: Boolean,
-        default: true,
-        required: true
-    },
-
-}, { timestamps: true }); 
+  // Access
+  role: { type: String, enum: ['admin', 'doctor', 'nurse', 'patient'], default: 'patient', required: true },
+  isActive: { type: Boolean, default: true, required: true }
+}, { timestamps: true });
 
 module.exports = mongoose.model('User', userSchema);

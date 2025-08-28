@@ -1,4 +1,4 @@
-// server.js
+// server.js (resolved)
 require('dotenv').config();
 
 const express   = require('express');
@@ -6,32 +6,28 @@ const cors      = require('cors');
 const path      = require('path');
 const connectDB = require('./config/db');
 
-// --- Load env ---
+// --- Env ---
 const {
-  PORT = 5050,
-  NODE_ENV,
-  // DB
+  PORT = 3000,
   MONGODB_URI,
-  MONGO_URI, // in case your connectDB uses this
-  // Google OAuth (optional in dev)
+  MONGO_URI,
   GOOGLE_CLIENT_ID,
   GOOGLE_CLIENT_SECRET,
   GOOGLE_REDIRECT_URI,
   FRONTEND_BASE_URL,
-  // Streaming analytics (optional)
-  CV_URL,
-  PUBLIC_BACKEND_URL
 } = process.env;
 
-// --- Connect DB early (after env is loaded) ---
+// --- DB first ---
 connectDB();
 
-// --- App setup ---
 const app = express();
 app.use(cors({ origin: '*' }));
-app.use(express.json());
+app.use(express.json({ limit: '2mb' }));
 
-// --- Serve static UI and HLS output ---
+// (Optional) tiny request log
+app.use((req, _res, next) => { console.log(`📥 ${req.method} ${req.url}`); next(); });
+
+// --- Static: UI + HLS ---
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/streams', express.static(path.join(__dirname, 'public', 'streams')));
 
@@ -51,65 +47,59 @@ app.use('/api/device-logs',       require('./routes/deviceLogs'));
 app.use('/api/staff',             require('./routes/staff'));
 app.use('/api/vitals',            require('./routes/vitals'));
 
-//admissions
-const admissionRoutes = require('./routes/admissionsRoutes');
-app.use('/api/admissions', admissionRoutes);
-
-//dashboard metrics
-const dashboardRoutes = require('./routes/clinicDashboardRoutes');
-app.use('/api/dashboard', dashboardRoutes);
-
-// --- Cameras (your module exporting { router, startStreamInternal }) ---
-const cameraRoutes = require('./routes/cameraRoutes'); // keep your current file name
-app.use('/api/cameras', cameraRoutes.router);
-
-// --- CV webhooks / analytics (only if present) ---
+// --- Admissions & dashboard (from dev) ---
 try {
-  app.use('/api/cv-events',    require('./routes/cvEvents'));
-} catch (_) {
-  console.warn('ℹ️  /api/cv-events route not found (skipping)');
-}
+  const admissionRoutes = require('./routes/admissionsRoutes');
+  app.use('/api/admissions', admissionRoutes);
+} catch { console.warn('ℹ️  /api/admissions missing (skipped)'); }
+
 try {
-  app.use('/api/cv-analytics', require('./routes/cvAnalytics'));
-} catch (_) {
-  console.warn('ℹ️  /api/cv-analytics route not found (skipping)');
+  const dashboardRoutes = require('./routes/clinicDashboardRoutes');
+  app.use('/api/dashboard', dashboardRoutes);
+} catch { console.warn('ℹ️  /api/dashboard missing (skipped)'); }
+
+// --- Cameras: prefer cameraRoutes (exports { router, startStreamInternal }), else fallback to legacy routes/cameras.js
+let cameraModule = null;
+try {
+  cameraModule = require('./routes/cameraRoutes');
+  if (cameraModule?.router) app.use('/api/cameras', cameraModule.router);
+  else throw new Error('cameraRoutes has no .router export');
+} catch {
+  console.warn('ℹ️  routes/cameraRoutes not found (falling back to routes/cameras)');
+  app.use('/api/cameras', require('./routes/cameras'));
 }
 
-// --- Google OAuth routes (optional) ---
+// --- CV webhooks / analytics (if present) ---
+try { app.use('/api/cv-events',    require('./routes/cvEvents')); } 
+catch { console.warn('ℹ️  /api/cv-events missing (skipped)'); }
+
+try { app.use('/api/cv-analytics', require('./routes/cvAnalytics')); } 
+catch { console.warn('ℹ️  /api/cv-analytics missing (skipped)'); }
+
+// --- Google OAuth (optional) ---
 if (GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET && GOOGLE_REDIRECT_URI && FRONTEND_BASE_URL) {
   const authRoutes = require('./routes/authRoutes')(
-    GOOGLE_CLIENT_ID,
-    GOOGLE_CLIENT_SECRET,
-    GOOGLE_REDIRECT_URI,
-    FRONTEND_BASE_URL
+    GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI, FRONTEND_BASE_URL
   );
   app.use('/api/authRoutes', authRoutes);
 } else {
   console.warn('⚠️  Google OAuth env not fully set; authRoutes disabled.');
 }
 
-// --- Optional autostart of a camera stream ---
-// Set AUTOSTART_RTSP in .env to enable (avoid hard-coding inside source)
-if (process.env.AUTOSTART_RTSP) {
-  if (typeof cameraRoutes.startStreamInternal === 'function') {
-    try {
-      // TIP for Reolink: use 'h264Preview_01_sub' (H.264) for smooth direct copy.
-      cameraRoutes.startStreamInternal(process.env.AUTOSTART_RTSP);
-      console.log('▶️  Autostarting RTSP:', process.env.AUTOSTART_RTSP);
-    } catch (e) {
-      console.error('❌ Autostart failed:', e.message);
-    }
-  } else {
-    console.warn('ℹ️  cameraRoutes.startStreamInternal not exported; autostart skipped.');
+// --- Optional autostart stream via env ---
+// Set AUTOSTART_RTSP=rtsp://user:pass@ip:port/h264Preview_01_sub
+if (process.env.AUTOSTART_RTSP && cameraModule?.startStreamInternal) {
+  try {
+    cameraModule.startStreamInternal(process.env.AUTOSTART_RTSP);
+    console.log('▶️  Autostarting RTSP:', process.env.AUTOSTART_RTSP);
+  } catch (e) {
+    console.error('❌ Autostart failed:', e.message);
   }
 }
 
-// --- Warn if DB env mismatch ---
+// --- Warn if DB envs missing ---
 if (!MONGODB_URI && !MONGO_URI) {
   console.warn('⚠️  No MONGODB_URI/MONGO_URI set. connectDB() may fail.');
 }
 
-// --- Start server ---
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
