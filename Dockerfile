@@ -6,21 +6,14 @@ WORKDIR /app
 
 # Copy package.json and install dependencies
 COPY package*.json ./
-RUN npm install
+RUN npm ci --omit=dev
 
 # Copy the rest of the application code
 COPY . .
 
 # Expose port (Cloud Run expects 8080)
-<<<<<<< HEAD
 ENV PORT=8080
 EXPOSE 8080
 
 # Start the server
 CMD ["npm", "start"]
-=======
-EXPOSE 8080
-
-# Start the server
-CMD ["npm", "run", "dev"]
->>>>>>> dev
