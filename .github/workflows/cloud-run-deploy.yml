@@ -30,6 +30,10 @@ jobs:
             echo "::error::OIDC environment variables not found. This job may be running from a fork or lacks proper permissions."
             exit 1
           fi
+      
+      - name: Debug GitHub OIDC Token
+        run: |
+          echo "${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" | cut -d "." -f2 | base64 -d | jq .
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
