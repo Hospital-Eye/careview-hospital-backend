@@ -18,98 +18,92 @@ module.exports = (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI, F
         const { code } = req.query;
 
         try {
-            // token exchange
+            // --- Token exchange ---
             const { data } = await axios.post('https://oauth2.googleapis.com/token', {
-                client_id: GOOGLE_CLIENT_ID,
-                client_secret: GOOGLE_CLIENT_SECRET,
-                code,
-                redirect_uri: GOOGLE_REDIRECT_URI,
-                grant_type: 'authorization_code',
-            });
-
-            const { access_token, id_token } = data;
-            console.log('Bearer access token: ', access_token);
-            
-            //get google profile info
-            const { data: profile } = await axios.get('https://www.googleapis.com/oauth2/v1/userinfo', {
-                headers: { Authorization: `Bearer ${access_token}` },
-            });
-
-            console.log('Token request payload:', {
             client_id: GOOGLE_CLIENT_ID,
             client_secret: GOOGLE_CLIENT_SECRET,
             code,
             redirect_uri: GOOGLE_REDIRECT_URI,
-            grant_type: 'authorization_code'
+            grant_type: 'authorization_code',
             });
 
+            const { access_token } = data;
 
-            // --- YOUR INTERNAL APPLICATION AUTHENTICATION AND AUTHORIZATION LOGIC ---
+            // --- Fetch Google profile ---
+            const { data: profile } = await axios.get('https://www.googleapis.com/oauth2/v1/userinfo', {
+            headers: { Authorization: `Bearer ${access_token}` },
+            });
+
             let isLoginSuccessful = false;
             let appSpecificToken = null;
+            let user;
 
             try {
-                const userEmail = profile.email;
-                let user = await User.findOne({ email: userEmail }).populate('clinic');
+            const userEmail = profile.email;
+            user = await User.findOne({ email: userEmail }).populate('clinic');
 
-                if (!user) {
-                // Determine role based on email domain
-                const assignedRole = userEmail.endsWith('@sigmahealthsense.com') ? 'nurse' : 'patient';
+            if (!user) {
+                // Assign role based on email domain
+                const assignedRole = userEmail.endsWith('@gmail.com') ? 'patient' : 'nurse';
 
-                // Create new user
                 user = new User({
-                    googleId: profile.id,
-                    email: userEmail,
-                    name: profile.name,
-                    profilePicture: profile.picture,
-                    role: assignedRole,
-                    isActive: true
+                googleId: profile.id,
+                email: userEmail,
+                name: profile.name,
+                profilePicture: profile.picture,
+                role: assignedRole,
+                organizationId: null, // Admin assigns later
+                clinicIds: [],
+                isActive: true
                 });
 
                 await user.save();
                 console.log(`🆕 New ${assignedRole} registered: ${userEmail}`);
             } else {
                 if (!user.isActive) {
-                    console.warn(`Inactive user login attempt: ${userEmail}`);
-                    return res.redirect(`${FRONTEND_BASE_URL}/login?error=account_inactive`);
-                    }
-                    
-                    user.googleId = profile.id; 
-                    user.name = profile.name; 
-                    user.profilePicture = profile.picture;
-                    await user.save();
-                    console.log(`Existing user logged in: ${userEmail}`);
+                console.warn(`Inactive user login attempt: ${userEmail}`);
+                return res.redirect(`${FRONTEND_BASE_URL}/login?error=account_inactive`);
                 }
 
-                const payload = { 
-                    id: user._id, 
-                    email: user.email, 
-                    role: user.role,
-                    organizationId: user.organizationId, 
-                    clinicIds: user.clinicIds || [],  
-                };
-                appSpecificToken = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '24h' }); // Use the passed JWT_SECRET
-                isLoginSuccessful = true;
+                // Update profile details if changed
+                user.googleId = profile.id;
+                user.name = profile.name;
+                user.profilePicture = profile.picture;
+                await user.save();
 
-                console.log(`✅ Login success for ${user.email}. Redirecting with token: ${appSpecificToken}`);
+                console.log(`Existing user logged in: ${userEmail}`);
+            }
 
+            // --- Build JWT ---
+            const payload = {
+                id: user._id,
+                email: user.email,
+                role: user.role,
+                organizationId: user.organizationId,
+                clinicIds: user.clinicIds || [],
+            };
+
+            appSpecificToken = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '24h' });
+            isLoginSuccessful = true;
+
+            console.log(`✅ Login success for ${user.email}`);
             } catch (authError) {
-                console.error('Internal authentication/authorization error:', authError);
-                isLoginSuccessful = false;
-                return res.redirect(`${FRONTEND_BASE_URL}/login?error=internal_auth_failed`);
+            console.error('Internal authentication/authorization error:', authError);
+            return res.redirect(`${FRONTEND_BASE_URL}/login?error=internal_auth_failed`);
             }
 
+            // --- Redirect to dashboard ---
             if (isLoginSuccessful) {
-                res.redirect(`${FRONTEND_BASE_URL}/dashboard?token=${appSpecificToken}`);
+            res.redirect(`${FRONTEND_BASE_URL}/dashboard?token=${appSpecificToken}`);
             } else {
-                res.redirect(`${FRONTEND_BASE_URL}/login?error=auth_failed_general`);
+            res.redirect(`${FRONTEND_BASE_URL}/login?error=auth_failed_general`);
             }
-
-        } catch (error) {
+            } catch (error) {
             console.error('Error during Google OAuth process:', error.response ? error.response.data.error : error.message);
             res.redirect(`${FRONTEND_BASE_URL}/login?error=google_oauth_failed`);
         }
-    });
+        });
+
 
     router.get('/logout', (req, res) => {
         res.redirect(`${FRONTEND_BASE_URL}/login`);
