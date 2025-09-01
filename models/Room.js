@@ -2,6 +2,8 @@ const mongoose = require('mongoose');
 const Patient = require('./Patient');
 
 const roomSchema = new mongoose.Schema({
+  organizationId: { type: mongoose.Schema.Types.ObjectId, ref: "Organization", required: true },
+  clinic: { type: mongoose.Schema.Types.ObjectId, ref: "Clinic", required: true },
   roomNumber: { type: String, required: true },
   unit: { type: String, required: true },
   roomType: { type: String, required: true },

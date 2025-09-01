@@ -1,5 +1,5 @@
 const express = require('express');
-const { protect, authorize } = require('../middleware/authMiddleware');
+const { protect, authorize, scope } = require('../middleware/authMiddleware');
 const router = express.Router();
 const {
   createNotification,

@@ -1,5 +1,5 @@
 const express = require('express');
-const { protect, authorize } = require('../middleware/authMiddleware');
+const { protect, authorize, scope } = require('../middleware/authMiddleware');
 const router = express.Router();
 const {
   createTask,
@@ -9,10 +9,10 @@ const {
   deleteTask
 } = require('../controllers/taskController');
 
-router.post('/', protect, authorize('admin', 'doctor', 'nurse'), createTask);
-router.get('/', protect, authorize('admin', 'doctor', 'nurse'), getTasks);
-router.get('/:id', protect, authorize('admin', 'doctor', 'nurse'), getTaskById);
-router.put('/:id', protect, authorize('admin', 'doctor', 'nurse'), updateTask);
-router.delete('/:id', protect, authorize('admin', 'doctor'), deleteTask);
+router.post('/', protect, authorize('admin', 'doctor', 'manager'), scope('Task'), createTask);
+router.get('/', protect, authorize('admin', 'doctor', 'manager', 'nurse'), scope('Task'), getTasks);
+router.get('/:id', protect, authorize('admin', 'doctor', 'manager', 'nurse'), scope('Task'), getTaskById);
+router.put('/:id', protect, authorize('admin', 'doctor', 'manager', 'nurse'), scope('Task'), updateTask);
+router.delete('/:id', protect, authorize('admin', 'doctor', 'manager'), scope('Task'), deleteTask);
 
 module.exports = router;

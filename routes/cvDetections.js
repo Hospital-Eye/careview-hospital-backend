@@ -1,5 +1,5 @@
 const express = require('express');
-const { protect, authorize } = require('../middleware/authMiddleware');
+const { protect, authorize, scope } = require('../middleware/authMiddleware');
 const router = express.Router();
 const {
   createDetection,
@@ -9,10 +9,10 @@ const {
   deleteDetection
 } = require('../controllers/cvDetectionController');
 
-router.post('/', protect, authorize('admin'), createDetection);
-router.get('/', protect, authorize('admin'), getDetections);
-router.get('/:id', protect, authorize('admin'), getDetectionById);
-router.put('/:id', protect, authorize('admin'), updateDetection);
-router.delete('/:id', protect, authorize('admin'), deleteDetection);
+router.post('/', protect, authorize('admin', 'manager'), scope('CVDetection'), createDetection);
+router.get('/', protect, authorize('admin', 'manager'), scope('CVDetection'), getDetections);
+router.get('/:id', protect, authorize('admin', 'manager'), scope('CVDetection'), getDetectionById);
+router.put('/:id', protect, authorize('admin', 'manager'), scope('CVDetection'), updateDetection);
+router.delete('/:id', protect, authorize('admin', 'manager'), scope('CVDetection'), deleteDetection);
 
 module.exports = router;

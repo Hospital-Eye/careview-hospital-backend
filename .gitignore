@@ -2,6 +2,7 @@
 .env
 node_modules
 .vscode
+.secrets
 
 # Secrets
 .env

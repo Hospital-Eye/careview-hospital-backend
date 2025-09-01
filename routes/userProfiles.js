@@ -2,7 +2,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const Patient = require('../models/Patient');
-const { protect, authorize } = require('../middleware/authMiddleware');
+const { protect, authorize, scope } = require('../middleware/authMiddleware');
 require('dotenv').config();
 
 const router = express.Router();

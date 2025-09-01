@@ -35,6 +35,7 @@ app.use('/streams', express.static(path.join(__dirname, 'public', 'streams')));
 app.get('/', (_req, res) => res.send('Hospital Eye API Running'));
 
 // --- Core routes ---
+app.use('/api/clinics',          require('./routes/clinicRoutes'));
 app.use('/api/users',             require('./routes/users'));
 app.use('/api/patients',          require('./routes/patients'));
 app.use('/api/tasks',             require('./routes/tasks'));
@@ -54,7 +55,7 @@ try {
 } catch { console.warn('ℹ️  /api/admissions missing (skipped)'); }
 
 try {
-  const dashboardRoutes = require('./routes/clinicDashboardRoutes');
+  const dashboardRoutes = require('./routes/dashboardRoutes');
   app.use('/api/dashboard', dashboardRoutes);
 } catch { console.warn('ℹ️  /api/dashboard missing (skipped)'); }
 
