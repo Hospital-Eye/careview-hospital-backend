@@ -75,61 +75,68 @@ const getPatients = async (req, res) => {
   }
 };
 
-
-// Get a patient by MRN (including latest admission + vitals)
+// Get a patient by MRN (including admission history + vitals)
 const getPatientByMRN = async (req, res) => {
   try {
     const patient = await Patient.findOne({ mrn: req.params.mrn });
-    if (!patient) return res.status(404).json({ error: 'Patient not found' });
+    if (!patient) return res.status(404).json({ error: "Patient not found" });
 
-    // Get latest admission and populate room & physician
-    const latestAdmission = await Admission.findOne({ patientId: patient._id })
+    // ✅ Fetch ALL admissions for this patient, newest first
+    const admissions = await Admission.find({ patientId: patient._id })
       .sort({ checkInTime: -1 })
-      .populate({
-        path: 'room',
-        select: 'roomNumber unit roomType',
-      })
-      .populate({
-        path: 'attendingPhysicianId',
-        select: 'name',
-      });
+      .populate("room", "roomNumber unit roomType")
+      .populate("attendingPhysicianId", "name");
 
-    // Fetch vitals history (latest first)
+    // ✅ Latest admission is just the first one
+    const latestAdmission = admissions[0] || null;
+
+    // ✅ Fetch vitals history (already works)
     const vitalsHistory = await Vital.find({ mrn: patient.mrn })
       .sort({ timestamp: -1 })
-      .populate('recordedBy', 'name');
+      .populate("recordedBy", "name");
 
-    // Combine details
+    // Base patient object
     const patientDetails = patient.toObject();
 
+    // Attach admission history as a list (like vitalsHistory)
+    patientDetails.admissionHistory = admissions;
+
+    // Convenience: flatten latest admission fields for quick access
     if (latestAdmission) {
       patientDetails.admissionReason = latestAdmission.admissionReason;
-      patientDetails.admissionDate = latestAdmission.admissionDate || latestAdmission.checkInTime;
+      patientDetails.admissionDate =
+        latestAdmission.admissionDate || latestAdmission.checkInTime;
       patientDetails.assignedRoom = latestAdmission.room || null;
-      patientDetails.attendingPhysician = latestAdmission.attendingPhysicianId || null;
-      patientDetails.currentWorkflowStage = latestAdmission.currentWorkflowStage;
+      patientDetails.attendingPhysician =
+        latestAdmission.attendingPhysicianId || null;
+      patientDetails.currentWorkflowStage =
+        latestAdmission.currentWorkflowStage;
       patientDetails.documentation = latestAdmission.documentation || null;
       patientDetails.carePlan = latestAdmission.carePlan || null;
-      patientDetails.admissionStatus = latestAdmission.status; // NEW: track if Active/Discharged
+      patientDetails.admissionStatus = latestAdmission.status;
     } else {
       patientDetails.admissionReason = null;
       patientDetails.admissionDate = null;
       patientDetails.assignedRoom = null;
       patientDetails.attendingPhysician = null;
-      patientDetails.currentWorkflowStage = 'Not Admitted';
+      patientDetails.currentWorkflowStage = "Not Admitted";
       patientDetails.documentation = null;
       patientDetails.carePlan = null;
-      patientDetails.admissionStatus = 'None';
+      patientDetails.admissionStatus = "None";
     }
 
+    // Attach vitals history list
     patientDetails.vitalsHistory = vitalsHistory;
 
     res.json(patientDetails);
   } catch (err) {
-    console.error('Error fetching patient by MRN with vitals and admission details:', err);
-    res.status(500).json({ error: 'Server error: Error fetching patient by MRN with vitals and admission details' });
+    console.error("Error fetching patient by MRN:", err);
+    res
+      .status(500)
+      .json({ error: "Server error: Error fetching patient by MRN" });
   }
 };
+
 
 // Update a patient by MRN (+ discharge patient)
 const updatePatientByMRN = async (req, res) => {

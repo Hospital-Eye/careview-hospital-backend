@@ -5,6 +5,6 @@ const router = express.Router();
 const { getDashboardMetrics } = require('../controllers/dashboardController');
 
 // Route to get all dashboard metrics
-router.get('/', protect, authorize('admin', 'nurse', 'patient'), getDashboardMetrics);
+router.get('/', protect, authorize('admin', 'nurse'), getDashboardMetrics);
 
 module.exports = router;
