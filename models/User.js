@@ -11,8 +11,12 @@ const userSchema = new Schema({
   name:  { type: String, required: true, trim: true },
   profilePicture: String,
 
+  // Clinic & Organization
+  clinic: { type: mongoose.Schema.Types.ObjectId, ref: "Clinic" },
+  organization: { type: mongoose.Schema.Types.ObjectId, ref: "Organization" },
+
   // Access
-  role: { type: String, enum: ['admin', 'doctor', 'nurse', 'patient'], default: 'patient', required: true },
+  role: { type: String, enum: ['admin', 'manager', 'doctor', 'nurse', 'patient'], default: 'patient', required: true },
   isActive: { type: Boolean, default: true, required: true }
 }, { timestamps: true });
 

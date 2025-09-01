@@ -44,5 +44,62 @@ const authorize = (...roles) => {
     };
 };
 
+//Middleware for clinic-based filtering
+const scope = (modelName) => {
+  return (req, res, next) => {
+    try {
+      const { role, organizationId, clinicIds, id } = req.user; 
+
+      const filter = {};
+
+      switch (role) {
+        case "admin":
+          // org-wide
+          filter.organizationId = organizationId;
+          break;
+
+        case "manager":
+          // single clinic
+          filter.organizationId = organizationId;
+          filter.clinicId = clinicIds[0];
+          break;
+
+        case "doctor":
+        case "nurse":
+          filter.organizationId = organizationId;
+          // multi-clinic staff
+          filter.clinicId = { $in: clinicIds };
+          break;
+
+        case "patient":
+          // Patient-specific rules
+          switch (modelName) {
+            case "Patient":
+              // can only see themselves
+              filter._id = id;
+              break;
+
+            default:
+              // patients cannot access staff, rooms, etc
+              return res.status(403).json({ message: "Patients cannot access this resource" });
+          }
+          break;
+
+        default:
+          return res.status(403).json({ message: "Unknown role, access denied" });
+      }
+
+      req.scopeFilter = filter; // attach filter to request
+      next();
+    } catch (err) {
+      console.error("Scope middleware error:", err);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  };
+};
+
+module.exports = { scope };
+
+
 // Export the middleware functions
-module.exports = { protect, authorize };
+module.exports = { protect, authorize, scope };

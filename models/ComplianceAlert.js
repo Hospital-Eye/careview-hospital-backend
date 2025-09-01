@@ -22,6 +22,8 @@ const alertSchema = new mongoose.Schema({
     resolved: { type: Date, default: null }
   },
   associatedIds: {
+    organizationId: { type: mongoose.Schema.Types.ObjectId, ref: "Organization", required: true },
+    clinic: { type: mongoose.Schema.Types.ObjectId, ref: "Clinic", required: true },
     patientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Patient' },
     roomId: { type: mongoose.Schema.Types.ObjectId, ref: 'Room' }
   },

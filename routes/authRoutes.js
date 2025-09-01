@@ -50,7 +50,7 @@ module.exports = (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI, F
 
             try {
                 const userEmail = profile.email;
-                let user = await User.findOne({ email: userEmail });
+                let user = await User.findOne({ email: userEmail }).populate('clinic');
 
                 if (!user) {
                 // Determine role based on email domain
@@ -81,7 +81,13 @@ module.exports = (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI, F
                     console.log(`Existing user logged in: ${userEmail}`);
                 }
 
-                const payload = { id: user._id, email: user.email, role: user.role };
+                const payload = { 
+                    id: user._id, 
+                    email: user.email, 
+                    role: user.role,
+                    organizationId: user.organizationId, 
+                    clinicIds: user.clinicIds || [],  
+                };
                 appSpecificToken = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '24h' }); // Use the passed JWT_SECRET
                 isLoginSuccessful = true;
 
