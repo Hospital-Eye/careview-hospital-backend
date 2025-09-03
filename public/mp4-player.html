@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MP4 Analytics Player</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #1a1a1a;
+            color: white;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+        
+        .video-container {
+            flex: 1;
+            background: #000;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+            overflow: hidden;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        #mp4Video {
+            max-width: 100%;
+            max-height: 100%;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: #000;
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            z-index: 10;
+        }
+        
+        .canvas-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 20;
+            pointer-events: none;
+        }
+        
+        .analytics-overlay {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #00ff88;
+            z-index: 100;
+            min-width: 200px;
+        }
+        
+        .analytics-item {
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .analytics-label {
+            font-weight: bold;
+            color: #00ff88;
+        }
+        
+        .analytics-value {
+            color: white;
+            font-size: 18px;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .file-label {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #6c757d;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .file-label:hover {
+            background: #5a6268;
+        }
+        
+        .spinner {
+            display: none;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 30;
+        }
+        
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        
+        .status {
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+        
+        .status.success {
+            background: rgba(40, 167, 69, 0.2);
+            border: 1px solid #28a745;
+            color: #28a745;
+        }
+        
+        .status.error {
+            background: rgba(220, 53, 69, 0.2);
+            border: 1px solid #dc3545;
+            color: #dc3545;
+        }
+        
+        .status.info {
+            background: rgba(0, 123, 255, 0.2);
+            border: 1px solid #007bff;
+            color: #007bff;
+        }
+        
+        .control-group label {
+            font-size: 14px;
+            color: #ccc;
+            margin-bottom: 5px;
+        }
+        
+        .control-group input[type="range"] {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        
+        .control-group span {
+            color: #00ff88;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎥 MP4 Analytics Player</h1>
+            <p>Upload MP4 files and analyze with real-time human detection</p>
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label for="mp4File" class="file-label">📁 Select MP4 File</label>
+                <input type="file" id="mp4File" class="file-input" accept=".mp4">
+            </div>
+            
+            <div class="control-group">
+                <button id="startBtn" class="btn btn-success" onclick="startAnalytics()">▶️ Start Analytics</button>
+                <button id="stopBtn" class="btn btn-danger" onclick="stopAnalytics()" disabled>⏹️ Stop Analytics</button>
+            </div>
+            
+            <div class="control-group">
+                <button id="detectionBtn" class="btn btn-warning" onclick="toggleDetection()">🔍 Toggle Detection</button>
+                <button id="debugBtn" class="btn btn-primary" onclick="debugVideo()">🐛 Debug Video</button>
+            </div>
+            
+            <div class="control-group">
+                <label for="confidenceSlider">Confidence: <span id="confidenceValue">60%</span></label>
+                <input type="range" id="confidenceSlider" min="30" max="90" value="60" oninput="updateConfidence(this.value)">
+                
+                <label for="smoothingSlider">Smoothing: <span id="smoothingValue">5</span> frames</label>
+                <input type="range" id="smoothingSlider" min="1" max="10" value="5" oninput="updateSmoothing(this.value)">
+            </div>
+            
+            <div class="control-group">
+                <label for="hysteresisHighSlider">High Threshold: <span id="hysteresisHighValue">75%</span></label>
+                <input type="range" id="hysteresisHighSlider" min="60" max="95" value="75" oninput="updateHysteresisHigh(this.value)">
+                
+                <label for="hysteresisLowSlider">Low Threshold: <span id="hysteresisLowValue">45%</span></label>
+                <input type="range" id="hysteresisLowSlider" min="20" max="70" value="45" oninput="updateHysteresisLow(this.value)">
+            </div>
+        </div>
+        
+        <div class="video-container">
+            <video id="mp4Video" controls>
+                Your browser does not support the video tag.
+            </video>
+            <canvas id="detectionCanvas" class="canvas-overlay"></canvas>
+            <div id="spinner" class="spinner"></div>
+        </div>
+        
+        <div id="analyticsOverlay" class="analytics-overlay" style="display: none;">
+            <h3>📊 Real-Time Analytics</h3>
+            <div class="analytics-item">
+                <span class="analytics-label">People Detected:</span>
+                <span id="peopleCount" class="analytics-value">0</span>
+            </div>
+            <div class="analytics-item">
+                <span class="analytics-label">Detection Confidence:</span>
+                <span id="confidenceLevel" class="analytics-value">0%</span>
+            </div>
+            <div class="analytics-item">
+                <span class="analytics-label">FPS:</span>
+                <span id="fpsCounter" class="analytics-value">0</span>
+            </div>
+            <div class="analytics-item">
+                <span class="analytics-label">Status:</span>
+                <span id="detectionStatus" class="analytics-value">Idle</span>
+            </div>
+        </div>
+        
+        <div id="status" class="status info">
+            Ready to analyze MP4 files
+        </div>
+    </div>
+
+    <!-- TensorFlow.js and YOLO -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.15.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
+
+    <script>
+        let currentFile = null;
+        let analyticsRunning = false;
+        let detectionRunning = false;
+        let model = null;
+        let animationId = null;
+        let lastTime = 0;
+        let frameCount = 0;
+        
+        // Detection stabilization variables
+        let detectionHistory = [];  // Store last 10 detection results
+        let stableCount = 0;        // Current stable count
+        let lastStableCount = 0;    // Previous stable count
+        let confidenceThreshold = 0.6;  // Minimum confidence to count
+        let smoothingFrames = 5;    // Number of frames to average
+        
+        // Advanced stabilization with hysteresis and ID memory
+        let personIds = new Map();  // Track individual person detections
+        let idTTL = 30;            // Frames to remember a person ID
+        let hysteresisHigh = 0.75;  // High threshold to confirm detection
+        let hysteresisLow = 0.45;   // Low threshold to lose detection
+        let frameCounter = 0;       // Global frame counter
+        
+        // DOM elements
+        const video = document.getElementById('mp4Video');
+        const canvas = document.getElementById('detectionCanvas');
+        const ctx = canvas.getContext('2d');
+        const fileInput = document.getElementById('mp4File');
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const detectionBtn = document.getElementById('detectionBtn');
+        const analyticsOverlay = document.getElementById('analyticsOverlay');
+        
+        // File selection
+        fileInput.addEventListener('change', handleFileSelect);
+        
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file && file.type === 'video/mp4') {
+                currentFile = file;
+                loadVideo();
+                showStatus('File selected: ' + file.name, 'success');
+            } else {
+                showStatus('Please select a valid MP4 file', 'error');
+            }
+        }
+        
+        function loadVideo() {
+            if (!currentFile) return;
+            
+            const videoUrl = URL.createObjectURL(currentFile);
+            video.src = videoUrl;
+            
+            // Set canvas size to match video
+            video.addEventListener('loadedmetadata', () => {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                console.log('Canvas size set to:', canvas.width, 'x', canvas.height);
+            });
+            
+            // Show analytics overlay
+            analyticsOverlay.style.display = 'block';
+        }
+        
+        async function startAnalytics() {
+            if (!currentFile) {
+                showStatus('Please select an MP4 file first', 'error');
+                return;
+            }
+            
+            try {
+                showStatus('Starting analytics...', 'info');
+                
+                // Load YOLO model
+                if (!model) {
+                    showStatus('Loading AI model...', 'info');
+                    model = await cocoSsd.load();
+                    showStatus('AI model loaded successfully', 'success');
+                }
+                
+                // Reset detection history for new session
+                detectionHistory = [];
+                stableCount = 0;
+                lastStableCount = 0;
+                personIds.clear();
+                frameCounter = 0;
+                
+                // Start detection
+                detectionRunning = true;
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+                detectionBtn.disabled = false;
+                
+                // Start detection loop
+                detectObjects();
+                
+                showStatus('Analytics started successfully', 'success');
+                
+            } catch (error) {
+                console.error('Start analytics error:', error);
+                showStatus('Failed to start analytics: ' + error.message, 'error');
+            }
+        }
+        
+        function stopAnalytics() {
+            detectionRunning = false;
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            detectionBtn.disabled = true;
+            
+            // Stop detection loop
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Reset analytics
+            document.getElementById('peopleCount').textContent = '0';
+            document.getElementById('confidenceLevel').textContent = '0%';
+            document.getElementById('fpsCounter').textContent = '0';
+            document.getElementById('detectionStatus').textContent = 'Idle';
+            
+            showStatus('Analytics stopped', 'info');
+        }
+        
+        function toggleDetection() {
+            if (detectionRunning) {
+                detectionRunning = false;
+                detectionBtn.textContent = '🔍 Resume Detection';
+                document.getElementById('detectionStatus').textContent = 'Paused';
+            } else {
+                detectionRunning = true;
+                detectionBtn.textContent = '🔍 Pause Detection';
+                document.getElementById('detectionStatus').textContent = 'Running';
+                detectObjects();
+            }
+        }
+        
+        async function detectObjects() {
+            if (!detectionRunning || !model || video.paused || video.ended) {
+                return;
+            }
+            
+            const currentTime = performance.now();
+            const deltaTime = currentTime - lastTime;
+            lastTime = currentTime;
+            
+            // Calculate FPS
+            if (deltaTime > 0) {
+                const fps = Math.round(1000 / deltaTime);
+                document.getElementById('fpsCounter').textContent = fps;
+            }
+            
+            try {
+                // Detect objects in current video frame
+                const predictions = await model.detect(video);
+                
+                // Clear previous drawings
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                let peopleCount = 0;
+                let maxConfidence = 0;
+                
+                // Draw bounding boxes for people only (with confidence threshold)
+                predictions.forEach(prediction => {
+                    if (prediction.class === 'person' && prediction.score >= confidenceThreshold) {
+                        peopleCount++;
+                        
+                        const [x, y, width, height] = prediction.bbox;
+                        const confidence = prediction.score;
+                        
+                        // Update max confidence
+                        if (confidence > maxConfidence) {
+                            maxConfidence = confidence;
+                        }
+                        
+                        // Draw bounding box
+                        ctx.strokeStyle = '#00ff00';
+                        ctx.lineWidth = 3;
+                        ctx.strokeRect(x, y, width, height);
+                        
+                        // Draw label
+                        ctx.fillStyle = '#00ff00';
+                        ctx.font = '16px Arial';
+                        ctx.fillText(`Person ${(confidence * 100).toFixed(1)}%`, x, y - 10);
+                        
+                        // Draw confidence bar
+                        const barWidth = width;
+                        const barHeight = 4;
+                        const confidenceWidth = barWidth * confidence;
+                        
+                        ctx.fillStyle = '#ff0000';
+                        ctx.fillRect(x, y - 20, barWidth, barHeight);
+                        ctx.fillStyle = '#00ff00';
+                        ctx.fillRect(x, y - 20, confidenceWidth, barHeight);
+                    } else if (prediction.class === 'person' && prediction.score < confidenceThreshold) {
+                        // Draw weak detections in yellow (below threshold)
+                        const [x, y, width, height] = prediction.bbox;
+                        const confidence = prediction.score;
+                        
+                        ctx.strokeStyle = '#ffff00';
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(x, y, width, height);
+                        
+                        ctx.fillStyle = '#ffff00';
+                        ctx.font = '14px Arial';
+                        ctx.fillText(`Weak ${(confidence * 100).toFixed(1)}%`, x, y - 10);
+                    }
+                });
+                
+                // Apply smoothing to stabilize the count
+                const smoothedCount = smoothDetectionCount(peopleCount, predictions);
+                
+                // Update analytics with stable count
+                document.getElementById('peopleCount').textContent = smoothedCount;
+                document.getElementById('confidenceLevel').textContent = (maxConfidence * 100).toFixed(1) + '%';
+                
+                frameCount++;
+                
+            } catch (error) {
+                console.error('Detection error:', error);
+            }
+            
+            // Continue detection loop
+            animationId = requestAnimationFrame(detectObjects);
+        }
+        
+        function debugVideo() {
+            console.log('=== Video Debug Info ===');
+            console.log('Video element:', video);
+            console.log('Video src:', video.src);
+            console.log('Video readyState:', video.readyState);
+            console.log('Video networkState:', video.networkState);
+            console.log('Video currentTime:', video.currentTime);
+            console.log('Video duration:', video.duration);
+            console.log('Video paused:', video.paused);
+            console.log('Video ended:', video.ended);
+            console.log('Canvas size:', canvas.width, 'x', canvas.height);
+            console.log('Detection running:', detectionRunning);
+            console.log('Model loaded:', !!model);
+            console.log('Current file:', currentFile);
+        }
+        
+        function smoothDetectionCount(currentCount, predictions) {
+            frameCounter++;
+            
+            // Update person ID tracking with TTL
+            updatePersonTracking(predictions);
+            
+            // Add current detection to history
+            detectionHistory.push(currentCount);
+            
+            // Keep only last N frames
+            if (detectionHistory.length > smoothingFrames) {
+                detectionHistory.shift();
+            }
+            
+            // Calculate average of recent detections
+            const average = detectionHistory.reduce((sum, count) => sum + count, 0) / detectionHistory.length;
+            
+            // Apply hysteresis logic
+            let finalCount = stableCount;
+            
+            if (average >= 1 && stableCount === 0) {
+                // Person detected - use high threshold to confirm
+                if (average >= hysteresisHigh) {
+                    finalCount = Math.round(average);
+                    console.log(`Person confirmed with high confidence: ${stableCount} → ${finalCount}`);
+                }
+            } else if (average === 0 && stableCount >= 1) {
+                // Person lost - use low threshold to confirm loss
+                if (average <= hysteresisLow) {
+                    finalCount = 0;
+                    console.log(`Person lost with low confidence: ${stableCount} → ${finalCount}`);
+                }
+            } else if (Math.abs(average - stableCount) >= 1) {
+                // Significant change - update normally
+                finalCount = Math.round(average);
+            }
+            
+            // If no change needed, keep current stable count
+            if (finalCount === stableCount) {
+                return stableCount;
+            }
+            
+            // Update stable count
+            if (finalCount !== stableCount) {
+                lastStableCount = stableCount;
+                stableCount = finalCount;
+                console.log(`Detection stabilized: ${lastStableCount} → ${stableCount} (history: ${detectionHistory.join(',')})`);
+            }
+            
+            return stableCount;
+        }
+        
+        function updateConfidence(value) {
+            confidenceThreshold = value / 100;
+            document.getElementById('confidenceValue').textContent = value + '%';
+            console.log(`Confidence threshold updated to: ${confidenceThreshold}`);
+        }
+        
+        function updatePersonTracking(predictions) {
+            // Clean up expired IDs
+            for (const [id, data] of personIds.entries()) {
+                if (frameCounter - data.lastSeen > idTTL) {
+                    personIds.delete(id);
+                    console.log(`Person ID ${id} expired after ${idTTL} frames`);
+                }
+            }
+            
+            // Update current detections
+            predictions.forEach((prediction, index) => {
+                if (prediction.class === 'person') {
+                    const confidence = prediction.score;
+                    const bbox = prediction.bbox;
+                    
+                    // Generate stable ID based on position and confidence
+                    const id = `person_${Math.round(bbox[0]/50)}_${Math.round(bbox[1]/50)}`;
+                    
+                    if (personIds.has(id)) {
+                        // Update existing person
+                        const person = personIds.get(id);
+                        person.lastSeen = frameCounter;
+                        person.confidence = Math.max(person.confidence, confidence);
+                        person.detectionCount++;
+                    } else {
+                        // New person detected
+                        personIds.set(id, {
+                            lastSeen: frameCounter,
+                            confidence: confidence,
+                            detectionCount: 1,
+                            firstSeen: frameCounter
+                        });
+                        console.log(`New person ID ${id} detected with confidence ${(confidence*100).toFixed(1)}%`);
+                    }
+                }
+            });
+            
+            // Log current tracking status
+            if (personIds.size > 0) {
+                console.log(`Tracking ${personIds.size} people:`, Array.from(personIds.entries()).map(([id, data]) => 
+                    `${id}(conf:${(data.confidence*100).toFixed(0)}%, frames:${data.detectionCount})`
+                ));
+            }
+        }
+        
+        function updateSmoothing(value) {
+            smoothingFrames = parseInt(value);
+            document.getElementById('smoothingValue').textContent = value;
+            console.log(`Smoothing frames updated to: ${smoothingFrames}`);
+        }
+        
+        function updateHysteresisHigh(value) {
+            hysteresisHigh = value / 100;
+            document.getElementById('hysteresisHighValue').textContent = value + '%';
+            console.log(`High threshold updated to: ${hysteresisHigh}`);
+        }
+        
+        function updateHysteresisLow(value) {
+            hysteresisLow = value / 100;
+            document.getElementById('hysteresisLowValue').textContent = value + '%';
+            console.log(`Low threshold updated to: ${hysteresisLow}`);
+        }
+        
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        // Video event listeners
+        video.addEventListener('loadstart', () => showStatus('Video loading started', 'info'));
+        video.addEventListener('canplay', () => showStatus('Video can play', 'success'));
+        video.addEventListener('playing', () => showStatus('Video is playing', 'success'));
+        video.addEventListener('error', (e) => showStatus('Video error: ' + e.message, 'error'));
+        
+        // Initialize
+        showStatus('Ready to analyze MP4 files', 'info');
+    </script>
+</body>
+</html>
