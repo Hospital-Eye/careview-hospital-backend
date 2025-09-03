@@ -1,35 +1,23 @@
-// server.js (resolved)
-require('dotenv').config();
-
-const express   = require('express');
-const cors      = require('cors');
-const path      = require('path');
+const express = require('express');
+const dotenv = require('dotenv');
+const cors = require('cors');
 const connectDB = require('./config/db');
+const path = require('path');
 
-// --- Env ---
-const {
-  PORT = 3000,
-  MONGODB_URI,
-  MONGO_URI,
-  GOOGLE_CLIENT_ID,
-  GOOGLE_CLIENT_SECRET,
-  GOOGLE_REDIRECT_URI,
-  FRONTEND_BASE_URL,
-} = process.env;
-
-// --- DB first ---
+dotenv.config();
 connectDB();
 
 const app = express();
-app.use(cors({ origin: '*' }));
-app.use(express.json({ limit: '2mb' }));
+app.use(cors());
+app.use(express.json({ limit: '2mb' })); 
 
-// (Optional) tiny request log
-app.use((req, _res, next) => { console.log(`📥 ${req.method} ${req.url}`); next(); });
+// Debug log all requests
+app.use((req, res, next) => {
+  console.log(`📥 ${req.method} ${req.url}`);
+  next();
+});
 
-// --- Static: UI + HLS ---
-app.use(express.static(path.join(__dirname, 'public')));
-app.use('/streams', express.static(path.join(__dirname, 'public', 'streams')));
+app.get('/', (req, res) => res.send('Hospital Eye API Running'));
 
 // --- Health ---
 app.get('/', (_req, res) => res.send('Hospital Eye API Running'));
@@ -41,66 +29,32 @@ app.use('/api/patients',          require('./routes/patients'));
 app.use('/api/tasks',             require('./routes/tasks'));
 app.use('/api/notifications',     require('./routes/notifications'));
 app.use('/api/compliance-alerts', require('./routes/complianceAlerts'));
-app.use('/api/analytics-events',  require('./routes/analyticsEvents'));
-app.use('/api/cv-detections',     require('./routes/cvDetections'));
-app.use('/api/rooms',             require('./routes/rooms'));
-app.use('/api/device-logs',       require('./routes/deviceLogs'));
-app.use('/api/staff',             require('./routes/staff'));
-app.use('/api/vitals',            require('./routes/vitals'));
+app.use('/api/analytics-events', require('./routes/analyticsEvents'));
+app.use('/api/cv-detections', require('./routes/cvDetections'));
+app.use('/api/rooms', require('./routes/rooms'));
+app.use('/api/device-logs', require('./routes/deviceLogs'));
+app.use('/api/staff', require('./routes/staff'));
+app.use('/api/vitals', require('./routes/vitals'));
+app.use('/api/cv-analytics', require('./routes/cvAnalytics'));
 
-// --- Admissions & dashboard (from dev) ---
-try {
-  const admissionRoutes = require('./routes/admissionsRoutes');
-  app.use('/api/admissions', admissionRoutes);
-} catch { console.warn('ℹ️  /api/admissions missing (skipped)'); }
+const camerasRoute = require('./routes/cameras');
+app.use('/api/cameras', camerasRoute);
 
 try {
   const dashboardRoutes = require('./routes/dashboardRoutes');
   app.use('/api/dashboard', dashboardRoutes);
 } catch { console.warn('ℹ️  /api/dashboard missing (skipped)'); }
 
-// --- Cameras: prefer cameraRoutes (exports { router, startStreamInternal }), else fallback to legacy routes/cameras.js
-let cameraModule = null;
-try {
-  cameraModule = require('./routes/cameraRoutes');
-  if (cameraModule?.router) app.use('/api/cameras', cameraModule.router);
-  else throw new Error('cameraRoutes has no .router export');
-} catch {
-  console.warn('ℹ️  routes/cameraRoutes not found (falling back to routes/cameras)');
-  app.use('/api/cameras', require('./routes/cameras'));
-}
+app.use('/api/cv-events', require('./routes/cvEvents'));
 
-// --- CV webhooks / analytics (if present) ---
-try { app.use('/api/cv-events',    require('./routes/cvEvents')); } 
-catch { console.warn('ℹ️  /api/cv-events missing (skipped)'); }
+// MP4 Upload and Analytics routes
+app.use('/api/mp4-uploads', require('./routes/mp4Uploads'));
+app.use('/api/mp4-events', require('./routes/mp4Events'));
 
-try { app.use('/api/cv-analytics', require('./routes/cvAnalytics')); } 
-catch { console.warn('ℹ️  /api/cv-analytics missing (skipped)'); }
+// Serve uploaded MP4 files
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
-// --- Google OAuth (optional) ---
-if (GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET && GOOGLE_REDIRECT_URI && FRONTEND_BASE_URL) {
-  const authRoutes = require('./routes/authRoutes')(
-    GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI, FRONTEND_BASE_URL
-  );
-  app.use('/api/authRoutes', authRoutes);
-} else {
-  console.warn('⚠️  Google OAuth env not fully set; authRoutes disabled.');
-}
+app.use(express.static(path.join(__dirname, 'public')));
 
-// --- Optional autostart stream via env ---
-// Set AUTOSTART_RTSP=rtsp://user:pass@ip:port/h264Preview_01_sub
-if (process.env.AUTOSTART_RTSP && cameraModule?.startStreamInternal) {
-  try {
-    cameraModule.startStreamInternal(process.env.AUTOSTART_RTSP);
-    console.log('▶️  Autostarting RTSP:', process.env.AUTOSTART_RTSP);
-  } catch (e) {
-    console.error('❌ Autostart failed:', e.message);
-  }
-}
-
-// --- Warn if DB envs missing ---
-if (!MONGODB_URI && !MONGO_URI) {
-  console.warn('⚠️  No MONGODB_URI/MONGO_URI set. connectDB() may fail.');
-}
-
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
