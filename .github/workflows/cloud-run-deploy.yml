@@ -69,11 +69,6 @@ jobs:
                             FRONTEND_BASE_URL=${{ secrets.FRONTEND_BASE_URL }},
                             NODE_ENV=${{ secrets.NODE_ENV }}"
     
-      - name: Call Cloud Run with identity token
-        run: |
-              ID_TOKEN=$(gcloud auth print-identity-token)
-              curl -H "Authorization: Bearer $ID_TOKEN" "$CLOUD_RUN_URL"
-      
       - name: Call Cloud Run
         run: |
           echo "Using ID token from auth step"
