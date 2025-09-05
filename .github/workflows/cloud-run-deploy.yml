@@ -42,6 +42,7 @@ jobs:
           workload_identity_provider: projects/1078754960579/locations/global/workloadIdentityPools/github-pool/providers/github-provider
           service_account: github-deployer@sigma-healthsense.iam.gserviceaccount.com
           audience: https://token.actions.githubusercontent.com
+          id_token_audience: "https://hospital-eye-backend-dev-1078754960579.us-central1.run.app"
 
       - name: Configure Docker for Artifact Registry
         run: gcloud auth configure-docker ${{ secrets.REGION }}-docker.pkg.dev --quiet
