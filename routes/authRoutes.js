@@ -39,7 +39,7 @@ module.exports = (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI, F
             let user;
 
             try {
-            const userEmail = profile.email;
+            const userEmail = profile.email.toLowerCase(); // normalize
             user = await User.findOne({ email: userEmail }).populate('clinic');
 
             if (!user) {

@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const taskSchema = new mongoose.Schema({
   organizationId: { type: mongoose.Schema.Types.ObjectId, ref: "Organization", required: true },
-  clinic: { type: mongoose.Schema.Types.ObjectId, ref: "Clinic", required: true },
+  clinicId: { type: mongoose.Schema.Types.ObjectId, ref: "Clinic", required: true },
 
   //tag to differentiate between patient-related vs general tasks
   taskType: {

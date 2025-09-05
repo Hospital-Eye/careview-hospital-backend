@@ -15,10 +15,10 @@ const protect = (req, res, next) => {
       // ✅ Verify token against your secret and check expiry
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
+      console.log('Decoded JWT payload:', decoded);
+
       // Attach user info to request
       req.user = decoded;
-
-      
 
       next();
     } catch (err) {
@@ -97,9 +97,6 @@ const scope = (modelName) => {
     }
   };
 };
-
-module.exports = { scope };
-
 
 // Export the middleware functions
 module.exports = { protect, authorize, scope };

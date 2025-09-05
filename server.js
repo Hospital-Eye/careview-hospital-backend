@@ -47,6 +47,12 @@ app.use('/api/rooms',             require('./routes/rooms'));
 app.use('/api/device-logs',       require('./routes/deviceLogs'));
 app.use('/api/staff',             require('./routes/staff'));
 app.use('/api/vitals',            require('./routes/vitals'));
+app.use('/api/profile',     require('./routes/userProfiles'));
+
+
+// --- Management ----
+const managementRoutes = require('./routes/managementRoutes');
+app.use('/api/management', managementRoutes);
 
 // --- Admissions & dashboard (from dev) ---
 try {
