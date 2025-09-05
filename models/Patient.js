@@ -3,7 +3,7 @@ const { Schema } = mongoose;
 
 const patientSchema = new Schema({
   mrn: { type: String, required: true, unique: true },
-  clinic: { type: mongoose.Schema.Types.ObjectId, ref: "Clinic", required: true },
+  clinicId: { type: mongoose.Schema.Types.ObjectId, ref: "Clinic", required: true },
   name: { type: String, required: true },
   dob: Date,
   gender: String,

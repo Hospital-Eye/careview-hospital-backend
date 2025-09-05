@@ -204,7 +204,7 @@ function ffmpegArgs({ rtspUrl, outDir, transport = 'tcp', forceEncode = false })
 }
 
 function spawnFfmpeg({ id, rtspUrl, outDir, transport, forceEncode }) {
-  const ffmpegPath = 'ffmpeg'; // use system ffmpeg
+  const ffmpegPath = require('ffmpeg-static');
   const args = ffmpegArgs({ rtspUrl, outDir, transport, forceEncode });
 
   console.log('🛠 FFmpeg path:', ffmpegPath);

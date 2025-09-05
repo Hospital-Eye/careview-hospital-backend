@@ -3,10 +3,24 @@ const Staff = require('../models/Staff');
 // Create new staff
 const createStaff = async (req, res) => {
   try {
-    const staff = new Staff(req.body);
+    // Destructure the request body to exclude _id
+    const { _id, ...staffData } = req.body;
+
+    // Check if required fields are present
+    if (!staffData.clinicId || !staffData.organizationId) {
+      return res.status(400).json({ error: 'clinic and organization are required.' });
+    }
+
+    // Create a new staff document using the sanitized data
+    const staff = new Staff(staffData);
+
+    // Save the document to the database
     await staff.save();
+
+    // Respond with the new staff document
     res.status(201).json(staff);
   } catch (err) {
+    // Handle validation or other errors
     res.status(400).json({ error: err.message });
   }
 };
