@@ -38,7 +38,7 @@ jobs:
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
-          token_format: access_token
+          token_format: id_token
           workload_identity_provider: projects/1078754960579/locations/global/workloadIdentityPools/github-pool/providers/github-provider
           service_account: github-deployer@sigma-healthsense.iam.gserviceaccount.com
           audience: https://token.actions.githubusercontent.com
