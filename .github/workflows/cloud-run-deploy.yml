@@ -73,6 +73,5 @@ jobs:
 
       - name: Call Cloud Run with identity token
         run: |
-          ID_TOKEN=$(gcloud auth print-identity-token)
-          echo "Generated ID token: ${ID_TOKEN:0:20}..." 
-          curl -H "Authorization: Bearer $ID_TOKEN" "$CLOUD_RUN_URL"
+              ID_TOKEN=$(gcloud auth print-identity-token)
+              curl -H "Authorization: Bearer $ID_TOKEN" "$CLOUD_RUN_URL"
