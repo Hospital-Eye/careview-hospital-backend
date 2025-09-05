@@ -37,6 +37,26 @@ app.use('/api/staff',             require('./routes/staff'));
 app.use('/api/vitals',            require('./routes/vitals'));
 app.use('/api/profile',     require('./routes/userProfiles'));
 
+// --- Admissions routes ---
+app.use('/api/admissions',        require('./routes/admissionsRoutes'));
+
+
+GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID
+GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET
+GOOGLE_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI
+FRONTEND_BASE_URL = process.env.FRONTEND_BASE_URL
+
+// --- auth routes for authentication ---
+if (GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET && GOOGLE_REDIRECT_URI && FRONTEND_BASE_URL) {
+  const authRoutes = require('./routes/authRoutes')(
+    GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI, FRONTEND_BASE_URL
+  );
+  app.use('/api/authRoutes', authRoutes);
+} else {
+  console.warn('⚠️  Google OAuth env not fully set; authRoutes disabled.');
+}
+
+
 
 // --- Management ----
 const managementRoutes = require('./routes/managementRoutes');
