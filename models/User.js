@@ -12,8 +12,8 @@ const userSchema = new Schema({
   profilePicture: String,
 
   // Clinic & Organization
-  clinic: { type: mongoose.Schema.Types.ObjectId, ref: "Clinic" },
-  organization: { type: mongoose.Schema.Types.ObjectId, ref: "Organization" },
+  clinicId: { type: String },
+  organizationId: { type: String },
 
   // Access
   role: { type: String, enum: ['admin', 'manager', 'doctor', 'nurse', 'patient'], default: 'patient', required: true },

@@ -14,97 +14,92 @@ module.exports = (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI, F
         res.redirect(url);
     });
 
+    // 📝 Allowed staff domains (from env/config ideally)
+    const ALLOWED_DOMAINS = [
+    "sigmahealthsense.com",
+    "anotherclinic.org"
+    ];
+
     router.get('/auth/google/callback', async (req, res) => {
-        const { code } = req.query;
+    const { code } = req.query;
 
-        try {
-            // --- Token exchange ---
-            const { data } = await axios.post('https://oauth2.googleapis.com/token', {
-            client_id: GOOGLE_CLIENT_ID,
-            client_secret: GOOGLE_CLIENT_SECRET,
-            code,
-            redirect_uri: GOOGLE_REDIRECT_URI,
-            grant_type: 'authorization_code',
-            });
-
-            const { access_token } = data;
-
-            // --- Fetch Google profile ---
-            const { data: profile } = await axios.get('https://www.googleapis.com/oauth2/v1/userinfo', {
-            headers: { Authorization: `Bearer ${access_token}` },
-            });
-
-            let isLoginSuccessful = false;
-            let appSpecificToken = null;
-            let user;
-
-            try {
-            const userEmail = profile.email.toLowerCase(); // normalize
-            user = await User.findOne({ email: userEmail }).populate('clinic');
-
-            if (!user) {
-                // Assign role based on email domain
-                const assignedRole = userEmail.endsWith('@gmail.com') ? 'patient' : 'nurse';
-
-                user = new User({
-                googleId: profile.id,
-                email: userEmail,
-                name: profile.name,
-                profilePicture: profile.picture,
-                role: assignedRole,
-                organizationId: null, // Admin assigns later
-                clinicIds: [],
-                isActive: true
-                });
-
-                await user.save();
-                console.log(`🆕 New ${assignedRole} registered: ${userEmail}`);
-            } else {
-                if (!user.isActive) {
-                console.warn(`Inactive user login attempt: ${userEmail}`);
-                return res.redirect(`${FRONTEND_BASE_URL}/login?error=account_inactive`);
-                }
-
-                // Update profile details if changed
-                user.googleId = profile.id;
-                user.name = profile.name;
-                user.profilePicture = profile.picture;
-                await user.save();
-
-                console.log(`Existing user logged in: ${userEmail}`);
-            }
-
-            // --- Build JWT ---
-            const payload = {
-                id: user._id,
-                email: user.email,
-                role: user.role,
-                organizationId: user.organizationId,
-                clinicIds: user.clinicIds || [],
-            };
-
-            appSpecificToken = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '24h' });
-            isLoginSuccessful = true;
-
-            console.log(`✅ Login success for ${user.email}`);
-            } catch (authError) {
-            console.error('Internal authentication/authorization error:', authError);
-            return res.redirect(`${FRONTEND_BASE_URL}/login?error=internal_auth_failed`);
-            }
-
-            // --- Redirect to dashboard ---
-            if (isLoginSuccessful) {
-            res.redirect(`${FRONTEND_BASE_URL}/dashboard?token=${appSpecificToken}`);
-            } else {
-            res.redirect(`${FRONTEND_BASE_URL}/login?error=auth_failed_general`);
-            }
-            } catch (error) {
-            console.error('Error during Google OAuth process:', error.response ? error.response.data.error : error.message);
-            res.redirect(`${FRONTEND_BASE_URL}/login?error=google_oauth_failed`);
-        }
+    try {
+        // --- Token exchange ---
+        const { data } = await axios.post('https://oauth2.googleapis.com/token', {
+        client_id: GOOGLE_CLIENT_ID,
+        client_secret: GOOGLE_CLIENT_SECRET,
+        code,
+        redirect_uri: GOOGLE_REDIRECT_URI,
+        grant_type: 'authorization_code',
         });
 
+        const { access_token } = data;
 
+        // --- Fetch Google profile ---
+        const { data: profile } = await axios.get(
+        'https://www.googleapis.com/oauth2/v1/userinfo',
+        { headers: { Authorization: `Bearer ${access_token}` } }
+        );
+
+        const userEmail = profile.email.toLowerCase();
+        const domain = userEmail.split("@")[1]; // take everything after @
+        let role;
+
+        // --- Role assignment ---
+        if (ALLOWED_DOMAINS.includes(domain)) {
+        role = "nurse";
+        } else if (domain === "gmail.com") {
+        role = "patient";
+        } else {
+        console.warn(`❌ Unauthorized domain attempted login: ${userEmail}`);
+        return res.redirect(`${FRONTEND_BASE_URL}/login?error=unauthorized_domain`);
+        }
+
+        // --- Find or create user ---
+        let user = await User.findOne({ email: userEmail });
+
+        if (!user) {
+        user = new User({
+            googleId: profile.id,
+            email: userEmail,
+            name: profile.name,
+            profilePicture: profile.picture,
+            role,
+            organizationId: null,
+            clinicId: null,
+            isActive: true,
+        });
+        await user.save();
+        console.log(`🆕 New ${role} registered: ${userEmail}`);
+        } else {
+        if (!user.isActive) {
+            return res.redirect(`${FRONTEND_BASE_URL}/login?error=account_inactive`);
+        }
+        user.googleId = profile.id;
+        user.name = profile.name;
+        user.profilePicture = profile.picture;
+        await user.save();
+        console.log(`✅ Existing ${role} logged in: ${userEmail}`);
+        }
+
+        // --- JWT ---
+        const payload = {
+        id: user._id,
+        email: user.email,
+        role: user.role,
+        organizationId: user.organizationId,
+        clinicId: user.clinicId || null,
+        };
+        const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "24h" });
+
+        return res.redirect(`${FRONTEND_BASE_URL}/dashboard?token=${token}`);
+    } catch (err) {
+        console.error("Google OAuth error:", err.message);
+        return res.redirect(`${FRONTEND_BASE_URL}/login?error=google_oauth_failed`);
+    }
+    });
+
+        
     router.get('/logout', (req, res) => {
         res.redirect(`${FRONTEND_BASE_URL}/login`);
     });

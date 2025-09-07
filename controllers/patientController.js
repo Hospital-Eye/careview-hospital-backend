@@ -7,28 +7,59 @@ const User = require('../models/User');
 
 const createPatient = async (req, res) => {
   try {
-    let emailId = req.body.emailId;
+    const { emailId } = req.body;
+
+    let userId = undefined;
+
     if (emailId) {
       // Check if email exists in User collection
       const existingUser = await User.findOne({ email: emailId });
       if (existingUser) {
-        // Use the existing email
-        req.body.emailId = existingUser.email;
+        userId = existingUser._id; // ✅ link to User
+        req.body.emailId = existingUser.email; // keep email consistent with User
       }
-      // else, keep the new entry as provided
     }
-    const patient = new Patient(req.body);
+
+    // Prevent duplicate patient if one already exists for this user
+    if (userId) {
+      const existingPatient = await Patient.findOne({ userId });
+      if (existingPatient) {
+        return res.status(200).json(existingPatient); // return existing instead of creating duplicate
+      }
+    }
+
+    const patient = new Patient({
+      ...req.body,
+      userId, // ✅ include userId only if found
+    });
+
     await patient.save();
     res.status(201).json(patient);
+
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 };
 
+
 // Get all patients, optionally filtered by status
 const getPatients = async (req, res) => {
   try {
     const { status } = req.query; // e.g., ?status=Active or ?status=Discharged
+
+    // Pull org/clinic from JWT
+    const userOrgId = req.user.organizationId;
+    const userClinicId = req.user.clinicId || null;
+
+    if (!userOrgId || !userClinicId) {
+      return res.status(403).json({ error: "Not authorized: missing org/clinic assignment" });
+    }
+
+    // Build base filter by org + clinics
+    const patientFilter = {
+      organizationId: userOrgId,
+      clinicId: userClinicId
+    };
 
     // Build admission filter
     const admissionFilter = {};
@@ -36,8 +67,8 @@ const getPatients = async (req, res) => {
       admissionFilter.status = status;
     }
 
-    // Find all patients and populate admissions
-    const patients = await Patient.find()
+    // Find patients for this org+clinic only
+    const patients = await Patient.find(patientFilter)
       .lean()
       .populate({
         path: "admissions",
@@ -51,18 +82,15 @@ const getPatients = async (req, res) => {
     // Flatten structure: add separate fields from latest admission
     const reshapedPatients = patients.map(p => {
       const latestAdmission = p.admissions && p.admissions.length > 0
-        ? p.admissions[p.admissions.length - 1] // pick latest admission
+        ? p.admissions[p.admissions.length - 1]
         : null;
 
       return {
         ...p,
-        // separate room fields
         roomId: latestAdmission?.room?._id || null,
         roomNumber: latestAdmission?.room?.roomNumber || null,
         roomUnit: latestAdmission?.room?.unit || null,
         roomType: latestAdmission?.room?.roomType || null,
-
-        // other useful fields
         attendingPhysicianName: latestAdmission?.attendingPhysicianId?.name || null,
         admissionStatus: latestAdmission?.status || null,
       };
@@ -74,6 +102,7 @@ const getPatients = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
 
 // Get a patient by MRN (including admission history + vitals)
 const getPatientByMRN = async (req, res) => {

@@ -2,8 +2,8 @@ const mongoose = require('mongoose');
 
 const staffSchema = new mongoose.Schema({
   employeeId: { type: Number, required: true, unique: true },
-  organizationId: { type: mongoose.Schema.Types.ObjectId, ref: "Organization", required: true },
-  clinicId: { type: mongoose.Schema.Types.ObjectId, ref: "Clinic", required: true },
+  organizationId: { type: String, required: true },
+  clinicId: { type: String, required: true },
   name: { type: String, required: true },
   contact: {
     email: { type: String },

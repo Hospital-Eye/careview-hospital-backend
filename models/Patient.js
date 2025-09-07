@@ -3,13 +3,17 @@ const { Schema } = mongoose;
 
 const patientSchema = new Schema({
   mrn: { type: String, required: true, unique: true },
-  clinicId: { type: mongoose.Schema.Types.ObjectId, ref: "Clinic", required: true },
+  organizationId: { type: String, required: true },
+  clinicId: { type: String, required: true },
   name: { type: String, required: true },
   dob: Date,
   gender: String,
 
   // from dev (many flows expect this)
   emailId: { type: String, required: true },
+
+  //link to user if exists
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", unique: true, sparse: true },
 
   weight: {
     value: Number,
