@@ -3,35 +3,75 @@ const Staff = require('../models/Staff');
 // Create new staff
 const createStaff = async (req, res) => {
   try {
-    // Destructure the request body to exclude _id
-    const { _id, ...staffData } = req.body;
+    const { _id, organizationId, clinicId, ...staffData } = req.body;
 
-    // Check if required fields are present
-    if (!staffData.clinicId || !staffData.organizationId) {
-      return res.status(400).json({ error: 'clinic and organization are required.' });
+    if (!req.user || !req.user.organizationId || !req.user.clinicId) {
+      return res.status(403).json({ error: "Unauthorized: missing organization/clinic info" });
     }
 
-    // Create a new staff document using the sanitized data
-    const staff = new Staff(staffData);
+    // Always assign org from JWT
+    staffData.organizationId = req.user.organizationId;
 
-    // Save the document to the database
+    // Role-based clinic assignment
+    switch (req.user.role) {
+      case "admin":
+        // Admin can assign staff to any clinic in their org
+        // → take from request body, but enforce it's in user's clinicId if provided
+        if (clinicId && req.user.clinicId === clinicId) {
+          staffData.clinicId = clinicId;
+        } else {
+          // fallback: default to first clinic
+          staffData.clinicId = req.user.clinicIds[0];
+        }
+        break;
+
+      case "manager":
+        // Manager can only create staff in their single clinic
+        staffData.clinicId = req.user.clinicId;
+        break;
+
+      case "doctor":
+      case "nurse":
+        return res.status(403).json({ error: "Not authorized to create staff" });
+
+      default:
+        return res.status(403).json({ error: "Unknown role" });
+    }
+
+    const staff = new Staff(staffData);
     await staff.save();
 
-    // Respond with the new staff document
     res.status(201).json(staff);
   } catch (err) {
-    // Handle validation or other errors
     res.status(400).json({ error: err.message });
   }
 };
 
-// Get all staff
+// Get all staff (restricted by role/org/clinic)
 const getAllStaff = async (req, res) => {
   try {
-    const staff = await Staff.find();
+    const { role, organizationId, clinicId } = req.user; // from JWT
+
+    let filter = {};
+
+    if (role === "admin") {
+      // Admin can see all staff in the organization
+      filter.organizationId = organizationId;
+    } else if (role === "manager") {
+      // Manager can only see staff in their clinic
+      filter.organizationId = organizationId;
+      filter.clinicId = clinicId;
+    } else {
+      return res
+        .status(403)
+        .json({ error: "Forbidden. Only admins or managers can view staff." });
+    }
+
+    const staff = await Staff.find(filter);
     res.json(staff);
   } catch (err) {
-    res.status(500).json({ error: 'Server error' });
+    console.error("Error fetching staff:", err);
+    res.status(500).json({ error: "Server error" });
   }
 };
 
