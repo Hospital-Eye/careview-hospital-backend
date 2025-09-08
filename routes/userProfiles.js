@@ -21,12 +21,21 @@ router.get('/', protect, async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
+      organizationId: user.organizationId || null,
+      clinicId: user.clinicId || null,
       profilePicture: user.profilePicture || null,
     };
 
     if (user.role === 'patient') {
       const patientDetails = await Patient.findOne({ userId: user._id }).lean();
       profileData.details = patientDetails || null;
+    }else {
+      // Otherwise, fetch from Staff collection
+      const Staff = require('../models/Staff');
+      const staffDetails = await Staff.findOne({ userId: user._id });
+      if (staffDetails) {
+        profileData.details = staffDetails;
+      }
     }
 
     res.status(200).json(profileData);
