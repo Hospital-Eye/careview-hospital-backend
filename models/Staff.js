@@ -4,6 +4,7 @@ const staffSchema = new mongoose.Schema({
   employeeId: { type: Number, required: true, unique: true },
   organizationId: { type: String, required: true },
   clinicId: { type: String, required: true },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   name: { type: String, required: true },
   contact: {
     email: { type: String },
