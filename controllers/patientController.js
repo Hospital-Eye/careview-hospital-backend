@@ -1,10 +1,9 @@
 const Patient = require('../models/Patient');
 const Vital = require('../models/Vital');
 const Admission = require('../models/Admission');
-
-// Create a new patient
 const User = require('../models/User');
 
+// Create a new patient
 const createPatient = async (req, res) => {
   try {
     const { emailId } = req.body;
@@ -12,7 +11,7 @@ const createPatient = async (req, res) => {
     let userId = undefined;
 
     if (emailId) {
-      // Check if email exists in User collection
+      // 🔎 Check if email exists in User collection
       const existingUser = await User.findOne({ email: emailId });
       if (existingUser) {
         userId = existingUser._id; // ✅ link to User
@@ -20,23 +19,33 @@ const createPatient = async (req, res) => {
       }
     }
 
-    // Prevent duplicate patient if one already exists for this user
+    // 🔒 Ensure we have organization and clinic from the logged-in user
+    const { organizationId, clinicId } = req.user || {};
+    if (!organizationId || !clinicId) {
+      return res.status(403).json({ error: "Not authorized: missing org/clinic assignment" });
+    }
+
+    // 🛑 Prevent duplicate patient for same userId
     if (userId) {
       const existingPatient = await Patient.findOne({ userId });
       if (existingPatient) {
-        return res.status(200).json(existingPatient); // return existing instead of creating duplicate
+        return res.status(200).json(existingPatient); // return existing instead of duplicate
       }
     }
 
+    // ✅ Create new patient with org/clinic auto-assigned
     const patient = new Patient({
       ...req.body,
-      userId, // ✅ include userId only if found
+      userId,
+      organizationId,
+      clinicId,
     });
 
     await patient.save();
     res.status(201).json(patient);
 
   } catch (err) {
+    console.error("Error creating patient:", err);
     res.status(400).json({ error: err.message });
   }
 };
