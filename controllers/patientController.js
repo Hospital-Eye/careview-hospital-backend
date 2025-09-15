@@ -1,54 +1,100 @@
+const multer = require("multer");
+const { Storage } = require("@google-cloud/storage");
 const Patient = require('../models/Patient');
 const Vital = require('../models/Vital');
 const Admission = require('../models/Admission');
 const User = require('../models/User');
 
-// Create a new patient
+
+//create patient with automatic room assignment based on availability and patient needs, and document upload to GCS
+
+// Configure Multer for file uploads
+const upload = multer({ storage: multer.memoryStorage() });
+
+// Init GCS client
+const storage = new Storage();
+const bucket = storage.bucket(process.env.GCS_BUCKET_NAME);
+
+// ----------------- Controller -----------------
 const createPatient = async (req, res) => {
   try {
     const { emailId } = req.body;
-
     let userId = undefined;
 
     if (emailId) {
-      // 🔎 Check if email exists in User collection
       const existingUser = await User.findOne({ email: emailId });
       if (existingUser) {
-        userId = existingUser._id; // ✅ link to User
-        req.body.emailId = existingUser.email; // keep email consistent with User
+        userId = existingUser._id;
+        req.body.emailId = existingUser.email;
       }
     }
 
-    // 🔒 Ensure we have organization and clinic from the logged-in user
     const { organizationId, clinicId } = req.user || {};
     if (!organizationId || !clinicId) {
-      return res.status(403).json({ error: "Not authorized: missing org/clinic assignment" });
+      return res
+        .status(403)
+        .json({ error: "Not authorized: missing org/clinic assignment" });
     }
 
-    // 🛑 Prevent duplicate patient for same userId
+    // Prevent duplicate patient for same user
     if (userId) {
       const existingPatient = await Patient.findOne({ userId });
       if (existingPatient) {
-        return res.status(200).json(existingPatient); // return existing instead of duplicate
+        return res.status(200).json(existingPatient);
       }
     }
 
-    // ✅ Create new patient with org/clinic auto-assigned
+    // Create patient
     const patient = new Patient({
       ...req.body,
       userId,
       organizationId,
       clinicId,
     });
-
     await patient.save();
-    res.status(201).json(patient);
 
+    // ✅ Handle document uploads (if any)
+    if (req.files && req.files.length > 0) {
+      const uploadPromises = req.files.map((file) => {
+        const gcsFileName = `${patient.mrn}/${Date.now()}_${file.originalname}`;
+        const blob = bucket.file(gcsFileName);
+        const blobStream = blob.createWriteStream({
+          resumable: false,
+          contentType: file.mimetype,
+        });
+
+        return new Promise((resolve, reject) => {
+          blobStream.on("error", (err) => reject(err));
+          blobStream.on("finish", async () => {
+            // Public URL of the file
+            const publicUrl = `https://storage.googleapis.com/${bucket.name}/${gcsFileName}`;
+            resolve(publicUrl);
+          });
+          blobStream.end(file.buffer);
+        });
+      });
+
+      const uploadedDocs = await Promise.all(uploadPromises);
+
+      // Save doc URLs in patient record
+      patient.documents = uploadedDocs;
+      await patient.save();
+    }
+
+    res.status(201).json(patient);
   } catch (err) {
     console.error("Error creating patient:", err);
     res.status(400).json({ error: err.message });
   }
 };
+
+// Middleware wrapper to accept multiple files
+const uploadPatients = [
+  upload.array("documents", 10), // allow up to 10 files
+  createPatient,
+];
+
+module.exports = { uploadPatients };
 
 
 // Get all patients, optionally filtered by status

@@ -1,15 +1,8 @@
 const mongoose = require('mongoose');
 
 const taskSchema = new mongoose.Schema({
-  organizationId: { type: mongoose.Schema.Types.ObjectId, ref: "Organization", required: true },
-  clinicId: { type: mongoose.Schema.Types.ObjectId, ref: "Clinic", required: true },
-
-  //tag to differentiate between patient-related vs general tasks
-  taskType: {
-      type: String,
-      enum: ['Patient-Related', 'Operational'],
-      required: true
-    },
+  organizationId: { type: String, required: true },
+  clinicId: { type: String, required: true },
 
   description: { type: String, required: true },
   
@@ -19,19 +12,17 @@ const taskSchema = new mongoose.Schema({
     default: 'Pending',
   },
 
+  // category: Patient-Related or General
+  category: {
+    type: String,
+    enum: ['Patient-Related', 'General'], // restrict values
+    required: true,
+  },
+
   priority: {
     type: String,
     enum: ['Low', 'Normal', 'High', 'Urgent'],
     default: 'Normal',
-  },
-
-  //required field for Operational Tasks
-  category: {
-    type: String,
-    // This is the custom validation logic
-    required: function() {
-        return this.taskType === 'Operational';
-    }
   },
 
   //required field for Patient-Related Tasks
