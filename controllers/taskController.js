@@ -2,30 +2,50 @@ const Task = require('../models/Task');
 
 // Create a new task
 const createTask = async (req, res) => {
-    try {
-        const { taskType, patientId, category, ...otherFields } = req.body;
+  try {
+    const { category, patientId, description, assignedStaffId, ...otherFields } = req.body;
 
-        if (taskType === 'Patient-Related' && !patientId) {
-            return res.status(400).json({ error: 'Patient ID is required for patient-related tasks.' });
-        }
-        if (taskType === 'Operational' && !category) {
-            return res.status(400).json({ error: 'Category is required for operational tasks.' });
-        }
-
-        // Create the task using the destructured fields
-        const task = new Task({
-            taskType,
-            patientId,
-            category,
-            ...otherFields,
-        });
-
-        await task.save();
-        res.status(201).json(task);
-    } catch (err) {
-        res.status(400).json({ error: err.message });
+    // Prevent empty _id from crashing
+    if (!otherFields._id) {
+      delete otherFields._id;   
     }
+
+    if (!description) {
+      return res.status(400).json({ error: 'Description is required.' });
+    }
+
+    // Patient-related tasks must include a patientId
+    if (category === 'Patient-Related' && !patientId) {
+      return res.status(400).json({ error: 'Patient ID is required for patient-related tasks.' });
+    }
+
+    const { clinicId, organizationId } = req.user;
+    if (!clinicId || !organizationId) {
+      return res.status(403).json({ error: 'User has no clinic/org assignment.' });
+    }
+
+    const task = new Task({
+      category,
+      description,
+      patientId: category === 'Patient-Related' ? patientId : null,
+      clinicId,
+      organizationId,
+      assignedStaffId: assignedStaffId || req.user.id,
+      timestamps: {
+        created: new Date(),
+        due: otherFields.due || null,
+      },
+      ...otherFields,
+    });
+
+    await task.save();
+    res.status(201).json(task);
+  } catch (err) {
+    console.error('Error creating task:', err);
+    res.status(400).json({ error: err.message });
+  }
 };
+
 
 // Get all tasks
 const getTasks = async (req, res) => {

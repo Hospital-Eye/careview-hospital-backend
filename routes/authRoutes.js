@@ -17,7 +17,7 @@ module.exports = (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI, F
     // 📝 Allowed staff domains (from env/config ideally)
     const ALLOWED_DOMAINS = [
     "sigmahealthsense.com",
-    "anotherclinic.org"
+    "usc.edu"
     ];
 
     router.get('/auth/google/callback', async (req, res) => {

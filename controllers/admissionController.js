@@ -4,48 +4,71 @@ const Patient = require('../models/Patient');
 //create a new admission
 const createAdmission = async (req, res) => {
   try {
-    // Step 1: Resolve staff ObjectIds from employeeId strings
-    let admittedByStaffId = null;
-    let attendingPhysicianId = null;
+    const { patientId, admittedByStaffId, attendingPhysicianId, admissionReason, room, acuityLevel } = req.body;
 
-    if (req.body.admittedByStaffId) {
-      const staff = await Staff.findOne({ employeeId: req.body.admittedByStaffId });
+    // Resolve admittedByStaffId if employeeId is provided
+    let admittedStaffIdResolved = null;
+    if (admittedByStaffId) {
+      const staff = await Staff.findOne({ employeeId: admittedByStaffId });
       if (!staff) return res.status(400).json({ error: 'Admitting staff not found' });
-      admittedByStaffId = staff._id;
+      admittedStaffIdResolved = staff._id;
     }
 
-    if (req.body.attendingPhysicianId) {
-      const physician = await Staff.findOne({ employeeId: req.body.attendingPhysicianId });
+    // Resolve attendingPhysicianId if employeeId is provided
+    let attendingPhysicianIdResolved = null;
+    if (attendingPhysicianId) {
+      const physician = await Staff.findOne({ employeeId: attendingPhysicianId });
       if (!physician) return res.status(400).json({ error: 'Attending physician not found' });
-      attendingPhysicianId = physician._id;
+      attendingPhysicianIdResolved = physician._id;
     }
 
-    // Step 2: Create the admission
+    // Resolve room by details OR accept ObjectId directly
+    let roomId;
+    if (typeof room === "string" && mongoose.Types.ObjectId.isValid(room)) {
+      roomId = room; // frontend passed room._id
+    } else if (room && room.roomNumber && room.unit && room.roomType) {
+      const roomDoc = await Room.findOne({
+        roomNumber: room.roomNumber,
+        unit: room.unit,
+        roomType: room.roomType,
+        clinicId: req.user.clinicId,
+        organizationId: req.user.organizationId
+      });
+      if (!roomDoc) return res.status(400).json({ error: "Room not found" });
+      roomId = roomDoc._id;
+    } else {
+      return res.status(400).json({ error: "Room is required" });
+    }
+
+    // ✅ Create admission
     const admission = new Admission({
-      patientId: req.body.patientId,
-      room: req.body.room,
-      admittedByStaffId,
-      attendingPhysicianId,
-      status: 'Active',
-      admissionReason: req.body.admissionReason,
-      // ...any other fields from req.body you want to copy
+      patientId,
+      organizationId: req.user.organizationId,
+      clinicId: req.user.clinicId,
+      room: roomId,
+      admittedByStaffId: admittedStaffIdResolved,
+      attendingPhysicianId: attendingPhysicianIdResolved,
+      admissionReason,
+      acuityLevel, // required field
+      status: "Active",
     });
 
     const savedAdmission = await admission.save();
 
-    // Step 3: Update patient
+    // Update patient with admission + room
     await Patient.findByIdAndUpdate(
-      savedAdmission.patientId,
-      { currentAdmissionId: savedAdmission._id, room: savedAdmission.room, status: 'Active' },
+      patientId,
+      { currentAdmissionId: savedAdmission._id, room: roomId, status: "Active" },
       { new: true }
     );
 
     res.status(201).json(savedAdmission);
   } catch (err) {
-    console.error('Error creating admission:', err);
+    console.error("Error creating admission:", err);
     res.status(400).json({ error: err.message });
   }
 };
+
 
 //get all admissions
 const getAdmissions = async (req, res) => {
