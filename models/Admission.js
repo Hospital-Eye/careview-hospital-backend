@@ -4,8 +4,8 @@ const { Schema } = mongoose;
 const admissionSchema = new Schema({
     patientId: {type: Schema.Types.ObjectId, ref: 'Patient', required: true, index: true},
 
-    organizationId: { type: mongoose.Schema.Types.ObjectId, ref: "Organization", required: true },
-    clinicId: { type: mongoose.Schema.Types.ObjectId, ref: "Clinic", required: true },
+    organizationId: { type: String, required: true },
+    clinicId: { type: String, required: true },
 
     checkInTime: {type: Date, required: true, default: Date.now},
 

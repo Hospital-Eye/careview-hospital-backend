@@ -1,9 +1,10 @@
 const Staff = require('../models/Staff');
+const User = require('../models/User');
 
 // Create new staff
 const createStaff = async (req, res) => {
   try {
-    const { _id, organizationId, clinicId, ...staffData } = req.body;
+    const { _id, organizationId, clinicId, contact, ...staffData } = req.body;
 
     if (!req.user || !req.user.organizationId || !req.user.clinicId) {
       return res.status(403).json({ error: "Unauthorized: missing organization/clinic info" });
@@ -15,18 +16,14 @@ const createStaff = async (req, res) => {
     // Role-based clinic assignment
     switch (req.user.role) {
       case "admin":
-        // Admin can assign staff to any clinic in their org
-        // → take from request body, but enforce it's in user's clinicId if provided
         if (clinicId && req.user.clinicId === clinicId) {
           staffData.clinicId = clinicId;
         } else {
-          // fallback: default to first clinic
           staffData.clinicId = req.user.clinicIds[0];
         }
         break;
 
       case "manager":
-        // Manager can only create staff in their single clinic
         staffData.clinicId = req.user.clinicId;
         break;
 
@@ -38,14 +35,36 @@ const createStaff = async (req, res) => {
         return res.status(403).json({ error: "Unknown role" });
     }
 
+    // --- Ensure User exists ---
+    let user = await User.findOne({ email: contact.email });
+
+    if (!user) {
+      user = new User({
+        email: contact.email,
+        name: staffData.name,
+        role: staffData.role, // link staff role
+        organizationId: staffData.organizationId,
+        clinicId: staffData.clinicId,
+      });
+      await user.save();
+    }
+
+    // Link userId to staff
+    staffData.userId = user._id;
+    staffData.contact = contact;
+
+    // Create staff
     const staff = new Staff(staffData);
     await staff.save();
 
     res.status(201).json(staff);
   } catch (err) {
+    console.error("Error creating staff:", err);
     res.status(400).json({ error: err.message });
   }
 };
+
+
 
 // Get all staff (restricted by role/org/clinic)
 const getAllStaff = async (req, res) => {
