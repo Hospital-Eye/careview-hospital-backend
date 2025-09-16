@@ -70,18 +70,23 @@ const createAdmission = async (req, res) => {
 };
 
 
-//get all admissions
+// get all admissions for the user's clinic & org
 const getAdmissions = async (req, res) => {
   try {
-    const admissions = await Admission.find()
+    // assuming you attach clinicId & organizationId to req.user in your auth middleware
+    const { clinicId, organizationId } = req.user;
+
+    const admissions = await Admission.find({
+      clinicId: clinicId,
+      organizationId: organizationId
+    })
       .populate('patientId', 'name mrn') // only get name & MRN
       .populate('room'); // populate room object
 
-    // Map room number for response without modifying DB
     const result = admissions.map(adm => ({
       patientName: adm.patientId?.name || '—',
       mrn: adm.patientId?.mrn || '—',
-      roomNumber: adm.room?.roomNumber || '—', // fallback if not populated
+      roomNumber: adm.room?.roomNumber || '—',
       status: adm.status,
     }));
 
@@ -91,6 +96,7 @@ const getAdmissions = async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 };
+
 
 
 // get admission by ID
