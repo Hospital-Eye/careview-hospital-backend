@@ -1,68 +1,85 @@
 const Admission = require('../models/Admission');
 const Patient = require('../models/Patient'); 
+const Staff = require('../models/Staff');
+const Room = require('../models/Room');
 
 //create a new admission
 const createAdmission = async (req, res) => {
   try {
-    const { patientId, admittedByStaffId, attendingPhysicianId, admissionReason, room, acuityLevel } = req.body;
+    const { 
+      patientId, 
+      admittedByStaffId,   // employeeId of admitting staff
+      attendingPhysicianName, // physician name (instead of ID)
+      admissionReason, 
+      acuityLevel, 
+      roomType, 
+      unit 
+    } = req.body;
 
-    // Resolve admittedByStaffId if employeeId is provided
+    // 🔹 Resolve admitting staff by employeeId
     let admittedStaffIdResolved = null;
     if (admittedByStaffId) {
       const staff = await Staff.findOne({ employeeId: admittedByStaffId });
-      if (!staff) return res.status(400).json({ error: 'Admitting staff not found' });
+      if (!staff) return res.status(400).json({ error: "Admitting staff not found" });
       admittedStaffIdResolved = staff._id;
     }
 
-    // Resolve attendingPhysicianId if employeeId is provided
+    // 🔹 Resolve attending physician by NAME
     let attendingPhysicianIdResolved = null;
-    if (attendingPhysicianId) {
-      const physician = await Staff.findOne({ employeeId: attendingPhysicianId });
-      if (!physician) return res.status(400).json({ error: 'Attending physician not found' });
+    if (attendingPhysicianName) {
+      const physician = await Staff.findOne({ 
+        name: attendingPhysicianName,
+        organizationId: req.user.organizationId,
+        clinicId: req.user.clinicId,
+        role: "doctor" // make sure only doctors are selected
+      });
+      if (!physician) return res.status(400).json({ error: "Attending physician not found" });
       attendingPhysicianIdResolved = physician._id;
     }
 
-    // Resolve room by details OR accept ObjectId directly
-    let roomId;
-    if (typeof room === "string" && mongoose.Types.ObjectId.isValid(room)) {
-      roomId = room; // frontend passed room._id
-    } else if (room && room.roomNumber && room.unit && room.roomType) {
-      const roomDoc = await Room.findOne({
-        roomNumber: room.roomNumber,
-        unit: room.unit,
-        roomType: room.roomType,
+    // 🔹 Auto room allotment
+    const availableRoom = await Room.findOneAndUpdate(
+      {
+        roomType,
+        unit,
         clinicId: req.user.clinicId,
-        organizationId: req.user.organizationId
-      });
-      if (!roomDoc) return res.status(400).json({ error: "Room not found" });
-      roomId = roomDoc._id;
-    } else {
-      return res.status(400).json({ error: "Room is required" });
+        organizationId: req.user.organizationId,
+        status: "Available"
+      },
+      { status: "Occupied" },
+      { new: true }
+    );
+
+    if (!availableRoom) {
+      return res.status(400).json({ error: `No available ${roomType} room in unit ${unit}` });
     }
 
-    // ✅ Create admission
+    // 🔹 Create admission
     const admission = new Admission({
       patientId,
       organizationId: req.user.organizationId,
       clinicId: req.user.clinicId,
-      room: roomId,
+      room: availableRoom._id,
       admittedByStaffId: admittedStaffIdResolved,
       attendingPhysicianId: attendingPhysicianIdResolved,
       admissionReason,
-      acuityLevel, // required field
+      acuityLevel,
       status: "Active",
     });
 
     const savedAdmission = await admission.save();
 
-    // Update patient with admission + room
+    // 🔹 Update patient with admission + room
     await Patient.findByIdAndUpdate(
       patientId,
-      { currentAdmissionId: savedAdmission._id, room: roomId, status: "Active" },
+      { currentAdmissionId: savedAdmission._id, room: availableRoom._id, status: "Active" },
       { new: true }
     );
 
-    res.status(201).json(savedAdmission);
+    res.status(201).json({
+      ...savedAdmission.toObject(),
+      assignedRoom: availableRoom
+    });
   } catch (err) {
     console.error("Error creating admission:", err);
     res.status(400).json({ error: err.message });

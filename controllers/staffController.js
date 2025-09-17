@@ -2,28 +2,34 @@ const Staff = require('../models/Staff');
 const User = require('../models/User');
 
 // Create new staff
+// Create new staff
 const createStaff = async (req, res) => {
   try {
     const { _id, organizationId, clinicId, contact, ...staffData } = req.body;
 
-    if (!req.user || !req.user.organizationId || !req.user.clinicId) {
-      return res.status(403).json({ error: "Unauthorized: missing organization/clinic info" });
+    if (!req.user || !req.user.role) {
+      return res.status(403).json({ error: "Unauthorized: missing user role" });
     }
 
-    // Always assign org from JWT
-    staffData.organizationId = req.user.organizationId;
-
-    // Role-based clinic assignment
+    // Role-based org/clinic assignment
     switch (req.user.role) {
       case "admin":
-        if (clinicId && req.user.clinicId === clinicId) {
-          staffData.clinicId = clinicId;
-        } else {
-          staffData.clinicId = req.user.clinicId;
+        if (!organizationId || !clinicId) {
+          return res
+            .status(400)
+            .json({ error: "organizationId and clinicId are required for admin" });
         }
+        staffData.organizationId = organizationId;
+        staffData.clinicId = clinicId;
         break;
 
       case "manager":
+        if (!req.user.organizationId || !req.user.clinicId) {
+          return res
+            .status(403)
+            .json({ error: "Unauthorized: missing organization/clinic info" });
+        }
+        staffData.organizationId = req.user.organizationId;
         staffData.clinicId = req.user.clinicId;
         break;
 
@@ -36,13 +42,13 @@ const createStaff = async (req, res) => {
     }
 
     // --- Ensure User exists ---
-    let user = await User.findOne({ email: contact.email });
+    let user = await User.findOne({ email: contact?.email });
 
     if (!user) {
       user = new User({
-        email: contact.email,
+        email: contact?.email,
         name: staffData.name,
-        role: staffData.role, // link staff role
+        role: staffData.role,
         organizationId: staffData.organizationId,
         clinicId: staffData.clinicId,
       });
@@ -63,8 +69,6 @@ const createStaff = async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 };
-
-
 
 // Get all staff (restricted by role/org/clinic)
 const getAllStaff = async (req, res) => {
