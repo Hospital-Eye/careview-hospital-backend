@@ -19,7 +19,7 @@ const createStaff = async (req, res) => {
         if (clinicId && req.user.clinicId === clinicId) {
           staffData.clinicId = clinicId;
         } else {
-          staffData.clinicId = req.user.clinicIds[0];
+          staffData.clinicId = req.user.clinicId;
         }
         break;
 
