@@ -15,7 +15,7 @@ const taskSchema = new mongoose.Schema({
   // category: Patient-Related or General
   category: {
     type: String,
-    enum: ['Patient-Related', 'General'], // restrict values
+    enum: ['Patient-Related', 'General'], 
     required: true,
   },
 
@@ -29,7 +29,6 @@ const taskSchema = new mongoose.Schema({
   patientId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Patient',
-    // This is the custom validation logic
     required: function() {
         return this.taskType === 'Patient-Related';
     },

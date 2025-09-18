@@ -1,9 +1,18 @@
 const Task = require('../models/Task');
 
 // Create a new task
+// Create a new task
 const createTask = async (req, res) => {
   try {
-    const { category, patientId, description, assignedStaffId, ...otherFields } = req.body;
+    const { 
+      category, 
+      patientId, 
+      description, 
+      assignedStaffId, 
+      organizationId: bodyOrgId, 
+      clinicId: bodyClinicId, 
+      ...otherFields 
+    } = req.body;
 
     // Prevent empty _id from crashing
     if (!otherFields._id) {
@@ -11,25 +20,40 @@ const createTask = async (req, res) => {
     }
 
     if (!description) {
-      return res.status(400).json({ error: 'Description is required.' });
+      return res.status(400).json({ error: "Description is required." });
     }
 
     // Patient-related tasks must include a patientId
-    if (category === 'Patient-Related' && !patientId) {
-      return res.status(400).json({ error: 'Patient ID is required for patient-related tasks.' });
+    if (category === "Patient-Related" && !patientId) {
+      return res.status(400).json({ error: "Patient ID is required for patient-related tasks." });
     }
 
-    const { clinicId, organizationId } = req.user;
-    if (!clinicId || !organizationId) {
-      return res.status(403).json({ error: 'User has no clinic/org assignment.' });
+    let organizationId, clinicId;
+
+    if (req.user.role === "admin") {
+      if (!bodyOrgId || !bodyClinicId) {
+        return res.status(400).json({ error: "Admin must provide organizationId and clinicId" });
+      }
+
+      organizationId = bodyOrgId;
+      clinicId = bodyClinicId;
+    } else if (req.user.role === "manager") {
+      organizationId = req.user.organizationId;
+      clinicId = req.user.clinicId;
+
+      if (!organizationId || !clinicId) {
+        return res.status(403).json({ error: "Not authorized: missing org/clinic assignment" });
+      }
+    } else {
+      return res.status(403).json({ error: "Only admins and managers can create tasks" });
     }
 
     const task = new Task({
       category,
       description,
-      patientId: category === 'Patient-Related' ? patientId : null,
-      clinicId,
+      patientId: category === "Patient-Related" ? patientId : null,
       organizationId,
+      clinicId,
       assignedStaffId: assignedStaffId || req.user.id,
       timestamps: {
         created: new Date(),
@@ -41,11 +65,10 @@ const createTask = async (req, res) => {
     await task.save();
     res.status(201).json(task);
   } catch (err) {
-    console.error('Error creating task:', err);
+    console.error("Error creating task:", err);
     res.status(400).json({ error: err.message });
   }
 };
-
 
 // Get all tasks
 const getTasks = async (req, res) => {
