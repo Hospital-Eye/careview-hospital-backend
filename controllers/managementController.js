@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const Clinic = require('../models/Clinic');
+const Organization = require('../models/Organization');
 
 //create manager
 const createManager = async (req, res) => {
