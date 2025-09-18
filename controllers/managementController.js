@@ -36,6 +36,71 @@ const createManager = async (req, res) => {
   }
 };
 
+
+//create Admin
+// ----------------- Controller -----------------
+const createAdmin = async (req, res) => {
+  try {
+    const { name, email, organizationId, clinicId } = req.body;
+
+    //Basic validation
+    if (!name || !email || !organizationId || !clinicId) {
+      return res.status(400).json({
+        error: "Name, email, organizationId, and clinicId are required",
+      });
+    }
+
+    //Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ error: "Invalid email format" });
+    }
+
+    //Ensure organization exists
+    const org = await Organization.findOne({ organizationId });
+    if (!org) {
+      return res.status(404).json({ error: "Organization not found" });
+    }
+
+    //Ensure clinic exists
+    const clinic = await Clinic.findOne({ clinicId, organizationId });
+    if (!clinic) {
+      return res
+        .status(404)
+        .json({ error: "Clinic not found for this organization" });
+    }
+
+    // Check if user already exists
+    let user = await User.findOne({ email });
+
+    if (user) {
+      user.role = "admin";
+      if (!user.clinicIds.includes(clinic._id)) {
+        user.clinicIds.push(clinic._id);
+      }
+      if (!user.organizationIds?.includes(org.organizationId)) {
+        user.organizationIds = [...(user.organizationIds || []), org.organizationId];
+      }
+    } else {
+      // Create new admin
+      user = new User({
+        name,
+        email,
+        role: "admin",
+        organizationIds: [org.organizationId],
+        clinicIds: [clinic._id],
+      });
+    }
+
+    await user.save();
+    return res.status(201).json(user);
+  } catch (err) {
+    console.error("Error creating admin:", err);
+    return res.status(400).json({ error: err.message });
+  }
+};
+
+
 //get all managers
 const getManagers = async (req, res) => {
   try {
@@ -86,4 +151,4 @@ const deleteManager = async (req, res) => {
   }
 };
 
-module.exports = { createManager, getManagers, updateManager, deleteManager };
+module.exports = { createManager, createAdmin, getManagers, updateManager, deleteManager };
