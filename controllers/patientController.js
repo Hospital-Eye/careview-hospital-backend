@@ -4,6 +4,9 @@ const Patient = require('../models/Patient');
 const Vital = require('../models/Vital');
 const Admission = require('../models/Admission');
 const User = require('../models/User');
+const Organization = require('../models/Organization');
+const Clinic = require('../models/Clinic');
+
 
 
 //create patient with automatic room assignment based on availability and patient needs, and document upload to GCS
@@ -18,9 +21,11 @@ const bucket = storage.bucket(process.env.GCS_BUCKET_NAME);
 // ----------------- Controller -----------------
 const createPatient = async (req, res) => {
   try {
-    const { emailId } = req.body;
+    const { emailId, organizationId: bodyOrgId, clinicId: bodyClinicId } = req.body;
     let userId = undefined;
+    let organizationId, clinicId;
 
+    // Check if email belongs to an existing user
     if (emailId) {
       const existingUser = await User.findOne({ email: emailId });
       if (existingUser) {
@@ -29,11 +34,39 @@ const createPatient = async (req, res) => {
       }
     }
 
-    const { organizationId, clinicId } = req.user || {};
-    if (!organizationId || !clinicId) {
-      return res
-        .status(403)
-        .json({ error: "Not authorized: missing org/clinic assignment" });
+    if (req.user.role === "admin") {
+      if (!bodyOrgId || !bodyClinicId) {
+        return res
+          .status(400)
+          .json({ error: "Admin must provide organizationId and clinicId" });
+      }
+
+      // Check if org and clinic codes are valid
+      const orgExists = await Organization.findOne({ organizationId: bodyOrgId });
+      if (!orgExists) {
+        return res.status(404).json({ error: "Organization not found" });
+      }
+
+      const clinicExists = await Clinic.findOne({
+        clinicId: bodyClinicId,
+        organizationId: bodyOrgId, 
+      });
+      if (!clinicExists) {
+        return res.status(404).json({ error: "Clinic not found for this organization" });
+      }
+
+      organizationId = bodyOrgId;
+      clinicId = bodyClinicId;
+    } else {
+      // Non-admins → use JWT
+      organizationId = req.user.organizationId;
+      clinicId = req.user.clinicId;
+
+      if (!organizationId || !clinicId) {
+        return res
+          .status(403)
+          .json({ error: "Not authorized: missing org/clinic assignment" });
+      }
     }
 
     // Prevent duplicate patient for same user
@@ -53,40 +86,13 @@ const createPatient = async (req, res) => {
     });
     await patient.save();
 
-    // ✅ Handle document uploads (if any)
-    if (req.files && req.files.length > 0) {
-      const uploadPromises = req.files.map((file) => {
-        const gcsFileName = `${patient.mrn}/${Date.now()}_${file.originalname}`;
-        const blob = bucket.file(gcsFileName);
-        const blobStream = blob.createWriteStream({
-          resumable: false,
-          contentType: file.mimetype,
-        });
-
-        return new Promise((resolve, reject) => {
-          blobStream.on("error", (err) => reject(err));
-          blobStream.on("finish", async () => {
-            // Public URL of the file
-            const publicUrl = `https://storage.googleapis.com/${bucket.name}/${gcsFileName}`;
-            resolve(publicUrl);
-          });
-          blobStream.end(file.buffer);
-        });
-      });
-
-      const uploadedDocs = await Promise.all(uploadPromises);
-
-      // Save doc URLs in patient record
-      patient.documents = uploadedDocs;
-      await patient.save();
-    }
-
     res.status(201).json(patient);
   } catch (err) {
     console.error("Error creating patient:", err);
     res.status(400).json({ error: err.message });
   }
 };
+
 
 // Middleware wrapper to accept multiple files
 const uploadPatients = [
