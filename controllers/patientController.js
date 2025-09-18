@@ -21,11 +21,9 @@ const bucket = storage.bucket(process.env.GCS_BUCKET_NAME);
 // ----------------- Controller -----------------
 const createPatient = async (req, res) => {
   try {
-    const { emailId, organizationId: bodyOrgId, clinicId: bodyClinicId } = req.body;
+    const { emailId } = req.body;
     let userId = undefined;
     let organizationId, clinicId;
-
-    console.log(req.body);
 
     // Check if email belongs to an existing user
     if (emailId) {
@@ -37,40 +35,47 @@ const createPatient = async (req, res) => {
     }
 
     if (req.user.role === "admin") {
-  if (!bodyOrgId || !bodyClinicId) {
-    return res
-      .status(400)
-      .json({ error: "Admin must provide organizationId and clinicId" });
-  }
+      // Admins must provide org/clinic in body
+      const { organizationId: bodyOrgId, clinicId: bodyClinicId } = req.body;
 
-  // Check if org and clinic codes are valid
-  const orgDoc = await Organization.findOne({ organizationId: bodyOrgId });
-  if (!orgDoc) {
-    return res.status(404).json({ error: "Organization not found" });
-  }
+      console.log(bodyOrgId);
+      console.log(bodyClinicId);
 
-  const clinicDoc = await Clinic.findOne({
-    clinicId: bodyClinicId,
-    organizationId: bodyOrgId,
-  });
-  if (!clinicDoc) {
-    return res.status(404).json({ error: "Clinic not found for this organization" });
-  }
+      if (!bodyOrgId || !bodyClinicId) {
+        return res
+          .status(400)
+          .json({ error: "Admin must provide organizationId and clinicId" });
+      }
 
-  // ✅ Assign business keys, not Mongo _ids
-  organizationId = orgDoc.organizationId;
-  clinicId = clinicDoc.clinicId;
-} else {
-  // Non-admins → use JWT
-  organizationId = req.user.organizationId;
-  clinicId = req.user.clinicId;
+      // Validate organization
+      const orgExists = await Organization.findOne({ organizationId: bodyOrgId });
+      if (!orgExists) {
+        return res.status(404).json({ error: "Organization not found" });
+      }
 
-  if (!organizationId || !clinicId) {
-    return res
-      .status(403)
-      .json({ error: "Not authorized: missing org/clinic assignment" });
-  }
-}
+      // Validate clinic
+      const clinicExists = await Clinic.findOne({
+        clinicId: bodyClinicId,
+        organizationId: bodyOrgId,
+      });
+      if (!clinicExists) {
+        return res.status(404).json({ error: "Clinic not found for this organization" });
+      }
+
+      organizationId = bodyOrgId;
+      clinicId = bodyClinicId;
+
+    } else {
+      // Managers/nurses/etc. → enforce org/clinic from JWT
+      organizationId = req.user.organizationId;
+      clinicId = req.user.clinicId;
+
+      if (!organizationId || !clinicId) {
+        return res
+          .status(403)
+          .json({ error: "Not authorized: missing org/clinic assignment" });
+      }
+    }
 
     // Prevent duplicate patient for same user
     if (userId) {
@@ -84,11 +89,11 @@ const createPatient = async (req, res) => {
     const patient = new Patient({
       ...req.body,
       userId,
-      organizationId: organizationId.toString(),
-      clinicId: clinicId.toString(),
+      organizationId,
+      clinicId,
     });
-    await patient.save();
 
+    await patient.save();
     res.status(201).json(patient);
   } catch (err) {
     console.error("Error creating patient:", err);
