@@ -1,59 +1,45 @@
 const Task = require('../models/Task');
 
 // Create a new task
-// Create a new task
 const createTask = async (req, res) => {
   try {
-    const { 
-      category, 
-      patientId, 
-      description, 
-      assignedStaffId, 
-      organizationId: bodyOrgId, 
-      clinicId: bodyClinicId, 
-      ...otherFields 
-    } = req.body;
-
-    // Prevent empty _id from crashing
-    if (!otherFields._id) {
-      delete otherFields._id;   
-    }
+    const { category, patientId, description, assignedStaffId, clinicId: bodyClinicId, ...otherFields } = req.body;
 
     if (!description) {
       return res.status(400).json({ error: "Description is required." });
     }
 
-    // Patient-related tasks must include a patientId
     if (category === "Patient-Related" && !patientId) {
       return res.status(400).json({ error: "Patient ID is required for patient-related tasks." });
     }
 
-    let organizationId, clinicId;
+    const { role, organizationId: userOrgId, clinicId: userClinicId } = req.user;
 
-    if (req.user.role === "admin") {
-      if (!bodyOrgId || !bodyClinicId) {
-        return res.status(400).json({ error: "Admin must provide organizationId and clinicId" });
+    if (!userOrgId) {
+      return res.status(403).json({ error: "Missing organizationId in user context" });
+    }
+
+    let clinicId;
+    if (role === "admin") {
+      if (!bodyClinicId) {
+        return res.status(400).json({ error: "Admin must provide clinicId" });
       }
-
-      organizationId = bodyOrgId;
       clinicId = bodyClinicId;
-    } else if (req.user.role === "manager") {
-      organizationId = req.user.organizationId;
-      clinicId = req.user.clinicId;
-
-      if (!organizationId || !clinicId) {
-        return res.status(403).json({ error: "Not authorized: missing org/clinic assignment" });
+    } else if (role === "manager") {
+      if (!userClinicId) {
+        return res.status(403).json({ error: "Manager has no clinic assignment" });
       }
+      clinicId = userClinicId;
     } else {
-      return res.status(403).json({ error: "Only admins and managers can create tasks" });
+      return res.status(403).json({ error: "Unauthorized role" });
     }
 
     const task = new Task({
       category,
       description,
       patientId: category === "Patient-Related" ? patientId : null,
-      organizationId,
       clinicId,
+      organizationId: userOrgId,
       assignedStaffId: assignedStaffId || req.user.id,
       timestamps: {
         created: new Date(),
@@ -69,6 +55,7 @@ const createTask = async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 };
+
 
 // Get all tasks
 const getTasks = async (req, res) => {

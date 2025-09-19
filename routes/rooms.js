@@ -3,7 +3,7 @@ const { protect, authorize, scope } = require('../middleware/authMiddleware');
 const router = express.Router();
 const roomController = require('../controllers/roomController');
 
-router.post('/', protect, authorize('admin', 'manager'), scope('Room'), roomController.createRoom);
+router.post('/', protect, authorize('admin', 'manager'), roomController.createRoom);
 router.get('/', protect, authorize('admin', 'manager', 'doctor', 'nurse'), scope('Room'), roomController.getRooms);
 router.get('/:id', protect, authorize('admin', 'manager', 'doctor', 'nurse'), scope('Room'), roomController.getRoomById);
 router.put('/:id', protect, authorize('admin', 'manager'), scope('Room'), roomController.updateRoom);

@@ -21,75 +21,66 @@ const bucket = storage.bucket(process.env.GCS_BUCKET_NAME);
 // ----------------- Controller -----------------
 const createPatient = async (req, res) => {
   try {
-    const { emailId } = req.body;
-    let userId = undefined;
-    let organizationId, clinicId;
+    const { emailId, clinicId: bodyClinicId, name, dob, gender } = req.body;
+    let userId;
 
-    // Check if email belongs to an existing user
-    if (emailId) {
-      const existingUser = await User.findOne({ email: emailId });
-      if (existingUser) {
-        userId = existingUser._id;
-        req.body.emailId = existingUser.email;
-      }
+    // Ensure we have email to identify/create a user
+    if (!emailId) {
+      return res.status(400).json({ error: "Email is required to create a patient." });
     }
 
-    if (req.user.role === "admin") {
-      // Admins must provide org/clinic in body
-      const { organizationId: bodyOrgId, clinicId: bodyClinicId } = req.body;
+    // Check if user already exists
+    let user = await User.findOne({ email: emailId });
 
-      console.log(bodyOrgId);
-      console.log(bodyClinicId);
-
-      if (!bodyOrgId || !bodyClinicId) {
-        return res
-          .status(400)
-          .json({ error: "Admin must provide organizationId and clinicId" });
-      }
-
-      // Validate organization
-      const orgExists = await Organization.findOne({ organizationId: bodyOrgId });
-      if (!orgExists) {
-        return res.status(404).json({ error: "Organization not found" });
-      }
-
-      // Validate clinic
-      const clinicExists = await Clinic.findOne({
-        clinicId: bodyClinicId,
-        organizationId: bodyOrgId,
-      });
-      if (!clinicExists) {
-        return res.status(404).json({ error: "Clinic not found for this organization" });
-      }
-
-      organizationId = bodyOrgId;
-      clinicId = bodyClinicId;
-
+    if (user) {
+      userId = user._id;
+      req.body.emailId = user.email;
     } else {
-      // Managers/nurses/etc. → enforce org/clinic from JWT
-      organizationId = req.user.organizationId;
-      clinicId = req.user.clinicId;
+      // Create a new user with role = patient
+      user = new User({
+        name: name || "Unknown", // fallback if not provided
+        email: emailId,
+        role: "patient",
+        organizationId: req.user.organizationId,
+        clinicIds: [], // can assign later if needed
+      });
 
-      if (!organizationId || !clinicId) {
-        return res
-          .status(403)
-          .json({ error: "Not authorized: missing org/clinic assignment" });
-      }
+      await user.save();
+      userId = user._id;
     }
 
-    // Prevent duplicate patient for same user
-    if (userId) {
-      const existingPatient = await Patient.findOne({ userId });
-      if (existingPatient) {
-        return res.status(200).json(existingPatient);
-      }
+    const { role, organizationId: userOrgId, clinicId: userClinicId } = req.user;
+
+    if (!userOrgId) {
+      return res.status(403).json({ error: "Missing organizationId in user context" });
     }
 
-    // Create patient
+    let clinicId;
+    if (role === "admin") {
+      if (!bodyClinicId) {
+        return res.status(400).json({ error: "Admin must provide clinicId" });
+      }
+      clinicId = bodyClinicId;
+    } else if (role === "manager") {
+      if (!userClinicId) {
+        return res.status(403).json({ error: "Manager has no clinic assignment" });
+      }
+      clinicId = userClinicId;
+    } else {
+      return res.status(403).json({ error: "Unauthorized role" });
+    }
+
+    // Prevent duplicate patient linked to the same user
+    const existingPatient = await Patient.findOne({ userId });
+    if (existingPatient) {
+      return res.status(200).json(existingPatient);
+    }
+
+    // Create patient record
     const patient = new Patient({
       ...req.body,
       userId,
-      organizationId,
+      organizationId: userOrgId,
       clinicId,
     });
 
@@ -100,15 +91,6 @@ const createPatient = async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 };
-
-
-// Middleware wrapper to accept multiple files
-const uploadPatients = [
-  upload.array("documents", 10), // allow up to 10 files
-  createPatient,
-];
-
-module.exports = { uploadPatients };
 
 
 // Get all patients, optionally filtered by status
