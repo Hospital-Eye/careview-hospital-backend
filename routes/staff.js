@@ -9,7 +9,7 @@ const {
   deleteStaff
 } = require('../controllers/staffController');
 
-router.post('/', protect, authorize('admin', 'manager'), scope('Staff'), createStaff);
+router.post('/', protect, authorize('admin', 'manager'), createStaff);
 router.get('/', protect, authorize('admin', 'manager'), scope('Staff'), getAllStaff);
 router.get('/:id', protect, authorize('admin', 'manager'), scope('Staff'), getStaffById);
 router.put('/:id', protect, authorize('admin', 'manager'), scope('Staff'), updateStaff);

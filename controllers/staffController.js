@@ -2,68 +2,61 @@ const Staff = require('../models/Staff');
 const User = require('../models/User');
 
 // Create new staff
-// Create new staff
 const createStaff = async (req, res) => {
   try {
-    const { _id, organizationId, clinicId, contact, ...staffData } = req.body;
+    const { name, role: staffRole, clinicId: bodyClinicId, contact } = req.body;
+    const email = contact?.email;
 
-    if (!req.user || !req.user.role) {
-      return res.status(403).json({ error: "Unauthorized: missing user role" });
+    if (!email || !staffRole) {
+      return res.status(400).json({ error: "Email and role are required." });
     }
 
-    // Role-based org/clinic assignment
-    switch (req.user.role) {
-      case "admin":
-        if (!organizationId || !clinicId) {
-          return res
-            .status(400)
-            .json({ error: "organizationId and clinicId are required for admin" });
-        }
-        staffData.organizationId = organizationId;
-        staffData.clinicId = clinicId;
-        break;
+    const { role: requesterRole, organizationId: userOrgId, clinicId: userClinicId } = req.user;
 
-      case "manager":
-        if (!req.user.organizationId || !req.user.clinicId) {
-          return res
-            .status(403)
-            .json({ error: "Unauthorized: missing organization/clinic info" });
-        }
-        staffData.organizationId = req.user.organizationId;
-        staffData.clinicId = req.user.clinicId;
-        break;
-
-      case "doctor":
-      case "nurse":
-        return res.status(403).json({ error: "Not authorized to create staff" });
-
-      default:
-        return res.status(403).json({ error: "Unknown role" });
+    if (!userOrgId) {
+      return res.status(403).json({ error: "Missing organizationId in user context" });
     }
 
-    // --- Ensure User exists ---
-    let user = await User.findOne({ email: contact?.email });
+    let clinicIds = [];
+    if (requesterRole === "admin") {
+      if (!bodyClinicId) {
+        return res.status(400).json({ error: "Admin must provide clinicId" });
+      }
+      clinicIds = [bodyClinicId];
+    } else if (requesterRole === "manager") {
+      if (!userClinicId) {
+        return res.status(403).json({ error: "Manager has no clinic assignment" });
+      }
+      clinicIds = [userClinicId];
+    } else {
+      return res.status(403).json({ error: "Unauthorized role" });
+    }
 
-    if (!user) {
-      user = new User({
-        email: contact?.email,
-        name: staffData.name,
-        role: staffData.role,
-        organizationId: staffData.organizationId,
-        clinicId: staffData.clinicId,
+    // Check if staff already exists
+    let user = await User.findOne({ email });
+
+    if (user) {
+      // Update existing user
+      user.role = staffRole; 
+      clinicIds.forEach(cid => {
+        if (!user.clinicIds.includes(cid)) {
+          user.clinicIds.push(cid);
+        }
       });
-      await user.save();
+    } else {
+      // Create a new user
+      user = new User({
+        name,
+        email,
+        role: staffRole,
+        organizationId: userOrgId,
+        clinicIds,
+        contact
+      });
     }
 
-    // Link userId to staff
-    staffData.userId = user._id;
-    staffData.contact = contact;
-
-    // Create staff
-    const staff = new Staff(staffData);
-    await staff.save();
-
-    res.status(201).json(staff);
+    await user.save();
+    res.status(201).json(user);
   } catch (err) {
     console.error("Error creating staff:", err);
     res.status(400).json({ error: err.message });

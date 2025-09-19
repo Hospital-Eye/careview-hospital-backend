@@ -5,28 +5,44 @@ const Admission = require('../models/Admission');
 //create room
 const createRoom = async (req, res) => {
   try {
+    const { clinicId: bodyClinicId } = req.body;
+    const { role, organizationId: userOrgId, clinicId: userClinicId } = req.user;
 
-    if (!req.scopeFilter?.clinic) {
-      return res.status(403).json({ error: "You don't have a clinic scope to create a room." });
+    if (!userOrgId) {
+      return res.status(403).json({ error: "Missing organizationId in user context" });
     }
 
-    const roomData = { ...req.body } ;
+    console.log(req.body);
 
-    // Enforce scopeFilter 
-    if (req.scopeFilter?.clinic) {
-      roomData.clinic = req.scopeFilter.clinic;
-    }
-    if (req.scopeFilter?.organizationId) {
-      roomData.organizationId = req.scopeFilter.organizationId;
+    let clinicId;
+    if (role === "admin") {
+      if (!bodyClinicId) {
+        return res.status(400).json({ error: "Admin must provide clinicId" });
+      }
+      clinicId = bodyClinicId;
+    } else if (role === "manager") {
+      if (!userClinicId) {
+        return res.status(403).json({ error: "Manager has no clinic assignment" });
+      }
+      clinicId = userClinicId;
+    } else {
+      return res.status(403).json({ error: "Unauthorized role" });
     }
 
-    const room = new Room(roomData);
+    const room = new Room({
+      ...req.body,
+      organizationId: userOrgId,
+      clinicId,
+    });
+
     await room.save();
     res.status(201).json(room);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 };
+
+
 
 //get all rooms
 const getRooms = async (req, res) => {
