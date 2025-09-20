@@ -1,5 +1,7 @@
 const Staff = require('../models/Staff');
 const User = require('../models/User');
+const Clinic = require('../models/Clinic');
+const Organization = require('../models/Organization');
 
 // Create new staff
 const createStaff = async (req, res) => {
@@ -32,17 +34,35 @@ const createStaff = async (req, res) => {
       return res.status(403).json({ error: "Unauthorized role" });
     }
 
+    // ----------------- Auto-generate Employee ID -----------------
+    function clinicPrefix(clinicId) {
+    const parts = clinicId.split("-");
+    const name = parts[0].substring(0, 3).toUpperCase(); 
+    const number = parts[1] || "1";                      
+    return `${name}${number}`;                           
+  }
+
+    const prefix = clinicPrefix(clinic.clinicId);
+
+    // Count patients for this clinic
+    const count = await Staff.countDocuments({ clinicId: clinic.clinicId });
+    const nextNumber = 1000 + count + 1; //
+
+    const employeeId = `${prefix}-${nextNumber}`;
+
     // Check if staff already exists
     let user = await User.findOne({ email });
 
     if (user) {
       // Update existing user
-      user.role = staffRole; 
+      user.role = staffRole;
+      user.employeeId = user.employeeId || employeeId; // assign if not already set
       clinicIds.forEach(cid => {
         if (!user.clinicIds.includes(cid)) {
           user.clinicIds.push(cid);
         }
       });
+      user.contact = contact || user.contact;
     } else {
       // Create a new user
       user = new User({
@@ -51,7 +71,8 @@ const createStaff = async (req, res) => {
         role: staffRole,
         organizationId: userOrgId,
         clinicIds,
-        contact
+        contact,
+        employeeId, // ✅ auto-assigned
       });
     }
 
@@ -62,6 +83,7 @@ const createStaff = async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 };
+
 
 // Get all staff (restricted by role/org/clinic)
 const getAllStaff = async (req, res) => {
