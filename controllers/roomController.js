@@ -1,6 +1,8 @@
 const Room = require('../models/Room');
 const Patient = require('../models/Patient');
 const Admission = require('../models/Admission');
+const Clinic = require('../models/Clinic');
+const Organization = require('../models/Organization');
 
 //create room
 const createRoom = async (req, res) => {
@@ -12,23 +14,40 @@ const createRoom = async (req, res) => {
       return res.status(403).json({ error: "Missing organizationId in user context" });
     }
 
-    console.log(req.body);
-
     let clinicId;
+
     if (role === "admin") {
       if (!bodyClinicId) {
         return res.status(400).json({ error: "Admin must provide clinicId" });
       }
-      clinicId = bodyClinicId;
+
+      // ✅ Always resolve clinicId to its string code
+      const clinic = await Clinic.findOne({
+        $or: [{ clinicId: bodyClinicId }, { _id: bodyClinicId }],
+        organizationId: userOrgId,
+      });
+
+      if (!clinic) {
+        return res.status(404).json({ error: "Clinic not found" });
+      }
+
+      clinicId = clinic.clinicId;
     } else if (role === "manager") {
       if (!userClinicId) {
         return res.status(403).json({ error: "Manager has no clinic assignment" });
       }
-      clinicId = userClinicId;
+
+      const clinic = await Clinic.findOne({ _id: userClinicId });
+      if (!clinic) {
+        return res.status(404).json({ error: "Assigned clinic not found" });
+      }
+
+      clinicId = clinic.clinicId;
     } else {
       return res.status(403).json({ error: "Unauthorized role" });
     }
 
+    // ✅ Save room with normalized clinicId
     const room = new Room({
       ...req.body,
       organizationId: userOrgId,
@@ -38,10 +57,10 @@ const createRoom = async (req, res) => {
     await room.save();
     res.status(201).json(room);
   } catch (err) {
+    console.error("Error creating room:", err);
     res.status(400).json({ error: err.message });
   }
 };
-
 
 
 //get all rooms
