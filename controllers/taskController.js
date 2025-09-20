@@ -5,6 +5,8 @@ const createTask = async (req, res) => {
   try {
     const { category, patientId, description, assignedStaffId, clinicId: bodyClinicId, ...otherFields } = req.body;
 
+    console.log(req.body);
+
     if (!description) {
       return res.status(400).json({ error: "Description is required." });
     }
