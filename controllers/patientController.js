@@ -24,7 +24,7 @@ const createPatient = async (req, res) => {
     const { emailId, clinicId: bodyClinicId, name, dob, gender } = req.body;
     let userId;
 
-    // Ensure email is provided
+    // Ensure we have email to identify/create a user
     if (!emailId) {
       return res.status(400).json({ error: "Email is required to create a patient." });
     }
@@ -34,9 +34,9 @@ const createPatient = async (req, res) => {
 
     if (user) {
       userId = user._id;
-      req.body.emailId = user.email; // normalize
+      req.body.emailId = user.email;
     } else {
-      // Create new user with patient role
+      // Create a new user with role = patient
       user = new User({
         name: name || "Unknown",
         email: emailId,
@@ -55,6 +55,7 @@ const createPatient = async (req, res) => {
       return res.status(403).json({ error: "Missing organizationId in user context" });
     }
 
+    let clinic;
     let clinicId;
 
     if (role === "admin") {
@@ -62,8 +63,7 @@ const createPatient = async (req, res) => {
         return res.status(400).json({ error: "Admin must provide clinicId" });
       }
 
-      // Find clinic by either string clinicId or _id
-      const clinic = await Clinic.findOne({
+      clinic = await Clinic.findOne({
         $or: [{ clinicId: bodyClinicId }, { _id: bodyClinicId }],
         organizationId: userOrgId,
       });
@@ -72,22 +72,42 @@ const createPatient = async (req, res) => {
         return res.status(404).json({ error: "Clinic not found" });
       }
 
-      clinicId = clinic.clinicId; // ✅ always use string business code
+      clinicId = clinic.clinicId;
     } else if (role === "manager") {
-      const clinic = await Clinic.findOne({ _id: userClinicId });
+      clinic = await Clinic.findOne({ _id: userClinicId });
       if (!clinic) {
         return res.status(404).json({ error: "Assigned clinic not found" });
       }
-      clinicId = clinic.clinicId; // ✅ use string code
+
+      clinicId = clinic.clinicId;
     } else {
       return res.status(403).json({ error: "Unauthorized role" });
     }
 
-    // Prevent duplicate patient linked to same user
+    // Prevent duplicate patient linked to the same user
     const existingPatient = await Patient.findOne({ userId });
     if (existingPatient) {
       return res.status(200).json(existingPatient);
     }
+
+    // ----------------- Auto-generate MRN -----------------
+    // Convert clinicId like "newhope-1" to "NEW1"
+    function clinicPrefix(clinicId) {
+      const parts = clinicId.split("-");
+      const name = parts[0].substring(0, 3).toUpperCase(); 
+      const number = parts[1] || "1";                      
+      return `${name}${number}`;                           
+    }
+
+    // Inside createPatient controller, after resolving clinicId:
+    const prefix = clinicPrefix(clinic.clinicId);
+
+    // Count patients for this clinic
+    const count = await Patient.countDocuments({ clinicId: clinic.clinicId });
+    const nextNumber = 1000 + count + 1; // Start at 1001
+
+    // Format MRN
+    const mrn = `${prefix}-${nextNumber}`;
 
     // Create patient record
     const patient = new Patient({
@@ -95,6 +115,7 @@ const createPatient = async (req, res) => {
       userId,
       organizationId: userOrgId,
       clinicId,
+      mrn, // ✅ system-generated
     });
 
     await patient.save();

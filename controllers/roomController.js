@@ -21,7 +21,6 @@ const createRoom = async (req, res) => {
         return res.status(400).json({ error: "Admin must provide clinicId" });
       }
 
-      // ✅ Always resolve clinicId to its string code
       const clinic = await Clinic.findOne({
         $or: [{ clinicId: bodyClinicId }, { _id: bodyClinicId }],
         organizationId: userOrgId,
