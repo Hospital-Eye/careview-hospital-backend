@@ -24,7 +24,7 @@ const createPatient = async (req, res) => {
     const { emailId, clinicId: bodyClinicId, name, dob, gender } = req.body;
     let userId;
 
-    // Ensure we have email to identify/create a user
+    // Ensure email is provided
     if (!emailId) {
       return res.status(400).json({ error: "Email is required to create a patient." });
     }
@@ -34,15 +34,15 @@ const createPatient = async (req, res) => {
 
     if (user) {
       userId = user._id;
-      req.body.emailId = user.email;
+      req.body.emailId = user.email; // normalize
     } else {
-      // Create a new user with role = patient
+      // Create new user with patient role
       user = new User({
-        name: name || "Unknown", // fallback if not provided
+        name: name || "Unknown",
         email: emailId,
         role: "patient",
         organizationId: req.user.organizationId,
-        clinicIds: [], // can assign later if needed
+        clinicIds: [],
       });
 
       await user.save();
@@ -56,21 +56,34 @@ const createPatient = async (req, res) => {
     }
 
     let clinicId;
+
     if (role === "admin") {
       if (!bodyClinicId) {
         return res.status(400).json({ error: "Admin must provide clinicId" });
       }
-      clinicId = bodyClinicId;
-    } else if (role === "manager") {
-      if (!userClinicId) {
-        return res.status(403).json({ error: "Manager has no clinic assignment" });
+
+      // Find clinic by either string clinicId or _id
+      const clinic = await Clinic.findOne({
+        $or: [{ clinicId: bodyClinicId }, { _id: bodyClinicId }],
+        organizationId: userOrgId,
+      });
+
+      if (!clinic) {
+        return res.status(404).json({ error: "Clinic not found" });
       }
-      clinicId = userClinicId;
+
+      clinicId = clinic.clinicId; // ✅ always use string business code
+    } else if (role === "manager") {
+      const clinic = await Clinic.findOne({ _id: userClinicId });
+      if (!clinic) {
+        return res.status(404).json({ error: "Assigned clinic not found" });
+      }
+      clinicId = clinic.clinicId; // ✅ use string code
     } else {
       return res.status(403).json({ error: "Unauthorized role" });
     }
 
-    // Prevent duplicate patient linked to the same user
+    // Prevent duplicate patient linked to same user
     const existingPatient = await Patient.findOne({ userId });
     if (existingPatient) {
       return res.status(200).json(existingPatient);
