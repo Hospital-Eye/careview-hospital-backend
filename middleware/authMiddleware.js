@@ -48,7 +48,7 @@ const authorize = (...roles) => {
 const scope = (modelName) => {
   return (req, res, next) => {
     try {
-      const { role, organizationId, clinicIds, id } = req.user; 
+      const { role, organizationId, clinicId, id } = req.user; 
 
       const filter = {};
 
@@ -61,14 +61,14 @@ const scope = (modelName) => {
         case "manager":
           // single clinic
           filter.organizationId = organizationId;
-          filter.clinicId = clinicIds[0];
+          filter.clinicId = clinicId;
           break;
 
         case "doctor":
         case "nurse":
           filter.organizationId = organizationId;
           // multi-clinic staff
-          filter.clinicId = { $in: clinicIds };
+          filter.clinicId = { $in: clinicId };
           break;
 
         case "patient":

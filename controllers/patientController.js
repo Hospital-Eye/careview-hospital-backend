@@ -7,8 +7,6 @@ const User = require('../models/User');
 const Organization = require('../models/Organization');
 const Clinic = require('../models/Clinic');
 
-
-
 //create patient with automatic room assignment based on availability and patient needs, and document upload to GCS
 
 // Configure Multer for file uploads
