@@ -46,6 +46,9 @@ app.use('/api/my-health', require('./routes/myHealthRoutes'));
 // --- Management routes ---
 app.use('/api/management', require('./routes/managementRoutes'));
 
+// --- Dashboard routes ---
+app.use('/api/dashboard', require('./routes/dashboardRoutes'));
+
 
 GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID
 GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET

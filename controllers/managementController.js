@@ -12,6 +12,8 @@ const createManager = async (req, res) => {
 
     let user = await User.findOne({ email });
 
+    console.log(req.body);
+
     if (user) {
       // Update existing user
       user.role = 'manager';
