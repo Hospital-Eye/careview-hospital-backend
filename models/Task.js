@@ -12,10 +12,10 @@ const taskSchema = new mongoose.Schema({
     default: 'Pending',
   },
 
-  // category: Patient-Related or General
+  // category: Patient-Related or Operational
   category: {
     type: String,
-    enum: ['Patient-Related', 'General'], 
+    enum: ['Patient-Related', 'Operational'], 
     required: true,
   },
 
