@@ -11,13 +11,15 @@ const createClinic = async (req, res) => {
   }
 };
 
-//get all clinics
+// get all clinics (with scope)
 const getClinics = async (req, res) => {
   try {
-    const clinics = await Clinic.find();
-    res.status(200).send(clinics);
+    const filter = req.scopeFilter || {}; 
+    const clinics = await Clinic.find(filter);
+    res.status(200).json(clinics);
   } catch (error) {
-    res.status(500).send(error);
+    console.error("Error fetching clinics:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 

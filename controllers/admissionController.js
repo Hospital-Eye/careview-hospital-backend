@@ -93,10 +93,9 @@ const getAdmissions = async (req, res) => {
     // assuming you attach clinicId & organizationId to req.user in your auth middleware
     const { clinicId, organizationId } = req.user;
 
-    const admissions = await Admission.find({
-      clinicId: clinicId,
-      organizationId: organizationId
-    })
+    const filter = req.scopeFilter || {};
+
+    const admissions = await Admission.find(filter)
       .populate('patientId', 'name mrn') // only get name & MRN
       .populate('room'); // populate room object
 

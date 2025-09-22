@@ -58,22 +58,27 @@ const createTask = async (req, res) => {
   }
 };
 
-
 // Get all tasks
 const getTasks = async (req, res) => {
-    try {
-        // Build a query object based on URL parameters
-        const query = {};
-        if (req.query.taskType) {
-            query.taskType = req.query.taskType;
-        }
+  try {
+    const scopeFilter = req.scopeFilter || {};
+    const query = { ...scopeFilter }; // start with scope filter
 
-        const tasks = await Task.find(query)
-            .populate('assignedStaffId patientId dependencies');
-        res.json(tasks);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+    // Add URL params on top of scope
+    if (req.query.taskType) {
+      query.taskType = req.query.taskType;
     }
+
+    const tasks = await Task.find(query)
+      .populate('assignedStaffId', 'name role contact')
+      .populate('patientId', 'name mrn')
+      .populate('dependencies', 'taskType status');
+
+    res.json(tasks);
+  } catch (err) {
+    console.error("Error fetching tasks:", err);
+    res.status(500).json({ error: err.message });
+  }
 };
 
 // Get single task by ID
