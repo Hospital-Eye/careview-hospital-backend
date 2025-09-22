@@ -15,10 +15,6 @@ const patientSchema = new Schema({
   //link to user if exists
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", unique: true, sparse: true },
 
-  weight: {
-    value: Number,
-    unit: String
-  },
   precautions: String,
   allergies: [{ substance: String }],
   emergencyContact: {
