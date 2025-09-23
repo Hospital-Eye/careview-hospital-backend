@@ -1,13 +1,48 @@
 const Clinic = require('../models/Clinic');
+const Organization = require('../models/Organization');
 
 //create a new clinic
 const createClinic = async (req, res) => {
   try {
-    const clinic = new Clinic(req.body);
+    const { name, registrationNumber, type, address, contactEmail, contactPhone, location } = req.body;
+
+    const { organizationId }  = req.user;  // ✅ take org from logged-in user
+
+    if (!organizationId) {
+      return res.status(403).json({ error: "Missing organizationId in user context" });
+    }
+
+    if (!name) {
+      return res.status(400).json({ error: "Clinic name is required" });
+    }
+
+    // 🔹 generate a base prefix from the name (strip spaces, lowercase)
+    const prefix = name.split(" ")[0].toLowerCase(); // e.g. "New Hope Life Scan" → "new"
+    // Better: take first two words
+    const base = name.replace(/\s+/g, "").toLowerCase(); // "New Hope Life Scan 1" → "newhopelifescan1"
+
+    // 🔹 find existing clinics with same base prefix
+    const existingClinics = await Clinic.find({ clinicId: new RegExp(`^${base}-`, "i") });
+    const nextNumber = existingClinics.length + 1;
+
+    const clinicId = `${base}-${nextNumber}`;
+
+    const clinic = new Clinic({
+      clinicId,
+      organizationId,
+      name,
+      registrationNumber,
+      type,
+      address,
+      contactEmail,
+      contactPhone
+    });
+
     await clinic.save();
-    res.status(201).send(clinic);
-  } catch (error) {
-    res.status(400).send(error);
+    res.status(201).json(clinic);
+  } catch (err) {
+    console.error("Error creating clinic:", err);
+    res.status(400).json({ error: err.message });
   }
 };
 

@@ -13,10 +13,11 @@ const organizationSchema = new Schema({
       enum: ["Point"],
       required: true
     },
+    /*
     coordinates: {
       type: [Number],  // [longitude, latitude]
       required: true
-    }
+    }*/
   },
   contactEmail: { type: String, required: true },
   contactPhone: { type: String, required: true },
