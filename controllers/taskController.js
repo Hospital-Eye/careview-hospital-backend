@@ -65,14 +65,20 @@ const getTasks = async (req, res) => {
     const query = { ...scopeFilter }; // start with scope filter
 
     // Add URL params on top of scope
-    if (req.query.taskType) {
-      query.taskType = req.query.taskType;
+    if (req.query.category) {
+      query.category = req.query.category; // Patient-Related / Operational
+    }
+    if (req.query.status) {
+      query.status = req.query.status; // Pending / In-Progress / Completed / Overdue
+    }
+    if (req.query.priority) {
+      query.priority = req.query.priority; // Low / Normal / High / Urgent
     }
 
     const tasks = await Task.find(query)
       .populate('assignedStaffId', 'name role contact')
       .populate('patientId', 'name mrn')
-      .populate('dependencies', 'taskType status');
+      .populate('dependencies', 'category status');
 
     res.json(tasks);
   } catch (err) {
@@ -92,31 +98,42 @@ const getTaskById = async (req, res) => {
     }
 };
 
-// Update a task
+// Update a task (scoped + safe merge)
 const updateTask = async (req, res) => {
-    try {
-        const updated = await Task.findByIdAndUpdate(
-            req.params.id,
-            req.body,
-            { new: true, runValidators: true }
-        );
-        if (!updated) return res.status(404).json({ error: 'Task not found' });
-        res.json(updated);
-    } catch (err) {
-        res.status(400).json({ error: err.message });
-    }
+  try {
+    const scopeFilter = req.scopeFilter || {};
+    const updated = await Task.findOneAndUpdate(
+      { _id: req.params.id, ...scopeFilter },
+      { $set: req.body }, // ✅ only set provided fields
+      { new: true, runValidators: true, context: "query" } // ✅ context avoids some validator quirks
+    );
+
+    if (!updated) return res.status(404).json({ error: "Task not found" });
+    res.json(updated);
+  } catch (err) {
+    console.error("Error updating task:", err);
+    res.status(400).json({ error: err.message });
+  }
 };
 
-// Delete a task
+
+//delete task
 const deleteTask = async (req, res) => {
-    try {
-        const deleted = await Task.findByIdAndDelete(req.params.id);
-        if (!deleted) return res.status(404).json({ error: 'Task not found' });
-        res.json({ message: 'Task deleted successfully' });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+  try {
+    const scopeFilter = req.scopeFilter || {};
+    const deleted = await Task.findOneAndDelete({ _id: req.params.id, ...scopeFilter });
+
+    if (!deleted) {
+      return res.status(404).json({ error: "Task not found or not accessible" });
     }
+
+    res.json({ message: "Task deleted successfully" });
+  } catch (err) {
+    console.error("Error deleting task:", err);
+    res.status(500).json({ error: err.message });
+  }
 };
+
 
 module.exports = {
     createTask,
