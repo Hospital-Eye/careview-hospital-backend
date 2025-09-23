@@ -2,6 +2,9 @@ const Staff = require('../models/Staff');
 const User = require('../models/User');
 const Clinic = require('../models/Clinic');
 const Organization = require('../models/Organization');
+const canActOn = require("../middleware/canActOn");
+const roleHierarchy = require("../models/roleHierarchy");
+const mongoose = require("mongoose");
 
 // Create new staff
 const createStaff = async (req, res) => {
@@ -152,14 +155,29 @@ const updateStaff = async (req, res) => {
 };
 
 // Delete staff
+// DELETE /staff/:id
 const deleteStaff = async (req, res) => {
   try {
-    const staff = await Staff.findByIdAndDelete(req.params.id);
-    if (!staff) return res.status(404).json({ error: 'Staff not found' });
-    res.json({ message: 'Staff deleted successfully' });
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: "Invalid staff ID" });
+    }
+
+    const target = await Staff.findById(id);
+    if (!target) {
+      return res.status(404).json({ error: "Staff not found" });
+    }
+
+    // check role hierarchy here if needed
+
+    await Staff.findByIdAndDelete(id);
+    res.json({ message: "Staff deleted successfully" });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error("Error deleting staff:", err);
+    res.status(500).json({ error: "Server error" });
   }
 };
+
 
 module.exports = { createStaff, getAllStaff, getStaffById, updateStaff, deleteStaff };
