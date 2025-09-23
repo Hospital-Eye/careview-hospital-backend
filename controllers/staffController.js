@@ -7,22 +7,37 @@ const roleHierarchy = require("../models/roleHierarchy");
 const mongoose = require("mongoose");
 
 // Create new staff
+// Create new staff
 const createStaff = async (req, res) => {
   try {
-    const { name, email, role: staffRole, clinicId, status } = req.body;
+    const { name, role: staffRole, status, contact } = req.body;
+    const email = contact?.email;
+    const phone = contact?.phone;
 
     if (!email || !staffRole) {
       return res.status(400).json({ error: "Email and role are required." });
     }
 
-    const { role: requesterRole, organizationId: userOrgId } = req.user;
+    const { role: requesterRole, organizationId: userOrgId, clinicId: userClinicId } = req.user;
 
     if (!userOrgId) {
       return res.status(403).json({ error: "Missing organizationId in user context" });
     }
 
-    if (!clinicId) {
-      return res.status(400).json({ error: "clinicId is required in request body" });
+    // ----------------- Determine clinicId -----------------
+    let clinicId;
+    if (requesterRole === "admin") {
+      clinicId = req.body.clinicId;
+      if (!clinicId) {
+        return res.status(400).json({ error: "clinicId is required in request body for admins" });
+      }
+    } else if (requesterRole === "manager") {
+      clinicId = userClinicId;
+      if (!clinicId) {
+        return res.status(400).json({ error: "Manager is not associated with any clinic" });
+      }
+    } else {
+      return res.status(403).json({ error: "Only admins and managers can create staff" });
     }
 
     // ----------------- Auto-generate Employee ID -----------------
@@ -46,7 +61,7 @@ const createStaff = async (req, res) => {
       user.employeeId = user.employeeId || employeeId;
       user.organizationId = user.organizationId || userOrgId;
       user.clinicId = user.clinicId || clinicId;
-      user.contact = { email, phone: user.contact?.phone || "" };
+      user.contact = { email, phone };
     } else {
       user = new User({
         name,
@@ -54,7 +69,7 @@ const createStaff = async (req, res) => {
         role: staffRole,
         organizationId: userOrgId,
         clinicId,
-        contact: { email },
+        contact: { email, phone },
         employeeId,
       });
     }
@@ -69,7 +84,7 @@ const createStaff = async (req, res) => {
       staff.role = staffRole;
       staff.organizationId = userOrgId;
       staff.clinicId = clinicId;
-      staff.contact = { email, phone: staff.contact?.phone || "" };
+      staff.contact = { email, phone };
       staff.status = status || staff.status;
     } else {
       staff = new Staff({
@@ -79,7 +94,7 @@ const createStaff = async (req, res) => {
         userId: user._id,
         name,
         role: staffRole,
-        contact: { email },
+        contact: { email, phone },
         status: status || "On-Duty",
       });
     }

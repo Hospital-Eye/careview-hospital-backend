@@ -13,7 +13,7 @@ const taskSchema = new mongoose.Schema({
   },
 
   // category: Patient-Related or Operational
-  category: {
+  taskType: {
     type: String,
     enum: ['Patient-Related', 'Operational'], 
     required: true,
@@ -37,7 +37,7 @@ const taskSchema = new mongoose.Schema({
 
   assignedStaffId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    ref: 'Staff',
     required: true,
   },
 
