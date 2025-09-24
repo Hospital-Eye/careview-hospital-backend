@@ -256,8 +256,18 @@ const updatePatientByMRN = async (req, res) => {
     const { mrn } = req.params;
     const updateData = { ...req.body };
 
+    console.log("Full URL:", req.originalUrl);
+    console.log("HTTP Method:", req.method);
+    console.log("Params:", req.params);
+    console.log("Query:", req.query);
+    console.log("Body:", req.body);
+
+    console.log("MRN param:", req.params.mrn);
+    console.log("Looking for patient with MRN:", mrn.trim());
+
+
     // Find the patient first
-    const patient = await Patient.findOne({ mrn });
+    const patient = await Patient.findOne({ mrn: mrn.trim() });
     if (!patient) {
       return res.status(404).json({ message: "Patient not found" });
     }

@@ -8,6 +8,7 @@ const roomSchema = new mongoose.Schema({
   unit: { type: String, required: true },
   roomType: { type: String, required: true },
   capacity: { type: Number, required: true },
+  occupiedBeds: { type: Number, default: 0 },
   equipment: [String],
   cameraIds: [String],
   accessRestrictions: [String],
