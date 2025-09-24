@@ -109,6 +109,52 @@ const getRoomById = async (req, res) => {
   }
 };
 
+const getAvailableRooms = async (req, res) => {
+  try {
+    const { unit, roomType } = req.query; // optional filters
+
+    // Base filter (scoped to org/clinic)
+    const scopeFilter = req.scopeFilter || {};
+    const roomFilter = { ...scopeFilter };
+
+    if (unit) roomFilter.unit = unit;
+    if (roomType) roomFilter.roomType = roomType;
+
+    // Fetch rooms
+    const rooms = await Room.find(roomFilter).lean();
+
+    // For each room, count active admissions
+    const roomIds = rooms.map(r => r._id);
+    const activeAdmissions = await Admission.aggregate([
+      { $match: { roomId: { $in: roomIds }, status: "Active" } },
+      { $group: { _id: "$roomId", count: { $sum: 1 } } }
+    ]);
+
+    // Map roomId → occupancy count
+    const occupancyMap = {};
+    activeAdmissions.forEach(a => {
+      occupancyMap[a._id.toString()] = a.count;
+    });
+
+    // Add availability info
+    const enrichedRooms = rooms.map(room => {
+      const occupied = occupancyMap[room._id.toString()] || 0;
+      const availableBeds = room.capacity - occupied;
+      return {
+        ...room,
+        occupied,
+        availableBeds,
+        isAvailable: availableBeds > 0
+      };
+    });
+
+    res.json(enrichedRooms);
+  } catch (err) {
+    console.error("Error fetching available rooms:", err);
+    res.status(500).json({ error: "Server error while fetching available rooms" });
+  }
+};
+
 //update room
 const updateRoom = async (req, res) => {
   try {
@@ -137,6 +183,7 @@ module.exports = {
   createRoom,
   getRooms,
   getRoomById,
+  getAvailableRooms,
   updateRoom,
   deleteRoom
 };
