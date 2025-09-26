@@ -44,44 +44,39 @@ const authorize = (...roles) => {
     };
 };
 
-//Middleware for clinic-based filtering
+// Middleware for clinic/org-based filtering
 const scope = (modelName) => {
   return (req, res, next) => {
     try {
-      const { role, organizationId, clinicId, id } = req.user; 
+      const { role, organizationId, clinicId, id } = req.user;
 
-      const filter = {};
+      const filter = { organizationId }; // always org-level first
 
       switch (role) {
         case "admin":
-          // org-wide
-          filter.organizationId = organizationId;
+          // Admin: see everything in the org (no clinic filter)
           break;
 
         case "manager":
-          // single clinic
-          filter.organizationId = organizationId;
+          // Manager: restricted to a single clinic
           filter.clinicId = clinicId;
           break;
 
         case "doctor":
         case "nurse":
-          filter.organizationId = organizationId;
-          // multi-clinic staff
-          filter.clinicId = { $in: clinicId };
+          // Staff: handle single vs multi-clinic
+          if (Array.isArray(clinicId)) {
+            filter.clinicId = { $in: clinicId };
+          } else {
+            filter.clinicId = clinicId;
+          }
           break;
 
         case "patient":
-          // Patient-specific rules
-          switch (modelName) {
-            case "Patient":
-              // can only see themselves
-              filter._id = id;
-              break;
-
-            default:
-              // patients cannot access staff, rooms, etc
-              return res.status(403).json({ message: "Patients cannot access this resource" });
+          if (modelName === "Patient") {
+            filter._id = id; // patient sees only themselves
+          } else {
+            return res.status(403).json({ message: "Patients cannot access this resource" });
           }
           break;
 
@@ -89,7 +84,7 @@ const scope = (modelName) => {
           return res.status(403).json({ message: "Unknown role, access denied" });
       }
 
-      req.scopeFilter = filter; // attach filter to request
+      req.scopeFilter = filter;
       next();
     } catch (err) {
       console.error("Scope middleware error:", err);
@@ -97,6 +92,7 @@ const scope = (modelName) => {
     }
   };
 };
+
 
 // Export the middleware functions
 module.exports = { protect, authorize, scope };
