@@ -61,41 +61,45 @@ const createRoom = async (req, res) => {
   }
 };
 
-
 //get all rooms
+// Get all rooms with dynamic occupancy info
 const getRooms = async (req, res) => {
   try {
-    const rooms = await Room.find(req.scopeFilter);
+    const rooms = await Room.find(req.scopeFilter || {});
 
-    const roomStatuses = await Promise.all(
+    const enrichedRooms = await Promise.all(
       rooms.map(async (room) => {
-        // Find all active admissions for this room
+        // Find active admissions for this room
         const admissions = await Admission.find({
           room: room._id,
           status: 'Active'
-        }).populate('patientId');
+        }).populate('patientId', 'name');
 
-        // Count only real admissions
-        const occupancyCount = admissions.length;
-
-        // List patients
+        const occupiedBeds = admissions.length;
         const occupants = admissions
           .map(ad => ad.patientId?.name)
           .filter(Boolean);
 
-
         return {
-          ...room.toObject(),
-          occupants,  
-          occupancy: `${occupancyCount}/${room.capacity}`
+          roomId: room._id,
+          roomNumber: room.roomNumber,
+          unit: room.unit,
+          roomType: room.roomType,
+          capacity: room.capacity,
+          occupiedBeds,
+          occupants,
+          isAvailable: occupiedBeds < room.capacity
         };
       })
     );
-    res.json(roomStatuses);
+
+    res.json(enrichedRooms);
   } catch (err) {
+    console.error("Error fetching rooms:", err);
     res.status(500).json({ error: err.message });
   }
 };
+   
 
 //get room by id
 const getRoomById = async (req, res) => {
