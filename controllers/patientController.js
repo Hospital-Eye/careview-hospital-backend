@@ -130,19 +130,8 @@ const getPatients = async (req, res) => {
   try {
     const { status } = req.query; // e.g., ?status=Active or ?status=Discharged
 
-    // Pull org/clinic from JWT
-    const userOrgId = req.user.organizationId;
-    const userClinicId = req.user.clinicId || null;
-
-    if (!userOrgId || !userClinicId) {
-      return res.status(403).json({ error: "Not authorized: missing org/clinic assignment" });
-    }
-
-    // Build base filter by org + clinics
-    const patientFilter = {
-      organizationId: userOrgId,
-      clinicId: userClinicId
-    };
+    // Use scope filter directly
+    const patientFilter = { ...req.scopeFilter };
 
     // Build admission filter
     const admissionFilter = {};
@@ -150,7 +139,7 @@ const getPatients = async (req, res) => {
       admissionFilter.status = status;
     }
 
-    // Find patients for this org+clinic only
+    // Find patients for org/clinic based on scope
     const patients = await Patient.find(patientFilter)
       .lean()
       .populate({
@@ -164,7 +153,7 @@ const getPatients = async (req, res) => {
 
     // Flatten structure: add separate fields from latest admission
     const reshapedPatients = patients.map(p => {
-      const latestAdmission = p.admissions && p.admissions.length > 0
+      const latestAdmission = p.admissions?.length
         ? p.admissions[p.admissions.length - 1]
         : null;
 
@@ -185,7 +174,6 @@ const getPatients = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-
 
 // Get a patient by MRN (including admission history + vitals)
 const getPatientByMRN = async (req, res) => {
