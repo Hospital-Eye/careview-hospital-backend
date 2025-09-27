@@ -3,31 +3,35 @@ const Patient = require('../models/Patient');
 const Staff = require('../models/Staff');
 const Room = require('../models/Room');
 
-// create a new admission
+// Create a new admission
 const createAdmission = async (req, res) => {
   try {
-    const { 
-      patientId, 
-      admittedByStaffId,   // employeeId of admitting staff
-      attendingPhysicianName, // physician name (instead of ID)
-      admissionReason, 
-      acuityLevel, 
-      roomType, 
-      unit 
+    const {
+      patientId,
+      admittedByStaffId,      // employeeId of admitting staff
+      attendingPhysicianName, // physician name
+      admissionReason,
+      acuityLevel,
+      unit,
+      roomType
     } = req.body;
 
-    // 🔹 Resolve admitting staff by employeeId
+    // ------------------- Resolve admitting staff -------------------
     let admittedStaffIdResolved = null;
     if (admittedByStaffId) {
-      const staff = await Staff.findOne({ employeeId: admittedByStaffId });
+      const staff = await Staff.findOne({
+        employeeId: admittedByStaffId,
+        organizationId: req.user.organizationId,
+        clinicId: req.user.clinicId
+      });
       if (!staff) return res.status(400).json({ error: "Admitting staff not found" });
       admittedStaffIdResolved = staff._id;
     }
 
-    // 🔹 Resolve attending physician by NAME
+    // ------------------- Resolve attending physician -------------------
     let attendingPhysicianIdResolved = null;
     if (attendingPhysicianName) {
-      const physician = await Staff.findOne({ 
+      const physician = await Staff.findOne({
         name: attendingPhysicianName,
         organizationId: req.user.organizationId,
         clinicId: req.user.clinicId,
@@ -37,56 +41,74 @@ const createAdmission = async (req, res) => {
       attendingPhysicianIdResolved = physician._id;
     }
 
-    // 🔹 Find an available room (capacity - occupiedBeds > 0)
-    const availableRoom = await Room.findOneAndUpdate(
-      {
-        roomType,
-        unit,
-        clinicId: req.user.clinicId,
-        organizationId: req.user.organizationId,
-        $expr: { $lt: ["$occupiedBeds", "$capacity"] } // only rooms with free beds
-      },
-      { $inc: { occupiedBeds: 1 } }, // increment occupiedBeds
-      { new: true }
-    );
+    // ------------------- Find available room -------------------
+    const roomFilter = {
+      organizationId: req.user.organizationId,
+      clinicId: req.user.clinicId,
+      unit,
+      roomType
+    };
 
-    if (!availableRoom) {
+    // Get rooms matching unit + roomType
+    const candidateRooms = await Room.find(roomFilter).lean();
+
+    if (!candidateRooms.length) {
+      return res.status(400).json({ error: `No rooms found for ${roomType} in unit ${unit}` });
+    }
+
+    // Check occupancy dynamically
+    let allocatedRoom = null;
+    for (const room of candidateRooms) {
+      const occupancy = await Admission.countDocuments({ room: room._id, status: 'Active' });
+      if (occupancy < room.capacity) {
+        allocatedRoom = room;
+        break;
+      }
+    }
+
+    if (!allocatedRoom) {
       return res.status(400).json({ error: `No available ${roomType} room in unit ${unit}` });
     }
 
-    // 🔹 Create admission
+    // ------------------- Create admission -------------------
     const admission = new Admission({
       patientId,
       organizationId: req.user.organizationId,
       clinicId: req.user.clinicId,
-      room: availableRoom._id,
+      room: allocatedRoom._id,
       admittedByStaffId: admittedStaffIdResolved,
       attendingPhysicianId: attendingPhysicianIdResolved,
       admissionReason,
       acuityLevel,
       status: "Active",
+      timestamps: { created: new Date() }
     });
 
     const savedAdmission = await admission.save();
 
-    // 🔹 Update patient with admission + room
+    // ------------------- Update patient record -------------------
     await Patient.findByIdAndUpdate(
       patientId,
-      { currentAdmissionId: savedAdmission._id, room: availableRoom._id, status: "Active" },
+      {
+        currentAdmissionId: savedAdmission._id,
+        room: allocatedRoom._id,
+        status: "Active"
+      },
       { new: true }
     );
 
+    // ------------------- Respond with admission + room info -------------------
     res.status(201).json({
-      ...savedAdmission.toObject(),
+      admission: savedAdmission,
       assignedRoom: {
-        _id: availableRoom._id,
-        roomNumber: availableRoom.roomNumber,
-        unit: availableRoom.unit,
-        roomType: availableRoom.roomType,
-        capacity: availableRoom.capacity,
-        occupiedBeds: availableRoom.occupiedBeds
+        roomId: allocatedRoom._id,
+        roomNumber: allocatedRoom.roomNumber,
+        unit: allocatedRoom.unit,
+        roomType: allocatedRoom.roomType,
+        capacity: allocatedRoom.capacity
       }
     });
+
   } catch (err) {
     console.error("Error creating admission:", err);
     res.status(400).json({ error: err.message });
