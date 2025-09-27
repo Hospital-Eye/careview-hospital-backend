@@ -244,6 +244,8 @@ const updatePatientByMRN = async (req, res) => {
     const { mrn } = req.params;
     const updateData = { ...req.body };
 
+    console.log("MRN param:", req.params.mrn);
+
     console.log("Full URL:", req.originalUrl);
     console.log("HTTP Method:", req.method);
     console.log("Params:", req.params);

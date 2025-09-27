@@ -61,7 +61,6 @@ const createRoom = async (req, res) => {
   }
 };
 
-//get all rooms
 // Get all rooms with dynamic occupancy info
 const getRooms = async (req, res) => {
   try {
@@ -83,6 +82,8 @@ const getRooms = async (req, res) => {
         return {
           roomId: room._id,
           roomNumber: room.roomNumber,
+          organizationId: room.organizationId,
+          clinicId: room.clinicId,
           unit: room.unit,
           roomType: room.roomType,
           capacity: room.capacity,
