@@ -24,13 +24,9 @@ const patientSchema = new Schema({
   },
 
   // from HEAD (clinical metadata kept for compatibility)
-  admissionDate: Date,
-  dischargeDate: Date,
   roomId: { type: Schema.Types.ObjectId, ref: 'Room' },
-  admissionReason: String,
   diagnoses: [String],
   attendingPhysicianId: { type: Schema.Types.ObjectId, ref: 'Staff' },
-  acuityLevel: Number,
 
   // normalize to dev’s enum
   status: { type: String, enum: ['Active', 'Discharged'], default: 'Active' },
@@ -44,14 +40,14 @@ const patientSchema = new Schema({
   }
 }, { timestamps: true });
 
-// ✅ Virtual relationship to admissions (from dev)
+// Virtual relationship to admissions (from dev)
 patientSchema.virtual('admissions', {
   ref: 'Admission',
   localField: '_id',
   foreignField: 'patientId'
 });
 
-// ✅ Ensure virtuals appear in JSON/Object
+// Ensure virtuals appear in JSON/Object
 patientSchema.set('toObject', { virtuals: true });
 patientSchema.set('toJSON', { virtuals: true });
 
