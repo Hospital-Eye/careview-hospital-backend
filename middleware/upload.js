@@ -1,7 +1,16 @@
-const multer = require('multer');
+const multer = require("multer");
+const path = require("path");
 
-// Store files in memory before sending to GCS
-const storage = multer.memoryStorage();
+// Configure disk storage for local dev
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/scans"); // folder where scans will be stored
+  },
+  filename: (req, file, cb) => {
+    const uniqueName = Date.now() + "-" + file.originalname;
+    cb(null, uniqueName);
+  }
+});
 
 const upload = multer({ storage });
 
