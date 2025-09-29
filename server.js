@@ -2,7 +2,7 @@ const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('./config/db');
-const path = require('path');
+const upload = require("./middleware/upload");
 
 dotenv.config();
 connectDB();
@@ -53,7 +53,8 @@ app.use('/api/dashboard', require('./routes/dashboardRoutes'));
 app.use('/api/scans', require('./routes/scanRoutes'));
 
 //to view actual file
-app.use("/uploads", express.static("uploads"));
+const path = require("path");
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 
 GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID
