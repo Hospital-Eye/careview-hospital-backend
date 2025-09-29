@@ -50,9 +50,10 @@ const uploadScan = async (req, res) => {
 
     // 3️⃣ Create Scan document
     const scan = new Scan({
-      organizationId: req.user.organizationId,
-      clinicId: req.user.clinicId,
+      organizationId: patient.organizationId,
+      clinicId: patient.clinicId,
       patientId: patient._id,
+      mrn: patient.mrn,
       uploadedBy: req.user._id,
       scanType,
       urgencyLevel,
