@@ -49,6 +49,12 @@ app.use('/api/management', require('./routes/managementRoutes'));
 // --- Dashboard routes ---
 app.use('/api/dashboard', require('./routes/dashboardRoutes'));
 
+// -- CT Scan routes ---
+app.use('/api/scans', require('./routes/scanRoutes'));
+
+//to view actual file
+app.use("/uploads", express.static("uploads"));
+
 
 GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID
 GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET
