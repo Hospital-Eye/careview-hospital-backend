@@ -1,4 +1,5 @@
 const Scan = require("../models/Scan");
+const Patient = require("../models/Patient");
 const path = require("path");
 const fs = require("fs");
 
@@ -7,55 +8,66 @@ const getScans = async (req, res) => {
   try {
     const filter = { ...req.scopeFilter };
 
+    // Allow filtering by patientId or MRN
     if (req.query.patientId) {
       filter.patientId = req.query.patientId;
     }
+    if (req.query.mrn) {
+      filter.mrn = req.query.mrn;
+    }
 
     const scans = await Scan.find(filter)
-      .populate("patientId", "name mrn")
-      .populate("uploadedBy", "name role");
+      .populate("patientId", "name mrn email")   // show patient details
+      .populate("uploadedBy", "name role email")      // show staff details
+      .sort({ createdAt: -1 });                       // newest first
 
-    res.json(scans);
+    res.status(200).json(scans);
   } catch (err) {
     console.error("Error fetching scans:", err);
     res.status(500).json({ error: "Server error while fetching scans" });
   }
 };
 
-// CREATE a scan
+
 const uploadScan = async (req, res) => {
   try {
-    const { patientId, uploadedBy, notes } = req.body;
+    const { patientName, mrn, scanType, urgencyLevel, notes } = req.body;
+
+    // 1️⃣ Validate file
     if (!req.file) {
       return res.status(400).json({ error: "No scan file uploaded" });
     }
 
-    // Ensure uploads/scans exists
-    const uploadDir = path.join(__dirname, "../uploads/scans");
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
+    // 2️⃣ Find patient by name + MRN
+    const patient = await Patient.findOne({
+      name: patientName,
+      mrn: mrn
+    });
+
+    if (!patient) {
+      return res.status(400).json({ error: "Patient with this name + MRN does not exist" });
     }
 
-    // Move file from memory buffer to disk
-    const filePath = path.join(uploadDir, req.file.originalname);
-    fs.writeFileSync(filePath, req.file.buffer);
-
-    // Save metadata in DB
+    // 3️⃣ Create Scan document
     const scan = new Scan({
-      patientId,
-      uploadedBy,
-      organizationId: req.user.organizationId,   // 🔹 from logged-in user
-      clinicId: req.user.clinicId,               // 🔹 from logged-in user
-      fileUrl: `/uploads/scans/${req.file.originalname}`, // relative path
+      organizationId: req.user.organizationId,
+      clinicId: req.user.clinicId,
+      patientId: patient._id,
+      uploadedBy: req.user._id,
+      scanType,
+      urgencyLevel,
+      fileUrl: `/uploads/scans/${req.file.filename}`, // local path
       notes,
     });
 
     const savedScan = await scan.save();
     res.status(201).json(savedScan);
+
   } catch (err) {
     console.error("Error uploading scan:", err);
     res.status(500).json({ error: err.message });
   }
 };
+
 
 module.exports = { getScans, uploadScan };
