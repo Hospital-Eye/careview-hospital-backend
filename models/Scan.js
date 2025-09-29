@@ -4,8 +4,8 @@ const scanSchema = new mongoose.Schema({
     organizationId: { type: String, required: true },
     clinicId: { type: String, required: true },
     patientId: { type: mongoose.Schema.Types.ObjectId, ref: "Patient", required: true },
-    mrn: { type: String, required: true},
-    uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: "Staff", required: true },
+    mrn: { type: String},
+    uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: "Staff"},
 
     scanType: { type: String, 
                 enum: [ 'Brain CT', 'Chest CT', 'Abdominal CT', 'Pelvic CT', 'Spine CT', 'Other' ],
