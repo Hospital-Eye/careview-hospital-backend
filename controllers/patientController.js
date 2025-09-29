@@ -6,6 +6,7 @@ const Admission = require('../models/Admission');
 const User = require('../models/User');
 const Organization = require('../models/Organization');
 const Clinic = require('../models/Clinic');
+const Counter = require("../models/Counter");
 
 //create patient with automatic room assignment based on availability and patient needs, and document upload to GCS
 
@@ -22,19 +23,17 @@ const createPatient = async (req, res) => {
     const { emailId, clinicId: bodyClinicId, name, dob, gender } = req.body;
     let userId;
 
-    // Ensure we have email to identify/create a user
+    // Ensure email exists
     if (!emailId) {
       return res.status(400).json({ error: "Email is required to create a patient." });
     }
 
-    // Check if user already exists
+    // Find or create User
     let user = await User.findOne({ email: emailId });
-
     if (user) {
       userId = user._id;
       req.body.emailId = user.email;
     } else {
-      // Create a new user with role = patient
       user = new User({
         name: name || "Unknown",
         email: emailId,
@@ -42,40 +41,31 @@ const createPatient = async (req, res) => {
         organizationId: req.user.organizationId,
         clinicIds: [],
       });
-
       await user.save();
       userId = user._id;
     }
 
     const { role, organizationId: userOrgId, clinicId: userClinicId } = req.user;
 
-    if (!userOrgId) {
-      return res.status(403).json({ error: "Missing organizationId in user context" });
-    }
+    if (!userOrgId) return res.status(403).json({ error: "Missing organizationId in user context" });
 
+    // Resolve clinic
     let clinic;
     let clinicId;
 
     if (role === "admin") {
-      if (!bodyClinicId) {
-        return res.status(400).json({ error: "Admin must provide clinicId" });
-      }
+      if (!bodyClinicId) return res.status(400).json({ error: "Admin must provide clinicId" });
 
       clinic = await Clinic.findOne({
         $or: [{ clinicId: bodyClinicId }, { _id: bodyClinicId }],
         organizationId: userOrgId,
       });
-
-      if (!clinic) {
-        return res.status(404).json({ error: "Clinic not found" });
-      }
+      if (!clinic) return res.status(404).json({ error: "Clinic not found" });
 
       clinicId = clinic.clinicId;
     } else if (role === "manager") {
       clinic = await Clinic.findOne({ _id: userClinicId });
-      if (!clinic) {
-        return res.status(404).json({ error: "Assigned clinic not found" });
-      }
+      if (!clinic) return res.status(404).json({ error: "Assigned clinic not found" });
 
       clinicId = clinic.clinicId;
     } else {
@@ -84,45 +74,53 @@ const createPatient = async (req, res) => {
 
     // Prevent duplicate patient linked to the same user
     const existingPatient = await Patient.findOne({ userId });
-    if (existingPatient) {
-      return res.status(200).json(existingPatient);
-    }
+    if (existingPatient) return res.status(200).json(existingPatient);
 
-    // ----------------- Auto-generate MRN -----------------
-    // Convert clinicId like "newhope-1" to "NEW1"
-    function clinicPrefix(clinicId) {
-      const parts = clinicId.split("-");
-      const name = parts[0].substring(0, 3).toUpperCase(); 
-      const number = parts[1] || "1";                      
-      return `${name}${number}`;                           
-    }
-
-    // Inside createPatient controller, after resolving clinicId:
-    const prefix = clinicPrefix(clinic.clinicId);
-
-    // Count patients for this clinic
-    const count = await Patient.countDocuments({ clinicId: clinic.clinicId });
-    const nextNumber = 1000 + count + 1; // Start at 1001
-
-    // Format MRN
-    const mrn = `${prefix}-${nextNumber}`;
-
-    // Create patient record
-    const patient = new Patient({
-      ...req.body,
-      userId,
-      organizationId: userOrgId,
-      clinicId,
-      mrn, // ✅ system-generated
-    });
-
-    await patient.save();
-    res.status(201).json(patient);
-  } catch (err) {
-    console.error("Error creating patient:", err);
-    res.status(400).json({ error: err.message });
+    // ----------------- MRN Generation -----------------
+  // Convert clinicId like "newhope-2" to "NEW2"
+  function clinicPrefix(clinicId) {
+    const parts = clinicId.split("-");
+    const name = parts[0].substring(0, 3).toUpperCase();
+    const number = parts[1] || "1";
+    return `${name}${number}`;
   }
-};
+  const prefix = clinicPrefix(clinic.clinicId);
+
+  // Find the highest MRN number in this clinic
+  const lastPatient = await Patient.find({ clinicId: clinic.clinicId })
+    .sort({ mrn: -1 })
+    .limit(1);
+
+  let lastSeq = 1000; // default starting number
+  if (lastPatient.length > 0 && lastPatient[0].mrn) {
+    const lastMrn = lastPatient[0].mrn; // e.g., "NEW2-1005"
+    const parts = lastMrn.split("-");
+    const num = parseInt(parts[1], 10);
+    if (!isNaN(num)) lastSeq = num;
+  }
+
+  // Increment to get next MRN
+  const nextNumber = lastSeq + 1;
+  const mrn = `${prefix}-${nextNumber}`;
+
+
+      // Create patient record
+      const patient = new Patient({
+        ...req.body,
+        userId,
+        organizationId: userOrgId,
+        clinicId,
+        mrn,
+      });
+
+      await patient.save();
+      res.status(201).json(patient);
+
+    } catch (err) {
+      console.error("Error creating patient:", err);
+      res.status(400).json({ error: err.message });
+    }
+  };
 
 
 // Get all patients, optionally filtered by status
