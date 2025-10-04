@@ -33,6 +33,8 @@ const uploadScan = async (req, res) => {
   try {
     const { patientName, mrn, scanType, urgencyLevel, notes } = req.body;
 
+    console.log("Uploader inside uploadScan:", req.user);
+
     // 1️⃣ Find patient using patientName + MRN
     const patient = await Patient.findOne({ name: patientName, mrn });
     if (!patient) {
@@ -55,7 +57,7 @@ const uploadScan = async (req, res) => {
       clinicId: patient.clinicId,
       patientId: patient._id,
       mrn: patient.mrn,
-      uploadedBy: req.user._id,
+      uploadedBy: req.user.id,
       scanType,
       urgencyLevel,
       fileUrl: `/uploads/scans/${req.file.filename}`, // local path
