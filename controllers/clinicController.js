@@ -8,6 +8,8 @@ const createClinic = async (req, res) => {
 
     const { organizationId }  = req.user;  // ✅ take org from logged-in user
 
+    console.log("Create Clinic Request Body:", req.body);
+
     if (!organizationId) {
       return res.status(403).json({ error: "Missing organizationId in user context" });
     }

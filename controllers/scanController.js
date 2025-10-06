@@ -41,16 +41,6 @@ const uploadScan = async (req, res) => {
       return res.status(404).json({ error: "Patient not found" });
     }
 
-    // 2️⃣ Check if a scan already exists for this patient + MRN
-    const existingScan = await Scan.findOne({
-      patientId: patient._id,
-      mrn: patient.mrn,
-    });
-
-    if (existingScan) {
-      return res.status(400).json({ error: "Patient scan record already exists" });
-    }
-
     // 3️⃣ Create scan
     const scan = new Scan({
       organizationId: patient.organizationId,

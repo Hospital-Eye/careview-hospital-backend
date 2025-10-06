@@ -5,6 +5,8 @@ const User = require('../models/User');
 const protect = (req, res, next) => {
   let token;
 
+  console.log("Reached protect middleware");
+
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith('Bearer ')
