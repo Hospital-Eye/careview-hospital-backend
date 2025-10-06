@@ -1,0 +1,21 @@
+# cv-service/config.example.yaml
+defaults:
+  model: yolov8n.pt        # use yolov8s.pt if you have GPU
+  conf: 0.35
+  imgsz: 640
+  frame_skip: 1            # 2–3 saves CPU
+  # default counting line (x,y)->(x,y); tune per camera
+  line: [[100, 100], [900, 100]]
+
+# Per-camera overrides by cameraId (string key)
+cameras:
+  cam1:
+    line: [[120, 410], [1180, 410]]
+    zone: [[200,120], [900,120], [900,700], [200,700]]
+    conf: 0.40
+    frame_skip: 1
+
+  "689ec160ff291961c3ee9540":
+    frame_skip: 2
+    conf: 0.45
+    line: [[80, 360], [1220, 360]]
