@@ -16,6 +16,20 @@ const createAdmission = async (req, res) => {
       roomType
     } = req.body;
 
+    // ------------------- Resolve patient -------------------
+    let patient = await Patient.findOne({
+      $or: [
+        { _id: patientId },    // if frontend sends actual ObjectId
+        { mrn: patientId }     // if frontend sends MRN instead
+      ],
+      organizationId: req.user.organizationId,
+      clinicId: req.user.clinicId
+    });
+
+    if (!patient) {
+      return res.status(404).json({ error: "Patient not found" });
+    }
+
     // ------------------- Resolve admitting staff -------------------
     let admittedStaffIdResolved = null;
     if (admittedByStaffId) {
@@ -72,7 +86,7 @@ const createAdmission = async (req, res) => {
 
     // ------------------- Create admission -------------------
     const admission = new Admission({
-      patientId,
+      patientId: patient._id,
       organizationId: req.user.organizationId,
       clinicId: req.user.clinicId,
       room: allocatedRoom._id,
@@ -88,7 +102,7 @@ const createAdmission = async (req, res) => {
 
     // ------------------- Update patient record -------------------
     await Patient.findByIdAndUpdate(
-      patientId,
+      patient._id,
       {
         currentAdmissionId: savedAdmission._id,
         room: allocatedRoom._id,

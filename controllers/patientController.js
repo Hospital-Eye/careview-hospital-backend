@@ -7,6 +7,7 @@ const User = require('../models/User');
 const Organization = require('../models/Organization');
 const Clinic = require('../models/Clinic');
 const Counter = require("../models/Counter");
+const mongoose = require("mongoose");
 
 //create patient with automatic room assignment based on availability and patient needs, and document upload to GCS
 
@@ -17,7 +18,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 const storage = new Storage();
 const bucket = storage.bucket(process.env.GCS_BUCKET_NAME);
 
-// ----------------- Controller -----------------
+// --- create new patient ---
 const createPatient = async (req, res) => {
   try {
     const { emailId, clinicId: bodyClinicId, name, dob, gender } = req.body;
@@ -39,36 +40,69 @@ const createPatient = async (req, res) => {
         email: emailId,
         role: "patient",
         organizationId: req.user.organizationId,
-        clinicId: [],
+        clinicId: req.user.clinicId,
       });
       await user.save();
       userId = user._id;
     }
 
     const { role, organizationId: userOrgId, clinicId: userClinicId } = req.user;
+    if (!userOrgId) {
+      return res.status(403).json({ error: "Missing organizationId in user context" });
+    }
 
-    if (!userOrgId) return res.status(403).json({ error: "Missing organizationId in user context" });
-
-    // Resolve clinic
+    // ----------------- Resolve Clinic -----------------
     let clinic;
     let clinicId;
 
+    // 🧩 Admin can specify clinicId manually
     if (role === "admin") {
-      if (!bodyClinicId) return res.status(400).json({ error: "Admin must provide clinicId" });
+      if (!bodyClinicId) {
+        return res.status(400).json({ error: "Admin must provide clinicId" });
+      }
+
+      let query;
+      if (mongoose.isValidObjectId(bodyClinicId)) {
+        query = { _id: bodyClinicId };
+      } else {
+        query = { clinicId: bodyClinicId };
+      }
 
       clinic = await Clinic.findOne({
-        $or: [{ clinicId: bodyClinicId }, { _id: bodyClinicId }],
+        ...query,
         organizationId: userOrgId,
       });
-      if (!clinic) return res.status(404).json({ error: "Clinic not found" });
+
+      if (!clinic) {
+        return res.status(404).json({ error: "Clinic not found" });
+      }
 
       clinicId = clinic.clinicId;
-    } else if (role === "manager") {
-      clinic = await Clinic.findOne({ _id: userClinicId });
-      if (!clinic) return res.status(404).json({ error: "Assigned clinic not found" });
+    }
+
+    // 🧩 Manager’s clinic is fixed (comes from req.user.clinicId)
+    else if (role === "manager") {
+      if (!userClinicId) {
+        return res.status(400).json({ error: "Manager has no assigned clinicId" });
+      }
+
+      let query;
+      if (mongoose.isValidObjectId(userClinicId)) {
+        query = { _id: userClinicId };
+      } else {
+        query = { clinicId: userClinicId };
+      }
+
+      clinic = await Clinic.findOne(query);
+      if (!clinic) {
+        return res.status(404).json({ error: "Assigned clinic not found" });
+      }
 
       clinicId = clinic.clinicId;
-    } else {
+    }
+
+    // ❌ No access for other roles
+    else {
       return res.status(403).json({ error: "Unauthorized role" });
     }
 
@@ -77,67 +111,62 @@ const createPatient = async (req, res) => {
     if (existingPatient) return res.status(200).json(existingPatient);
 
     // ----------------- MRN Generation -----------------
-  // Convert clinicId like "newhope-2" to "NEW2"
-  function clinicPrefix(clinicId) {
-    const parts = clinicId.split("-");
-    const name = parts[0].substring(0, 3).toUpperCase();
-    const number = parts[1] || "1";
-    return `${name}${number}`;
-  }
-  const prefix = clinicPrefix(clinic.clinicId);
-
-  // Find the highest MRN number in this clinic
-  const lastPatient = await Patient.find({ clinicId: clinic.clinicId })
-    .sort({ mrn: -1 })
-    .limit(1);
-
-  let lastSeq = 1000; // default starting number
-  if (lastPatient.length > 0 && lastPatient[0].mrn) {
-    const lastMrn = lastPatient[0].mrn; // e.g., "NEW2-1005"
-    const parts = lastMrn.split("-");
-    const num = parseInt(parts[1], 10);
-    if (!isNaN(num)) lastSeq = num;
-  }
-
-  // Increment to get next MRN
-  const nextNumber = lastSeq + 1;
-  const mrn = `${prefix}-${nextNumber}`;
-
-
-      // Create patient record
-      const patient = new Patient({
-        ...req.body,
-        userId,
-        organizationId: userOrgId,
-        clinicId,
-        mrn,
-      });
-
-      await patient.save();
-      res.status(201).json(patient);
-
-    } catch (err) {
-      console.error("Error creating patient:", err);
-      res.status(400).json({ error: err.message });
+    function clinicPrefix(clinicId) {
+      const parts = clinicId.split("-");
+      const name = parts[0].substring(0, 3).toUpperCase();
+      const number = parts[1] || "1";
+      return `${name}${number}`;
     }
-  };
 
+    const prefix = clinicPrefix(clinic.clinicId);
+
+    const lastPatient = await Patient.find({ clinicId: clinic.clinicId })
+      .sort({ mrn: -1 })
+      .limit(1);
+
+    let lastSeq = 1000;
+    if (lastPatient.length > 0 && lastPatient[0].mrn) {
+      const parts = lastPatient[0].mrn.split("-");
+      const num = parseInt(parts[1], 10);
+      if (!isNaN(num)) lastSeq = num;
+    }
+
+    const nextNumber = lastSeq + 1;
+    const mrn = `${prefix}-${nextNumber}`;
+
+    // ----------------- Create Patient -----------------
+    const patient = new Patient({
+      ...req.body,
+      userId,
+      organizationId: userOrgId,
+      clinicId,
+      mrn,
+    });
+
+    await patient.save();
+    res.status(201).json(patient);
+  } catch (err) {
+    console.error("Error creating patient:", err);
+    res.status(400).json({ error: err.message });
+  }
+};
 
 // Get all patients, optionally filtered by status
 const getPatients = async (req, res) => {
   try {
     const { status } = req.query; // e.g., ?status=Active or ?status=Discharged
 
-    // Use scope filter directly
+    // Apply scope (org/clinic)
     const patientFilter = { ...req.scopeFilter };
+    if (status) patientFilter.status = status; // ✅ Filter by patient.status
 
-    // Build admission filter
+    // Optional: admission filter if you want to limit nested admissions too
     const admissionFilter = {};
     if (status) {
       admissionFilter.status = status;
     }
 
-    // Find patients for org/clinic based on scope
+    // Fetch patients
     const patients = await Patient.find(patientFilter)
       .lean()
       .populate({
@@ -149,7 +178,7 @@ const getPatients = async (req, res) => {
         ]
       });
 
-    // Flatten structure: add separate fields from latest admission
+    // Flatten structure
     const reshapedPatients = patients.map(p => {
       const latestAdmission = p.admissions?.length
         ? p.admissions[p.admissions.length - 1]
