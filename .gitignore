@@ -11,3 +11,13 @@ node_modules
 public/streams/
 
 uploads/
+**/node_modules/
+**/.venv/
+**/__pycache__/
+**/*.pyc
+**/*.pt
+**/*.pth
+**/*.onnx
+**/*.mp4
+**/*.mkv
+**/*.mov
