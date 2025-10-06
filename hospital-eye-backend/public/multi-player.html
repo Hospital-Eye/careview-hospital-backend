@@ -1,0 +1,466 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Hospital Eye — Multi Live Console</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root{
+      --bg:#0b0f14; --panel:#121821; --panel-2:#0e141c; --text:#eef3f8; --muted:#9fb0c3;
+      --brand:#6aa7ff; --ok:#3ccf91; --danger:#ff5d6c; --ring:rgba(106,167,255,.35);
+      --radius:14px; --shadow:0 10px 30px rgba(0,0,0,.35)
+    }
+    *{box-sizing:border-box}
+    body{ margin:0; background:linear-gradient(120deg,#0b0f14 0%, #0c1320 100%); color:var(--text);
+      font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Inter,sans-serif; padding:16px }
+    .toolbar{ display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+      background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,.01));
+      border:1px solid rgba(255,255,255,.06); border-radius:var(--radius); box-shadow:var(--shadow);
+      padding:12px; margin-bottom:14px }
+    .btn{ cursor:pointer; border:none; padding:10px 12px; border-radius:10px; background:linear-gradient(180deg,#3259ff,#6aa7ff); color:#fff }
+    .btn-ghost{ background:#111825; color:var(--text) }
+    .btn-outline{ background:transparent; border:1px solid rgba(255,255,255,.15); color:var(--text) }
+    .btn-danger{ background:linear-gradient(180deg,#ff3a55,#ff7381); color:#fff }
+    label{font-size:12px; color:var(--muted)}
+    input[type=range], input[type=number]{ vertical-align:middle }
+    .grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap:14px }
+    .card{ background:linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%);
+      border:1px solid rgba(255,255,255,.06); border-radius:var(--radius); box-shadow:var(--shadow);
+      padding:10px; display:grid; grid-template-rows:auto 1fr auto; gap:8px; min-height:300px }
+    .title{ display:flex; align-items:center; justify-content:space-between; gap:8px; color:var(--muted) }
+    .video-wrap{ position:relative; min-height:220px; height:300px; display:flex; align-items:center; justify-content:center }
+    video{ width:100%; height:100%; object-fit:contain; background:#000; border-radius:12px }
+    canvas{ position:absolute; inset:0; pointer-events:none }
+    .controls{ display:flex; gap:8px; flex-wrap:wrap }
+    .metrics{ position:absolute; top:10px; right:10px; background:rgba(0,0,0,.8);
+      border:2px solid var(--ok); border-radius:10px; padding:8px 10px; display:none; min-width:160px }
+    .row{ display:flex; justify-content:space-between; gap:10px; margin:4px 0 }
+    .hud{ position:absolute; top:10px; left:10px; background:rgba(0,0,0,.5); border:1px solid rgba(255,255,255,.12);
+      border-radius:10px; padding:6px 8px; font-weight:600; display:none }
+    .status-dot{width:10px;height:10px;border-radius:999px;background:#999; display:inline-block; margin-right:6px}
+    .ok{background:var(--ok)} .err{background:var(--danger)}
+    .spinner{position:absolute; inset:0; display:none; align-items:center; justify-content:center}
+    .spinner::after{content:"";width:28px;height:28px;border-radius:50%;border:3px solid rgba(255,255,255,.15); border-top-color:var(--brand); animation:spin .9s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .pill{padding:6px 10px;border-radius:999px;font-weight:600}
+    .live{background:rgba(60,207,145,.15); color:var(--ok); border:1px solid rgba(60,207,145,.35)}
+    .toast{position:fixed; right:18px; bottom:18px; display:flex; flex-direction:column; gap:8px; z-index:9999}
+    .toast .t{ background:#101722; border:1px solid rgba(255,255,255,.08); padding:10px 12px; border-radius:10px; box-shadow:var(--shadow); min-width:260px }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <span class="pill live">LIVE</span>
+    <button class="btn-outline" id="addDemo">Add Demo Card</button>
+    <button class="btn" id="startAll">Start All Cameras</button>
+    <button class="btn-ghost" id="stopAll">Stop All Cameras</button>
+    <button class="btn-outline" id="startAllA">Start All Analytics</button>
+    <button class="btn-ghost" id="stopAllA">Stop All Analytics</button>
+    <div style="margin-left:auto; display:flex; align-items:center; gap:10px; flex-wrap:wrap">
+      <label>Conf <span id="confVal">60%</span></label>
+      <input type="range" id="conf" min="30" max="90" value="60" />
+      <label>Smooth <span id="smoothVal">5</span></label>
+      <input type="range" id="smooth" min="1" max="10" value="5" />
+      <label>Max det/s per cam <span id="rateVal">6</span></label>
+      <input type="range" id="rate" min="1" max="15" value="6" />
+      <label>Max concurrent <span id="concVal">1</span></label>
+      <input type="range" id="conc" min="1" max="3" value="1" />
+    </div>
+  </div>
+
+  <div class="grid" id="grid"></div>
+  <div class="toast" id="toast"></div>
+
+  <!-- hls.js + TFJS + coco-ssd -->
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.15.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
+  <script>
+    /* ------------------------ basics & helpers ------------------------ */
+    const $ = (s)=>document.querySelector(s);
+    const grid = $('#grid');
+    const toastBox = $('#toast');
+    function toast(msg, type='info'){
+      const t = document.createElement('div'); t.className='t'; t.textContent = msg;
+      if (type==='err') t.style.borderColor='rgba(255,93,108,.5)'; if (type==='ok') t.style.borderColor='rgba(60,207,145,.5)';
+      toastBox.appendChild(t); setTimeout(()=>{ t.style.opacity='0'; t.style.transform='translateY(6px)'; }, 2800);
+      setTimeout(()=>toastBox.removeChild(t), 3400);
+    }
+    const fetchJSON = async (url, opts) => (await fetch(url,opts)).json().catch(()=>null);
+
+    /* ------------------------ global state ------------------------ */
+    let confidence = 0.6;
+    let smoothingFrames = 5;
+    let maxDetectionsPerSecond = 6;          // per camera target
+    let maxConcurrentDetections = 1;         // scheduler concurrency
+    let model = null;                         // shared model
+    let schedulerRunning = false;
+
+    // Map: camId -> { video, canvas, ctx, hls, running, detect, hist, stable, lastT, nextAt, visible, line }
+    const cams = new Map();
+
+    // IntersectionObserver to pause analytics when offscreen
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        const card = e.target.closest('.card');
+        if (!card) return;
+        const id = card.dataset.id;
+        const st = cams.get(id);
+        if (st) st.visible = e.isIntersecting;
+      });
+    }, { threshold: 0.1 });
+
+    // Tab visibility pause
+    document.addEventListener('visibilitychange', () => {
+      // nothing to do; scheduler checks visibility before enqueue
+    });
+
+    /* ------------------------ model load (shared) ------------------------ */
+    async function ensureModel(){
+      if (!model) {
+        toast('Loading detection model…');
+        model = await cocoSsd.load();
+        toast('Model loaded','ok');
+      }
+      return model;
+    }
+
+    /* ------------------------ cards ------------------------ */
+    function makeCard(cam) {
+      const id = cam._id;
+      const el = document.createElement('div');
+      el.className = 'card'; el.dataset.id = id;
+      el.innerHTML = `
+        <div class="title">
+          <div><span class="status-dot" id="dot-${id}"></span>${cam.name || 'Camera'} — ${cam.ip || 'NA'}:${cam.rtspPort || '—'}</div>
+          <div style="display:flex; gap:6px">
+            <button class="btn-outline play">Play</button>
+            <button class="btn-ghost stop">Stop</button>
+            <button class="btn-ghost full">Fullscreen</button>
+          </div>
+        </div>
+        <div class="video-wrap">
+          <video playsinline muted autoplay></video>
+          <canvas></canvas>
+          <div class="hud">In <b class="in">0</b> · Out <b class="out">0</b> · Occ <b class="occ">0</b></div>
+          <div class="metrics">
+            <div class="row"><span>People:</span><b class="people">0</b></div>
+            <div class="row"><span>Conf:</span><b class="conf">0%</b></div>
+            <div class="row"><span>FPS:</span><b class="fps">0</b></div>
+            <div class="row"><span>Status:</span><b class="status">Idle</b></div>
+          </div>
+          <div class="spinner"></div>
+        </div>
+        <div class="controls">
+          <button class="btn-outline startA">Start Analytics</button>
+          <button class="btn-ghost stopA">Stop Analytics</button>
+          <button class="btn-danger remove">Remove</button>
+        </div>
+      `;
+      grid.appendChild(el);
+
+      const video  = el.querySelector('video');
+      const canvas = el.querySelector('canvas');
+      const ctx    = canvas.getContext('2d');
+      video.crossOrigin = 'anonymous'; video.playsInline = true; video.muted = true;
+
+      const state = {
+        video, canvas, ctx, hls:null,
+        running:false, detect:false,
+        hist:[], stable:0, lastT:0, nextAt:0,
+        visible:true, line:null,
+        minIntervalMs: Math.max(1000/ maxDetectionsPerSecond, 60) // per-cam rate cap
+      };
+      cams.set(id, state);
+
+      // observers
+      io.observe(el.querySelector('.video-wrap'));
+      new ResizeObserver(()=>fitCanvas(el)).observe(el.querySelector('.video-wrap'));
+
+      // wire up
+      el.querySelector('.play').onclick  = () => playCam(el, cam);
+      el.querySelector('.stop').onclick  = () => stopCam(el, cam);
+      el.querySelector('.startA').onclick= () => startAnalytics(el, cam);
+      el.querySelector('.stopA').onclick = () => stopAnalytics(el, cam);
+      el.querySelector('.remove').onclick= () => removeCam(el, cam);
+      el.querySelector('.full').onclick   = () => {
+        const wrap = el.querySelector('.video-wrap');
+        wrap.requestFullscreen?.() || wrap.webkitRequestFullscreen?.() || wrap.msRequestFullscreen?.();
+      };
+
+      // default line (for consistency with your other UIs)
+      fitCanvas(el);
+      state.line = defaultLine(el);
+      return el;
+    }
+
+    function fitCanvas(card){
+      const video = card.querySelector('video');
+      const canvas = card.querySelector('canvas');
+      canvas.width = video.clientWidth || video.videoWidth || 640;
+      canvas.height= video.clientHeight|| video.videoHeight|| 360;
+    }
+    function defaultLine(card){
+      const c = card.querySelector('canvas');
+      const w = c.width, h = c.height;
+      return [[Math.round(w*0.1), Math.round(h*0.5)], [Math.round(w*0.9), Math.round(h*0.5)]];
+    }
+
+    /* ------------------------ stream controls ------------------------ */
+    async function playCam(card, cam){
+      const id = cam._id; const st = cams.get(id);
+      const spinner = card.querySelector('.spinner'); spinner.style.display='flex';
+      try {
+        await fetchJSON(`/api/cameras/${id}/stop`, { method:'POST' });
+        const start = await fetchJSON(`/api/cameras/${id}/start`, {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ channel: cam.defaultChannel||0, stream: cam.defaultStream||'sub', useSystemFfmpeg:true })
+        });
+        const dot = card.querySelector(`#dot-${id}`);
+        if (!start || start.ok===false) { dot.classList.add('err'); dot.classList.remove('ok'); toast('Start failed','err'); return; }
+        const hlsUrl = start.hls.startsWith('/') ? start.hls : '/'+start.hls;
+
+        // Optional: small wait loop for manifest
+        const ok = await (async ()=>{ for (let i=0;i<40;i++){ try{ const r=await fetch(hlsUrl,{cache:'no-store'}); if(r.ok) return true; }catch{} await new Promise(rs=>setTimeout(rs,250)); } return false; })();
+        if (!ok) toast('Playlist not ready; trying anyway…');
+
+        if (st.hls) { try { st.hls.destroy(); } catch{} st.hls = null; }
+        const video = card.querySelector('video');
+
+        if (Hls.isSupported()){
+          const h = new Hls({
+            lowLatencyMode: true, maxBufferLength: 2, maxMaxBufferLength: 3,
+            liveSyncDuration: 1.5, capLevelToPlayerSize:true,
+            fetchSetup:(ctx,init)=>({ ...init, credentials:'omit' })
+          });
+          h.on(Hls.Events.ERROR, (_e, data)=>{
+            console.warn(`HLS error for ${id}`, data?.type, data?.details, data?.fatal);
+            if (data?.fatal) {
+              video.src = hlsUrl;
+              video.play().catch(()=>{});
+            }
+          });
+          h.on(Hls.Events.MANIFEST_PARSED, async ()=>{ try{ await video.play(); }catch{} });
+          h.loadSource(hlsUrl); h.attachMedia(video);
+          st.hls = h;
+        } else {
+          video.src = hlsUrl; video.autoplay = true; try{ await video.play(); }catch{}
+        }
+        dot.classList.add('ok'); dot.classList.remove('err');
+        card.querySelector('.metrics').style.display='block';
+        fitCanvas(card);
+      } finally { spinner.style.display='none'; }
+    }
+
+    function stopCam(card, cam){
+      const id = cam._id; const st = cams.get(id);
+      fetchJSON(`/api/cameras/${id}/stop`, { method:'POST' }).catch(()=>{});
+      if (st.hls) { try{ st.hls.destroy(); }catch{} st.hls=null; }
+      const video = card.querySelector('video'); video.removeAttribute('src'); video.load();
+      const ctx = card.querySelector('canvas').getContext('2d'); ctx.clearRect(0,0,9999,9999);
+      const dot = card.querySelector(`#dot-${id}`); dot.classList.remove('ok'); dot.classList.remove('err');
+    }
+
+    async function startAnalytics(card, cam){
+      const id = cam._id; const st = cams.get(id);
+      st.running = true; st.detect = true; st.hist = []; st.stable = 0; st.lastT = 0; st.nextAt = 0;
+      card.querySelector('.metrics').style.display = 'block';
+      // optional server-side analytics
+      fetchJSON(`/api/cv-analytics/${id}/start`, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ line: st.line })
+      }).catch(()=>{});
+      // kick scheduler
+      runScheduler();
+    }
+    async function stopAnalytics(card, cam){
+      const id = cam._id; const st = cams.get(id);
+      st.running = false; st.detect = false;
+      fetchJSON(`/api/cv-analytics/${id}/stop`, { method:'POST' }).catch(()=>{});
+      card.querySelector('.metrics').style.display = 'none';
+      // clear overlay
+      const ctx = card.querySelector('canvas').getContext('2d'); ctx.clearRect(0,0,9999,9999);
+    }
+    async function removeCam(card, cam){
+      if (!confirm('Remove this camera?')) return;
+      stopCam(card, cam);
+      await fetchJSON(`/api/cameras/${cam._id}`, { method:'DELETE' }).catch(()=>{});
+      card.remove(); cams.delete(cam._id);
+    }
+
+    /* ------------------------ detection scheduler ------------------------ */
+    let inFlight = 0;
+    async function runScheduler(){
+      if (schedulerRunning) return;
+      schedulerRunning = true;
+      await ensureModel();
+
+      const tick = async () => {
+        // Adjust minIntervalMs on the fly (based on slider)
+        for (const [id, st] of cams) st.minIntervalMs = Math.max(1000/maxDetectionsPerSecond, 60);
+
+        // skip if tab hidden: let HLS keep playing but spare compute
+        if (document.hidden) { requestAnimationFrame(tick); return; }
+
+        // try schedule up to maxConcurrentDetections
+        for (const [id, st] of cams){
+          if (!st.detect || !st.running) continue;
+          if (!st.visible) continue; // only visible cards
+          const v = st.video;
+          if (!v || v.readyState < 2 || !v.videoWidth) continue;
+          const now = performance.now();
+          if (inFlight >= maxConcurrentDetections) break;
+          if (now < st.nextAt) continue;
+
+          // schedule this detection
+          st.nextAt = now + st.minIntervalMs;
+          inFlight++;
+          detectOnce(id).finally(()=>{ inFlight = Math.max(0, inFlight-1); });
+        }
+        requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    }
+
+    async function detectOnce(id){
+      const st = cams.get(id); if (!st) return;
+      const card = grid.querySelector(`.card[data-id="${id}"]`);
+      try{
+        const preds = await model.detect(st.video);
+
+        // FPS (approx per detection)
+        const now = performance.now(); const dt = now - (st.lastT||now); st.lastT = now;
+        if (dt>0) card.querySelector('.fps').textContent = Math.round(1000/dt);
+
+        // Draw
+        const ctx = st.ctx; const c = st.canvas;
+        ctx.clearRect(0,0,c.width,c.height);
+        let people = 0, maxConf = 0;
+        for (const p of preds) {
+          if (p.class === 'person' && p.score >= confidence) {
+            people++;
+            const [x,y,w,h] = p.bbox;
+            ctx.strokeStyle = '#00ff00'; ctx.lineWidth=3; ctx.strokeRect(x,y,w,h);
+            ctx.fillStyle = '#00ff00'; ctx.font='14px system-ui, sans-serif';
+            ctx.fillText(`Person ${(p.score*100).toFixed(1)}%`, x, Math.max(12,y-6));
+            if (p.score>maxConf) maxConf=p.score;
+          }
+        }
+        // smoothing
+        st.hist.push(people); if (st.hist.length > smoothingFrames) st.hist.shift();
+        const avg = st.hist.reduce((s,c)=>s+c,0)/(st.hist.length||1);
+        let final = st.stable;
+        if (Math.abs(avg - st.stable) >= 1) final = Math.round(avg);
+        if (final !== st.stable) st.stable = final;
+
+        // metrics
+        card.querySelector('.people').textContent = st.stable;
+        card.querySelector('.conf').textContent   = (maxConf*100|0) + '%';
+        card.querySelector('.status').textContent = st.running ? 'Running' : 'Idle';
+      } catch (e){
+        // swallow occasional decode / draw errors
+        // console.warn('detectOnce failed', id, e);
+      }
+    }
+
+    /* ------------------------ bulk controls ------------------------ */
+    async function loadList(){
+      const list = await fetchJSON('/api/cameras') || [];
+      // build or refresh cards
+      const known = new Set(cams.keys());
+      for (const cam of list){
+        if (!cams.has(cam._id)) makeCard(cam);
+        known.delete(cam._id);
+      }
+      // remove stale
+      for (const stale of known){
+        const card = grid.querySelector(`.card[data-id="${stale}"]`);
+        if (card) card.remove();
+        cams.delete(stale);
+      }
+      return list;
+    }
+
+    $('#startAll').onclick = async () => {
+      const list = await loadList();
+      for (const cam of list){
+        const card = grid.querySelector(`.card[data-id="${cam._id}"]`);
+        await playCam(card, cam);
+      }
+      toast('All cameras started','ok');
+    };
+    $('#stopAll').onclick = async () => {
+      const list = await loadList();
+      for (const cam of list){
+        const card = grid.querySelector(`.card[data-id="${cam._id}"]`);
+        stopCam(card, cam);
+      }
+      toast('All cameras stopped');
+    };
+    $('#startAllA').onclick = async () => {
+      await ensureModel();
+      const list = await loadList();
+      for (const cam of list){
+        const card = grid.querySelector(`.card[data-id="${cam._id}"]`);
+        startAnalytics(card, cam);
+      }
+      toast('Analytics running for all','ok');
+    };
+    $('#stopAllA').onclick = async () => {
+      const list = await loadList();
+      for (const cam of list){
+        const card = grid.querySelector(`.card[data-id="${cam._id}"]`);
+        stopAnalytics(card, cam);
+      }
+      toast('Analytics stopped for all');
+    };
+
+    // Add a quick “demo” card without server APIs (paste custom m3u8)
+    $('#addDemo').onclick = () => {
+      const id = 'demo-' + Math.random().toString(36).slice(2,9);
+      const cam = { _id:id, name:'Custom HLS', ip:'', rtspPort:'' };
+      const card = makeCard(cam);
+      // add a tiny URL line
+      const urlRow = document.createElement('div');
+      urlRow.style.display='flex'; urlRow.style.gap='6px'; urlRow.style.marginTop='6px';
+      urlRow.innerHTML = `
+        <input id="u-${id}" placeholder="Paste /hls-proxy?url=... or same-origin .m3u8" style="flex:1; padding:8px; border-radius:8px; border:1px solid rgba(255,255,255,.12); background:#0f1621; color:#fff" />
+        <button class="btn-outline" id="b-${id}">Play URL</button>`;
+      card.appendChild(urlRow);
+      $('#b-'+id).onclick = async () => {
+        const u = $('#u-'+id).value.trim(); if (!u) return toast('Paste a URL','err');
+        const st = cams.get(id); const video = card.querySelector('video');
+        if (st.hls) { try{ st.hls.destroy(); }catch{} st.hls=null; }
+        if (Hls.isSupported()){
+          const h = new Hls({ lowLatencyMode:true, maxBufferLength:2, fetchSetup:(c,i)=>({ ...i, credentials:'omit' }) });
+          h.loadSource(u); h.attachMedia(video); st.hls = h;
+        } else { video.src = u; }
+      };
+    };
+
+    /* ------------------------ sliders ------------------------ */
+    $('#conf').oninput = (e)=>{ const v = Number(e.target.value); confidence = v/100; $('#confVal').textContent = v + '%'; };
+    $('#smooth').oninput = (e)=>{ const v = Number(e.target.value); smoothingFrames = v; $('#smoothVal').textContent = v; };
+    $('#rate').oninput = (e)=>{ const v = Number(e.target.value); maxDetectionsPerSecond = v; $('#rateVal').textContent = v; };
+    $('#conc').oninput = (e)=>{ const v = Number(e.target.value); maxConcurrentDetections = v; $('#concVal').textContent = v; };
+
+    /* ------------------------ init ------------------------ */
+    (async function init(){
+      await loadList();
+      // start scheduler loop lazy; it will spin when first analytics starts
+      toast('Ready. Add demo or start your saved cameras.');
+    })();
+
+    /* ------------------------ server header reminder ------------------------ */
+    /*
+      Ensure your HLS responses (m3u8 + segments) include:
+        Access-Control-Allow-Origin: *
+        Cross-Origin-Resource-Policy: cross-origin
+        Timing-Allow-Origin: *
+      And keep client requests "anonymous":
+        video.crossOrigin = 'anonymous'
+        hls.js fetchSetup: credentials:'omit'
+    */
+  </script>
+</body>
+</html>
