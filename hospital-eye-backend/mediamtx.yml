@@ -1,0 +1,7 @@
+server:
+  readTimeout: 10s
+  writeTimeout: 10s
+
+paths:
+  reolink:
+    source: rtsp://admin:Sigma2812@47.149.131.62:554/Preview_01_main
