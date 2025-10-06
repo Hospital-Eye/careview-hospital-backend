@@ -78,19 +78,14 @@ const createAdmin = async (req, res) => {
 
     if (user) {
       user.role = "admin";
-      if (!user.clinicIds.includes(clinic._id)) {
-        user.clinicIds.push(clinic._id);
-      }
-      if (!user.organizationIds?.includes(org.organizationId)) {
-        user.organizationIds = [...(user.organizationIds || []), org.organizationId];
-      }
+      user.clinicId = clinicId;
     } else {
       // Create new admin
       user = new User({
         name,
         email,
         role: "admin",
-        organizationId: organizationId,
+        organizationId: req.user.organizationId,
         clinicId: clinicId,
       });
     }

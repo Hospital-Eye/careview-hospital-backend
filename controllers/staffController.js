@@ -4,9 +4,36 @@ const Clinic = require('../models/Clinic');
 const Organization = require('../models/Organization');
 const canActOn = require("../middleware/canActOn");
 const roleHierarchy = require("../models/roleHierarchy");
+const Counter = require("../models/Counter");
 const mongoose = require("mongoose");
 
 //create staff
+// ----------------- Helper: Generate Unique 10-Digit Employee ID -----------------
+const existingEmployeeIds = new Set();
+
+async function generateUniqueEmployeeId() {
+  let id;
+  let exists = true;
+
+  while (exists) {
+    // Generate a random 10-digit number (string)
+    id = Math.floor(1000000000 + Math.random() * 9000000000).toString();
+
+    // Quick in-memory check
+    if (existingEmployeeIds.has(id)) continue;
+
+    // Check DB to avoid collision across server restarts or multiple instances
+    const found = await Staff.exists({ employeeId: id });
+    if (!found) {
+      exists = false;
+      existingEmployeeIds.add(id);
+    }
+  }
+
+  return id;
+}
+
+// ----------------- Controller: Create Staff -----------------
 const createStaff = async (req, res) => {
   try {
     const { name, role: staffRole, status, contact } = req.body;
@@ -40,30 +67,8 @@ const createStaff = async (req, res) => {
       return res.status(403).json({ error: "Only admins and managers can create staff" });
     }
 
-    // ----------------- Generate Unique Employee ID -----------------
-    function clinicPrefix(clinicId) {
-      const parts = clinicId.split("-");
-      const name = parts[0].substring(0, 3).toUpperCase();
-      const number = parts[1] || "1";
-      return `${name}${number}`;
-    }
-
-    const prefix = clinicPrefix(clinicId);
-
-    // Find the latest staff for this clinic to avoid collisions
-    const lastStaff = await Staff.findOne({ clinicId })
-      .sort({ createdAt: -1 })
-      .lean();
-
-    let nextNumber = 1001; // starting employee number
-    if (lastStaff && lastStaff.employeeId) {
-      const match = lastStaff.employeeId.match(/-(\d+)$/);
-      if (match) {
-        nextNumber = parseInt(match[1]) + 1;
-      }
-    }
-
-    let employeeId = `${prefix}-${nextNumber}`;
+    // ----------------- Generate Unique Random Employee ID -----------------
+    const employeeId = await generateUniqueEmployeeId();
 
     // ----------------- Upsert User -----------------
     let user = await User.findOne({ email });
@@ -111,21 +116,7 @@ const createStaff = async (req, res) => {
       });
     }
 
-    // ----------------- Save with Retry on Duplicate -----------------
-    try {
-      await staff.save();
-    } catch (err) {
-      if (err.code === 11000 && err.keyPattern?.employeeId) {
-        // Duplicate employeeId — generate a new one and retry
-        const match = employeeId.match(/-(\d+)$/);
-        const newNumber = match ? parseInt(match[1]) + 1 : nextNumber + 1;
-        employeeId = `${prefix}-${newNumber}`;
-        staff.employeeId = employeeId;
-        await staff.save();
-      } else {
-        throw err;
-      }
-    }
+    await staff.save();
 
     res.status(201).json({ user, staff });
   } catch (err) {
@@ -133,7 +124,6 @@ const createStaff = async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 };
-
 
 // Get all staff (restricted by role/org/clinic + scope)
 const getAllStaff = async (req, res) => {
