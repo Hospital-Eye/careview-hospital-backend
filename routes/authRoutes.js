@@ -17,8 +17,7 @@ module.exports = (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI, F
     // 📝 Allowed staff domains (from env/config ideally)
     const ALLOWED_DOMAINS = [
     "sigmahealthsense.com",
-    "usc.edu",
-    "gmail.com"
+    "usc.edu"
     ];
 
     router.get('/auth/google/callback', async (req, res) => {
@@ -49,7 +48,8 @@ module.exports = (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI, F
         // --- Role assignment ---
         if (ALLOWED_DOMAINS.includes(domain)) {
         role = "nurse";
-        } else if (domain === "gmail.com") {
+        }
+        else if (!ALLOWED_DOMAINS.includes(domain)){
         role = "patient";
         } else {
         console.warn(`❌ Unauthorized domain attempted login: ${userEmail}`);
@@ -66,8 +66,8 @@ module.exports = (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI, F
             name: profile.name,
             profilePicture: profile.picture,
             role,
-            organizationId: null,
-            clinicId: null,
+            organizationId: "sigma-healthsense",
+            clinicId: "newhope-1",
             isActive: true,
         });
         await user.save();
@@ -93,7 +93,9 @@ module.exports = (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI, F
         };
         const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "24h" });
 
+        console.log(`✅ Login successful with email: ${userEmail}`);
         return res.redirect(`${FRONTEND_BASE_URL}/dashboard?token=${token}`);
+
     } catch (err) {
         console.error("Google OAuth error:", err.message);
         return res.redirect(`${FRONTEND_BASE_URL}/login?error=google_oauth_failed`);

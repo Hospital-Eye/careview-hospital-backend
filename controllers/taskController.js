@@ -3,7 +3,7 @@ const Task = require('../models/Task');
 // Create a new task
 const createTask = async (req, res) => {
   try {
-    const { category, patientId, description, assignedStaffId, clinicId: bodyClinicId, ...otherFields } = req.body;
+    const { taskType, patientId, description, assignedStaffId, clinicId: bodyClinicId, ...otherFields } = req.body;
 
     console.log(req.body);
 
@@ -11,7 +11,7 @@ const createTask = async (req, res) => {
       return res.status(400).json({ error: "Description is required." });
     }
 
-    if (category === "Patient-Related" && !patientId) {
+    if (taskType === "Patient-Related" && !patientId) {
       return res.status(400).json({ error: "Patient ID is required for patient-related tasks." });
     }
 
@@ -37,9 +37,9 @@ const createTask = async (req, res) => {
     }
 
     const task = new Task({
-      category,
+      taskType,
       description,
-      patientId: category === "Patient-Related" ? patientId : null,
+      patientId: taskType === "Patient-Related" ? patientId : null,
       clinicId,
       organizationId: userOrgId,
       assignedStaffId: assignedStaffId || req.user.id,
@@ -65,8 +65,8 @@ const getTasks = async (req, res) => {
     const query = { ...scopeFilter }; // start with scope filter
 
     // Add URL params on top of scope
-    if (req.query.category) {
-      query.category = req.query.category; // Patient-Related / Operational
+    if (req.query.taskType) {
+      query.taskType = req.query.taskType; // Patient-Related / Operational
     }
     if (req.query.status) {
       query.status = req.query.status; // Pending / In-Progress / Completed / Overdue
@@ -78,7 +78,7 @@ const getTasks = async (req, res) => {
     const tasks = await Task.find(query)
       .populate('assignedStaffId', 'name role contact')
       .populate('patientId', 'name mrn')
-      .populate('dependencies', 'category status');
+      .populate('dependencies', 'taskType status');
 
     res.json(tasks);
   } catch (err) {

@@ -39,7 +39,7 @@ const createPatient = async (req, res) => {
         email: emailId,
         role: "patient",
         organizationId: req.user.organizationId,
-        clinicIds: [],
+        clinicId: [],
       });
       await user.save();
       userId = user._id;
