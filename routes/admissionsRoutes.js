@@ -9,7 +9,7 @@ const {
     deleteAdmission
 } = require('../controllers/admissionController');
 
-router.post('/', protect, authorize('admin', 'nurse', 'manager', 'doctor'), scope('Admission'), createAdmission);
+router.post('/', protect, authorize('admin', 'nurse', 'manager', 'doctor'), createAdmission);
 router.get('/', protect, authorize('admin', 'nurse', 'manager', 'doctor'), scope('Admission'), getAdmissions);
 router.get('/:id', protect, authorize('admin', 'nurse', 'manager', 'doctor'), scope('Admission'), getAdmissionById);
 router.put('/:id', protect, authorize('admin', 'nurse', 'manager'), scope('Admission'), updateAdmission);

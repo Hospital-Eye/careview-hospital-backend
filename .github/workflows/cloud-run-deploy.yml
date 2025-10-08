@@ -68,8 +68,4 @@ jobs:
                             GOOGLE_REDIRECT_URI=${{ secrets.GOOGLE_REDIRECT_URI }},
                             FRONTEND_BASE_URL=${{ secrets.FRONTEND_BASE_URL }},
                             NODE_ENV=${{ secrets.NODE_ENV }}"
-    
-      - name: Call Cloud Run
-        run: |
-          echo "Using ID token from auth step"
-          curl -H "Authorization: Bearer ${{ steps.auth.outputs.id_token }}" "https://hospital-eye-backend-dev-1078754960579.us-central1.run.app"
+  
