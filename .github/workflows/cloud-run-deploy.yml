@@ -48,7 +48,11 @@ jobs:
           echo "REGION=${{ secrets.REGION }}"
           echo "SERVICE_NAME=${{ secrets.SERVICE_NAME }}"
           echo "SERVICE_ACCOUNT_EMAIL=${{ secrets.SERVICE_ACCOUNT_EMAIL }}"
-
+      
+      - name: Verify gcloud project config
+        run: |
+          gcloud config list
+          gcloud projects describe ${{ secrets.PROJECT_ID }}
 
       - name: Deploy to Cloud Run
         run: |
@@ -57,10 +61,5 @@ jobs:
             --region ${{ secrets.REGION }} \
             --platform managed \
             --service-account ${{ secrets.SERVICE_ACCOUNT_EMAIL }} \
-            --set-env-vars "MONGODB_URI=${{ secrets.MONGODB_URI }},
-                            JWT_SECRET=${{ secrets.JWT_SECRET }},
-                            GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }},
-                            GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }},
-                            GOOGLE_REDIRECT_URI=${{ secrets.GOOGLE_REDIRECT_URI }},
-                            FRONTEND_BASE_URL=${{ secrets.FRONTEND_BASE_URL }},
-                            NODE_ENV=${{ secrets.NODE_ENV }}"
+            --set-env-vars "MONGODB_URI=${{ secrets.MONGODB_URI }},JWT_SECRET=${{ secrets.JWT_SECRET }},GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }},GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }},GOOGLE_REDIRECT_URI=${{ secrets.GOOGLE_REDIRECT_URI }},FRONTEND_BASE_URL=${{ secrets.FRONTEND_BASE_URL }},NODE_ENV=${{ secrets.NODE_ENV }}"
+
