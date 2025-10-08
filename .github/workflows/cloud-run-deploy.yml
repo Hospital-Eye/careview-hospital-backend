@@ -41,6 +41,14 @@ jobs:
           docker build -t "$IMAGE" .
           docker push "$IMAGE"
           echo "IMAGE=$IMAGE" >> $GITHUB_ENV
+      
+      - name: Debug environment secrets
+        run: |
+          echo "PROJECT_ID=${{ secrets.PROJECT_ID }}"
+          echo "REGION=${{ secrets.REGION }}"
+          echo "SERVICE_NAME=${{ secrets.SERVICE_NAME }}"
+          echo "SERVICE_ACCOUNT_EMAIL=${{ secrets.SERVICE_ACCOUNT_EMAIL }}"
+
 
       - name: Deploy to Cloud Run
         run: |
