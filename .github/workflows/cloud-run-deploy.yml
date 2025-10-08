@@ -21,28 +21,16 @@ jobs:
       - name: Remove old creds
         run: rm -f gha-creds-*.json || true
 
-      - name: Check if OIDC token variables are injected
-        run: |
-          echo "Checking if GitHub injected OIDC token environment variables..."
-          echo "ACTIONS_ID_TOKEN_REQUEST_TOKEN: ${ACTIONS_ID_TOKEN_REQUEST_TOKEN:+[SET]}"
-          echo "ACTIONS_ID_TOKEN_REQUEST_URL: ${ACTIONS_ID_TOKEN_REQUEST_URL:+[SET]}"
-          if [ -z "$ACTIONS_ID_TOKEN_REQUEST_TOKEN" ] || [ -z "$ACTIONS_ID_TOKEN_REQUEST_URL" ]; then
-            echo "::error::OIDC environment variables not found. This job may be running from a fork or lacks proper permissions."
-            exit 1
-          fi
-      
-      - name: Debug GitHub OIDC Token
-        run: |
-          echo "${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" | cut -d "." -f2 | base64 -d | jq .
-
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
-          token_format: id_token
+          token_format: access_token
           workload_identity_provider: projects/1078754960579/locations/global/workloadIdentityPools/github-pool/providers/github-provider
           service_account: github-deployer@sigma-healthsense.iam.gserviceaccount.com
           audience: https://token.actions.githubusercontent.com
-          id_token_audience: "https://hospital-eye-backend-dev-1078754960579.us-central1.run.app"
+
+      - name: Set GCP Project
+        run: gcloud config set project ${{ secrets.PROJECT_ID }}
 
       - name: Configure Docker for Artifact Registry
         run: gcloud auth configure-docker ${{ secrets.REGION }}-docker.pkg.dev --quiet
@@ -68,4 +56,3 @@ jobs:
                             GOOGLE_REDIRECT_URI=${{ secrets.GOOGLE_REDIRECT_URI }},
                             FRONTEND_BASE_URL=${{ secrets.FRONTEND_BASE_URL }},
                             NODE_ENV=${{ secrets.NODE_ENV }}"
-  
