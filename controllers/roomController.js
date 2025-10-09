@@ -10,6 +10,8 @@ const createRoom = async (req, res) => {
     const { clinicId: bodyClinicId } = req.body;
     const { role, organizationId: userOrgId, clinicId: userClinicId } = req.user;
 
+    console.log(req.body);
+
     if (!userOrgId) {
       return res.status(403).json({ error: "Missing organizationId in user context" });
     }
@@ -22,8 +24,8 @@ const createRoom = async (req, res) => {
       }
 
       const clinic = await Clinic.findOne({
-        $or: [{ clinicId: bodyClinicId }, { _id: bodyClinicId }],
-        organizationId: userOrgId,
+      clinicId: bodyClinicId,
+      organizationId: userOrgId,
       });
 
       if (!clinic) {
