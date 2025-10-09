@@ -10,9 +10,9 @@ const {
 } = require('../controllers/cvDetectionController');
 
 router.post('/', protect, authorize('admin', 'manager'), scope('CVDetection'), createDetection);
-router.get('/', protect, authorize('admin', 'manager'), scope('CVDetection'), getDetections);
-router.get('/:id', protect, authorize('admin', 'manager'), scope('CVDetection'), getDetectionById);
-router.put('/:id', protect, authorize('admin', 'manager'), scope('CVDetection'), updateDetection);
+router.get('/', protect, authorize('admin', 'manager', 'doctor'), scope('CVDetection'), getDetections);
+router.get('/:id', protect, authorize('admin', 'manager', 'doctor'), scope('CVDetection'), getDetectionById);
+router.put('/:id', protect, authorize('admin', 'manager', 'doctor'), scope('CVDetection'), updateDetection);
 router.delete('/:id', protect, authorize('admin', 'manager'), scope('CVDetection'), deleteDetection);
 
 module.exports = router;

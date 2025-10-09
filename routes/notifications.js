@@ -6,7 +6,7 @@ const {
   getNotifications
 } = require('../controllers/notificationController');
 
-router.post('/', protect, authorize('admin'), createNotification);
-router.get('/', protect, authorize('admin'), getNotifications);
+router.post('/', protect, authorize('admin', 'manager'), createNotification);
+router.get('/', protect, authorize('admin', 'manager'), getNotifications);
 
 module.exports = router;
