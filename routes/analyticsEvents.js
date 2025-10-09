@@ -6,7 +6,7 @@ const {
   getEvents
 } = require('../controllers/analyticsEventController');
 
-router.post('/', protect, authorize('admin', 'manager'), scope('AnalyticsEvent'), createEvent);
-router.get('/', protect, authorize('admin', 'manager'), scope('AnalyticsEvent'), getEvents);
+router.post('/', protect, authorize('admin', 'manager', 'doctor', 'nurse'), scope('AnalyticsEvent'), createEvent);
+router.get('/', protect, authorize('admin', 'manager', 'doctor', 'nurse'), scope('AnalyticsEvent'), getEvents);
 
 module.exports = router;

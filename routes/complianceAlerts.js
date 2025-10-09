@@ -9,10 +9,10 @@ const {
   deleteAlert
 } = require('../controllers/complianceAlertController');
 
-router.post('/', protect, authorize('admin'), scope('ComplianceAlert'), createAlert);
-router.get('/', protect, authorize('admin', 'manager'), scope('ComplianceAlert'), getAlerts);
-router.get('/:id', protect, authorize('admin', 'manager'), scope('ComplianceAlert'), getAlertById);
-router.put('/:id', protect, authorize('admin', 'manager'), scope('ComplianceAlert'), updateAlert);
-router.delete('/:id', protect, authorize('admin'), scope('ComplianceAlert'), deleteAlert);
+router.post('/', protect, authorize('admin', 'manager'), createAlert);
+router.get('/', protect, authorize('admin', 'manager', 'doctor', 'nurse'), scope('ComplianceAlert'), getAlerts);
+router.get('/:id', protect, authorize('admin', 'manager', 'doctor', 'nurse'), scope('ComplianceAlert'), getAlertById);
+router.put('/:id', protect, authorize('admin', 'manager', 'doctor', 'nurse'), scope('ComplianceAlert'), updateAlert);
+router.delete('/:id', protect, authorize('admin', 'manager'), scope('ComplianceAlert'), deleteAlert);
 
 module.exports = router;

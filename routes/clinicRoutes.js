@@ -11,7 +11,7 @@ const {
 } = require('../controllers/clinicController');
 
 
-router.post('/', protect, authorize('admin', 'manager', ), createClinic);
+router.post('/', protect, authorize('admin', 'manager'), createClinic);
 router.get('/', protect, authorize('admin', 'manager', 'doctor'), scope('Clinic'), getClinics);
 router.get('/:id', protect, authorize('admin', 'manager', 'doctor'), scope('Clinic'), getClinicById);
 router.put('/:id', protect, authorize('admin', 'manager', 'doctor'), scope('Clinic'), editClinic);

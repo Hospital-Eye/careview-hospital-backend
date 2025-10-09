@@ -16,8 +16,6 @@ const createAdmission = async (req, res) => {
       roomType
     } = req.body;
 
-    console.log(req.body);
-
     // ------------------- Resolve patient -------------------
     let patient = await Patient.findOne({
       $or: [

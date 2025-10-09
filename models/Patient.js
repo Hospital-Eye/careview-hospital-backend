@@ -9,7 +9,6 @@ const patientSchema = new Schema({
   dob: Date,
   gender: String,
 
-  // from dev (many flows expect this)
   emailId: { type: String, required: true },
 
   //link to user if exists
@@ -23,21 +22,11 @@ const patientSchema = new Schema({
     phone: String
   },
 
-  // from HEAD (clinical metadata kept for compatibility)
-  roomId: { type: Schema.Types.ObjectId, ref: 'Room' },
   diagnoses: [String],
-  attendingPhysicianId: { type: Schema.Types.ObjectId, ref: 'Staff' },
 
   // normalize to dev’s enum
   status: { type: String, enum: ['Active', 'Discharged'], default: 'Active' },
 
-  carePlan: {
-    assignedStaffIds: [{ type: Schema.Types.ObjectId, ref: 'Staff' }],
-    notes: String,
-    scheduledProcedures: [String],
-    medicationSchedule: [String],
-    dietaryRestrictions: String
-  }
 }, { timestamps: true });
 
 // Virtual relationship to admissions (from dev)
