@@ -3,9 +3,8 @@ const User = require('../models/User');
 
 // Middleware to protect routes (Authentication)
 const protect = (req, res, next) => {
+  console.log('protect middleware reached');
   let token;
-
-  console.log("Reached protect middleware");
 
   if (
     req.headers.authorization &&
@@ -14,24 +13,20 @@ const protect = (req, res, next) => {
     try {
       token = req.headers.authorization.split(' ')[1];
 
-      // ✅ Verify token against your secret and check expiry
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
       console.log('Decoded JWT payload:', decoded);
 
-      // Attach user info to request
       req.user = decoded;
 
-      next();
+      return next(); // ✅ Add return here so function exits cleanly
     } catch (err) {
       console.error('Token verification failed:', err.message);
       return res.status(401).json({ message: 'Not authorized, token failed' });
     }
   }
 
-  if (!token) {
-    return res.status(401).json({ message: 'Not authorized, no token' });
-  }
+  // ✅ Only runs if the first if didn't match
+  return res.status(401).json({ message: 'Not authorized, no token' });
 };
 
 // Middleware for role-based authorization
