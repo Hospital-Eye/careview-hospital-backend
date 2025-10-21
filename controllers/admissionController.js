@@ -135,10 +135,13 @@ const getAdmissions = async (req, res) => {
       .populate('room'); // populate room object
 
     const result = admissions.map(adm => ({
+      _id: adm._id,
       patientName: adm.patientId?.name || '—',
       mrn: adm.patientId?.mrn || '—',
       roomNumber: adm.room?.roomNumber || '—',
+      acuityLevel: adm.acuityLevel,
       status: adm.status,
+      admissionDate: adm.admissionDate
     }));
 
     res.json(result);
