@@ -3,9 +3,16 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('./config/db');
 const upload = require("./middleware/upload");
+const db = require('./models');
+const { initCleanupCron } = require('./utils/cleanup-cron');
 
 dotenv.config();
-connectDB();
+
+// Initialize database connection
+connectDB().then(() => {
+  // Initialize cleanup cron job for CVEvent and MP4Event TTL
+  initCleanupCron(db);
+});
 
 const app = express();
 app.use(cors());

@@ -1,13 +1,15 @@
-const Admission = require('../models/Admission');
-const Patient = require('../models/Patient'); 
-const Staff = require('../models/Staff');
-const Room = require('../models/Room');
+const { Admission, Patient, Staff, Room } = require('../models');
+const { Op } = require('sequelize');
+const { sequelize } = require('../config/db');
+const { validate: isUUID } = require('uuid');
 
 // Create a new admission
 const createAdmission = async (req, res) => {
   console.log("🩺 createAdmission endpoint hit");
 
   console.log(req.body);
+
+  const t = await sequelize.transaction();
 
   try {
     const {
@@ -21,10 +23,11 @@ const createAdmission = async (req, res) => {
     } = req.body;
 
     // ------------------- Resolve patient -------------------
-    const patient = await Patient.findById(patientId);
+    const patient = await Patient.findByPk(patientId, { transaction: t });
 
     if (!patient) {
       console.warn(`❌ Patient not found for ID: ${patientId}`);
+      await t.rollback();
       return res.status(404).json({ error: "Patient not found" });
     }
 
@@ -34,15 +37,16 @@ const createAdmission = async (req, res) => {
 
     if (admittedByStaffId) {
       console.log("🔍 Looking for admitting staff with ID:", admittedByStaffId);
-      const staff = await Staff.findById(admittedByStaffId);
+      const staff = await Staff.findByPk(admittedByStaffId, { transaction: t });
       console.log("🧠 Found staff:", staff);
 
       if (!staff) {
         console.warn(`❌ No staff found for ID ${admittedByStaffId}`);
+        await t.rollback();
         return res.status(400).json({ error: "Admitting staff not found" });
       }
 
-      admittedStaffIdResolved = staff._id;
+      admittedStaffIdResolved = staff.id;
       console.log("✅ Staff resolved successfully:", admittedStaffIdResolved);
     }
 
@@ -51,64 +55,67 @@ const createAdmission = async (req, res) => {
     if (attendingPhysicianName) {
       console.log("🔍 Looking for attending physician:", attendingPhysicianName);
       const physician = await Staff.findOne({
-        name: attendingPhysicianName,
-        organizationId: req.user.organizationId,
-        clinicId: req.user.clinicId,
-        role: "doctor"
+        where: {
+          name: attendingPhysicianName,
+          organizationId: req.user.organizationId,
+          clinicId: req.user.clinicId,
+          role: "doctor"
+        },
+        transaction: t
       });
       console.log("🧠 Found physician:", physician);
       if (!physician) {
         console.warn("❌ Attending physician not found");
+        await t.rollback();
         return res.status(400).json({ error: "Attending physician not found" });
       }
-      attendingPhysicianIdResolved = physician._id;
+      attendingPhysicianIdResolved = physician.id;
     }
 
     // ------------------- Resolve allocated Room -------------------
     const allocatedRoom = await Room.findOne({
-    _id: req.body.room,
-    organizationId: patient.organizationId,
-    clinicId: patient.clinicId
-    }).lean();
+      where: {
+        id: req.body.room,
+        organizationId: patient.organizationId,
+        clinicId: patient.clinicId
+      },
+      transaction: t
+    });
 
     if (!allocatedRoom) {
+      await t.rollback();
       return res.status(400).json({ error: "Specified room not found or unavailable" });
     }
 
     // ------------------- Create admission -------------------
-    const admission = new Admission({
-    patientId: patient._id,
-    organizationId: patient.organizationId,
-    clinicId: patient.clinicId,
-    room: allocatedRoom._id,
-    admittedByStaffId: admittedStaffIdResolved,
-    attendingPhysicianId: attendingPhysicianIdResolved,
-    admissionReason,
-    acuityLevel,
-    status: "Active",
-    timestamps: { created: new Date() }
-    });
-
-    const savedAdmission = await admission.save();
+    const admission = await Admission.create({
+      patientId: patient.id,
+      organizationId: patient.organizationId,
+      clinicId: patient.clinicId,
+      room: allocatedRoom.id,
+      admittedByStaffId: admittedStaffIdResolved,
+      attendingPhysicianId: attendingPhysicianIdResolved,
+      admissionReason,
+      acuityLevel,
+      status: "Active"
+    }, { transaction: t });
 
     // ------------------- Update patient record -------------------
-    await Patient.findByIdAndUpdate(
-      patient._id,
-      {
-        currentAdmissionId: savedAdmission._id,
-        room: allocatedRoom._id,
-        status: "Active"
-      },
-      { new: true }
-    );
+    await patient.update({
+      currentAdmissionId: admission.id,
+      room: allocatedRoom.id,
+      status: "Active"
+    }, { transaction: t });
 
-    console.log("🎉 Admission successfully created:", savedAdmission._id);
+    await t.commit();
+
+    console.log("🎉 Admission successfully created:", admission.id);
 
     // ------------------- Respond with admission + room info -------------------
     res.status(201).json({
-      admission: savedAdmission,
+      admission: admission,
       assignedRoom: {
-        roomId: allocatedRoom._id,
+        roomId: allocatedRoom.id,
         roomNumber: allocatedRoom.roomNumber,
         unit: allocatedRoom.unit,
         roomType: allocatedRoom.roomType,
@@ -117,6 +124,7 @@ const createAdmission = async (req, res) => {
     });
 
   } catch (err) {
+    await t.rollback();
     console.error("Error creating admission:", err);
     res.status(400).json({ error: err.message });
   }
@@ -130,15 +138,26 @@ const getAdmissions = async (req, res) => {
 
     const filter = req.scopeFilter || {};
 
-    const admissions = await Admission.find(filter)
-      .populate('patientId', 'name mrn') // only get name & MRN
-      .populate('room'); // populate room object
+    const admissions = await Admission.findAll({
+      where: filter,
+      include: [
+        {
+          model: Patient,
+          as: 'patient',
+          attributes: ['name', 'mrn']
+        },
+        {
+          model: Room,
+          as: 'roomDetails'
+        }
+      ]
+    });
 
     const result = admissions.map(adm => ({
-      _id: adm._id,
-      patientName: adm.patientId?.name || '—',
-      mrn: adm.patientId?.mrn || '—',
-      roomNumber: adm.room?.roomNumber || '—',
+      id: adm.id,
+      patientName: adm.patient?.name || '—',
+      mrn: adm.patient?.mrn || '—',
+      roomNumber: adm.roomDetails?.roomNumber || '—',
       acuityLevel: adm.acuityLevel,
       status: adm.status,
       admissionDate: adm.admissionDate
@@ -156,8 +175,14 @@ const getAdmissions = async (req, res) => {
 // get admission by ID
 const getAdmissionById = async (req, res) => {
   try {
-    const admission = await Admission.findById(req.params.id)
-      .populate('patientId room admittedByStaffId attendingPhysicianId');
+    const admission = await Admission.findByPk(req.params.id, {
+      include: [
+        { model: Patient, as: 'patient' },
+        { model: Room, as: 'roomDetails' },
+        { model: Staff, as: 'admittedByStaff' },
+        { model: Staff, as: 'attendingPhysician' }
+      ]
+    });
     if (!admission) return res.status(404).json({ error: 'Admission not found' });
     res.json(admission);
   } catch (err) {
@@ -169,10 +194,16 @@ const getAdmissionById = async (req, res) => {
 const getActiveAdmissionByPatient = async (req, res) => {
   try {
     const admission = await Admission.findOne({
-      patientId: req.params.patientId,
-      status: 'Active'
-    })
-      .populate('room admittedByStaffId attendingPhysicianId');
+      where: {
+        patientId: req.params.patientId,
+        status: 'Active'
+      },
+      include: [
+        { model: Room, as: 'roomDetails' },
+        { model: Staff, as: 'admittedByStaff' },
+        { model: Staff, as: 'attendingPhysician' }
+      ]
+    });
     if (!admission) return res.status(404).json({ error: 'No active admission found' });
     res.json(admission);
   } catch (err) {
@@ -184,9 +215,19 @@ const getActiveAdmissionByPatient = async (req, res) => {
 const getAdmissionsByDateRange = async (req, res) => {
   try {
     const { start, end } = req.query;
-    const admissions = await Admission.find({
-      admissionDate: { $gte: new Date(start), $lte: new Date(end) }
-    }).populate('patientId room attendingPhysicianId');
+    const admissions = await Admission.findAll({
+      where: {
+        admissionDate: {
+          [Op.gte]: new Date(start),
+          [Op.lte]: new Date(end)
+        }
+      },
+      include: [
+        { model: Patient, as: 'patient' },
+        { model: Room, as: 'roomDetails' },
+        { model: Staff, as: 'attendingPhysician' }
+      ]
+    });
     res.json(admissions);
   } catch (err) {
     res.status(500).json({ error: 'Server error: No admissions by date range found' });
@@ -196,8 +237,10 @@ const getAdmissionsByDateRange = async (req, res) => {
 // update an admission
 const updateAdmission = async (req, res) => {
   try {
-    const updated = await Admission.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
-    if (!updated) return res.status(404).json({ error: 'Admission not found' });
+    const admission = await Admission.findByPk(req.params.id);
+    if (!admission) return res.status(404).json({ error: 'Admission not found' });
+
+    const updated = await admission.update(req.body);
     res.json(updated);
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -207,13 +250,11 @@ const updateAdmission = async (req, res) => {
 // Update workflow stage
 const updateWorkflowStage = async (req, res) => {
   try {
-    const admission = await Admission.findByIdAndUpdate(
-      req.params.id,
-      { currentWorkflowStage: req.body.stage },
-      { new: true }
-    );
+    const admission = await Admission.findByPk(req.params.id);
     if (!admission) return res.status(404).json({ error: 'Admission not found' });
-    res.json(admission);
+
+    const updated = await admission.update({ currentWorkflowStage: req.body.stage });
+    res.json(updated);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -221,49 +262,85 @@ const updateWorkflowStage = async (req, res) => {
 
 // Transfer patient to another room
 const transferRoom = async (req, res) => {
+  const t = await sequelize.transaction();
+
   try {
-    const admission = await Admission.findById(req.params.id);
-    if (!admission) return res.status(404).json({ error: 'Admission not found' });
+    const admission = await Admission.findByPk(req.params.id, { transaction: t });
+    if (!admission) {
+      await t.rollback();
+      return res.status(404).json({ error: 'Admission not found' });
+    }
 
-    admission.assignedRoomId = req.body.newRoomId;
-    await admission.save();
+    await admission.update({ assignedRoomId: req.body.newRoomId }, { transaction: t });
 
-    await Patient.findByIdAndUpdate(admission.patientId, { room: req.body.newRoomId });
+    const patient = await Patient.findByPk(admission.patientId, { transaction: t });
+    await patient.update({ room: req.body.newRoomId }, { transaction: t });
+
+    await t.commit();
 
     res.json({ message: 'Patient transferred successfully', admission });
   } catch (err) {
+    await t.rollback();
     res.status(500).json({ error: 'Server error: Unable to transfer patient' });
   }
 };
 
 //cancel an admission
 const cancelAdmission = async (req, res) => {
+  const t = await sequelize.transaction();
+
   try {
-    const admission = await Admission.findById(req.params.id);
-    if (!admission) return res.status(404).json({ error: 'Admission not found' });
+    const admission = await Admission.findByPk(req.params.id, { transaction: t });
+    if (!admission) {
+      await t.rollback();
+      return res.status(404).json({ error: 'Admission not found' });
+    }
 
-    admission.status = 'Canceled';
-    admission.currentWorkflowStage = 'Canceled';
-    await admission.save();
+    await admission.update({
+      status: 'Canceled',
+      currentWorkflowStage: 'Canceled'
+    }, { transaction: t });
 
-    await Patient.findByIdAndUpdate(admission.patientId, { currentAdmissionId: null });
+    const patient = await Patient.findByPk(admission.patientId, { transaction: t });
+    await patient.update({ currentAdmissionId: null }, { transaction: t });
+
+    await t.commit();
 
     res.json({ message: 'Admission canceled successfully', admission });
   } catch (err) {
+    await t.rollback();
     res.status(500).json({ error: 'Server error: Unable to cancel admission' });
   }
 };
 
 //delete an admission
 const deleteAdmission = async (req, res) => {
-  try {
-    const deleted = await Admission.findByIdAndDelete(req.params.id);
-    if (!deleted) return res.status(404).json({ error: 'Admission not found' });
+  const t = await sequelize.transaction();
 
-    await Patient.findByIdAndUpdate(deleted.patientId, { currentAdmissionId: null });
+  try {
+    const admission = await Admission.findByPk(req.params.id, { transaction: t });
+    if (!admission) {
+      await t.rollback();
+      return res.status(404).json({ error: 'Admission not found' });
+    }
+
+    const patientId = admission.patientId;
+
+    await Admission.destroy({
+      where: { id: req.params.id },
+      transaction: t
+    });
+
+    const patient = await Patient.findByPk(patientId, { transaction: t });
+    if (patient) {
+      await patient.update({ currentAdmissionId: null }, { transaction: t });
+    }
+
+    await t.commit();
 
     res.json({ message: 'Admission deleted successfully' });
   } catch (err) {
+    await t.rollback();
     res.status(500).json({ error: 'Server error: Unable to delete admission' });
   }
 };

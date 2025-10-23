@@ -1,11 +1,9 @@
-const Staff = require('../models/Staff');
-const User = require('../models/User');
-const Clinic = require('../models/Clinic');
-const Organization = require('../models/Organization');
+const { Staff, User, Clinic, Organization, Counter } = require('../models');
+const { Op } = require('sequelize');
+const { sequelize } = require('../config/db');
+const { validate: isUUID } = require('uuid');
 const canActOn = require("../middleware/canActOn");
 const roleHierarchy = require("../models/roleHierarchy");
-const Counter = require("../models/Counter");
-const mongoose = require("mongoose");
 
 //create staff
 // ----------------- Helper: Generate Unique 10-Digit Employee ID -----------------
@@ -23,7 +21,7 @@ async function generateUniqueEmployeeId() {
     if (existingEmployeeIds.has(id)) continue;
 
     // Check DB to avoid collision across server restarts or multiple instances
-    const found = await Staff.exists({ employeeId: id });
+    const found = await Staff.findOne({ where: { employeeId: id } });
     if (!found) {
       exists = false;
       existingEmployeeIds.add(id);
@@ -35,6 +33,7 @@ async function generateUniqueEmployeeId() {
 
 // ----------------- Controller: Create Staff -----------------
 const createStaff = async (req, res) => {
+  const t = await sequelize.transaction();
   try {
     const { name, role: staffRole, status, contact } = req.body;
     const email = contact?.email;
@@ -42,12 +41,14 @@ const createStaff = async (req, res) => {
 
     // ----------------- Validation -----------------
     if (!email || !staffRole) {
+      await t.rollback();
       return res.status(400).json({ error: "Email and role are required." });
     }
 
     const { role: requesterRole, organizationId: userOrgId, clinicId: userClinicId } = req.user;
 
     if (!userOrgId) {
+      await t.rollback();
       return res.status(403).json({ error: "Missing organizationId in user context" });
     }
 
@@ -56,14 +57,17 @@ const createStaff = async (req, res) => {
     if (requesterRole === "admin") {
       clinicId = req.body.clinicId;
       if (!clinicId) {
+        await t.rollback();
         return res.status(400).json({ error: "clinicId is required in request body for admins" });
       }
     } else if (requesterRole === "manager") {
       clinicId = userClinicId;
       if (!clinicId) {
+        await t.rollback();
         return res.status(400).json({ error: "Manager is not associated with any clinic" });
       }
     } else {
+      await t.rollback();
       return res.status(403).json({ error: "Only admins and managers can create staff" });
     }
 
@@ -71,16 +75,18 @@ const createStaff = async (req, res) => {
     const employeeId = await generateUniqueEmployeeId();
 
     // ----------------- Upsert User -----------------
-    let user = await User.findOne({ email });
+    let user = await User.findOne({ where: { email }, transaction: t });
 
     if (user) {
-      user.role = staffRole;
-      user.employeeId = user.employeeId || employeeId;
-      user.organizationId = user.organizationId || userOrgId;
-      user.clinicId = user.clinicId || clinicId;
-      user.contact = { email, phone };
+      await user.update({
+        role: staffRole,
+        employeeId: user.employeeId || employeeId,
+        organizationId: user.organizationId || userOrgId,
+        clinicId: user.clinicId || clinicId,
+        contact: { email, phone }
+      }, { transaction: t });
     } else {
-      user = new User({
+      user = await User.create({
         name,
         email,
         role: staffRole,
@@ -88,38 +94,38 @@ const createStaff = async (req, res) => {
         clinicId,
         contact: { email, phone },
         employeeId,
-      });
+      }, { transaction: t });
     }
 
-    await user.save();
-
     // ----------------- Upsert Staff -----------------
-    let staff = await Staff.findOne({ userId: user._id });
+    let staff = await Staff.findOne({ where: { userId: user.id }, transaction: t });
 
     if (staff) {
-      staff.name = name;
-      staff.role = staffRole;
-      staff.organizationId = userOrgId;
-      staff.clinicId = clinicId;
-      staff.contact = { email, phone };
-      staff.status = status || staff.status;
+      await staff.update({
+        name,
+        role: staffRole,
+        organizationId: userOrgId,
+        clinicId,
+        contact: { email, phone },
+        status: status || staff.status
+      }, { transaction: t });
     } else {
-      staff = new Staff({
+      staff = await Staff.create({
         employeeId,
         organizationId: userOrgId,
         clinicId,
-        userId: user._id,
+        userId: user.id,
         name,
         role: staffRole,
         contact: { email, phone },
         status: status || "On-Duty",
-      });
+      }, { transaction: t });
     }
 
-    await staff.save();
-
+    await t.commit();
     res.status(201).json({ user, staff });
   } catch (err) {
+    await t.rollback();
     console.error("Error creating staff:", err);
     res.status(400).json({ error: err.message });
   }
@@ -146,16 +152,19 @@ const getAllStaff = async (req, res) => {
         .json({ error: "Forbidden. Only admins or managers can view staff." });
     }
 
-    const staff = await Staff.find(filter).lean();
+    const staff = await Staff.findAll({ where: filter });
 
     // Normalize so frontend never breaks
-    const normalized = staff.map((s) => ({
-      ...s,
-      contact: {
-        email: s.contact?.email || s.email || "",
-        phone: s.contact?.phone || "",
-      },
-    }));
+    const normalized = staff.map((s) => {
+      const staffData = s.get({ plain: true });
+      return {
+        ...staffData,
+        contact: {
+          email: staffData.contact?.email || staffData.email || "",
+          phone: staffData.contact?.phone || "",
+        },
+      };
+    });
 
     res.json(normalized);
   } catch (err) {
@@ -167,7 +176,7 @@ const getAllStaff = async (req, res) => {
 // Get one staff
 const getStaffById = async (req, res) => {
   try {
-    const staff = await Staff.findById(req.params.id);
+    const staff = await Staff.findByPk(req.params.id);
     if (!staff) return res.status(404).json({ error: 'Staff not found' });
     res.json(staff);
   } catch (err) {
@@ -178,8 +187,10 @@ const getStaffById = async (req, res) => {
 // Update staff
 const updateStaff = async (req, res) => {
   try {
-    const staff = await Staff.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const staff = await Staff.findByPk(req.params.id);
     if (!staff) return res.status(404).json({ error: 'Staff not found' });
+
+    await staff.update(req.body);
     res.json(staff);
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -192,18 +203,18 @@ const deleteStaff = async (req, res) => {
   try {
     const { id } = req.params;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
+    if (!isUUID(id)) {
       return res.status(400).json({ error: "Invalid staff ID" });
     }
 
-    const target = await Staff.findById(id);
+    const target = await Staff.findByPk(id);
     if (!target) {
       return res.status(404).json({ error: "Staff not found" });
     }
 
     // check role hierarchy here if needed
 
-    await Staff.findByIdAndDelete(id);
+    await Staff.destroy({ where: { id } });
     res.json({ message: "Staff deleted successfully" });
   } catch (err) {
     console.error("Error deleting staff:", err);

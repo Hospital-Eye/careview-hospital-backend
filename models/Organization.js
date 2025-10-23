@@ -1,27 +1,61 @@
-const mongoose = require('mongoose');
-const { Schema } = mongoose;
+const { DataTypes } = require('sequelize');
 
-const organizationSchema = new Schema({
-  organizationId: { type: String, required: true },
-  name: { type: String, required: true },
-  registrationNumber: { type: String, required: true },
-  dateOfEstablishment: Date,
-  address: { type: String, required: true },
-  location: {
-    type: {
-      type: String,
-      enum: ["Point"],
-      required: true
+module.exports = (sequelize, DataTypes) => {
+  const Organization = sequelize.define('Organization', {
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true
     },
-    /*
-    coordinates: {
-      type: [Number],  // [longitude, latitude]
-      required: true
-    }*/
-  },
-  contactEmail: { type: String, required: true },
-  contactPhone: { type: String, required: true },
-  createdAt: { type: Date, default: Date.now }
-});
+    organizationId: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true
+    },
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    registrationNumber: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    dateOfEstablishment: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    address: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    location: {
+      type: DataTypes.JSONB,
+      allowNull: true,
+      comment: 'GeoJSON location data - commented out as in MongoDB schema'
+    },
+    contactEmail: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        isEmail: true
+      }
+    },
+    contactPhone: {
+      type: DataTypes.STRING,
+      allowNull: false
+    }
+  }, {
+    tableName: 'Organization',
+    timestamps: true
+  });
 
-module.exports = mongoose.model('Organization', organizationSchema);
+  Organization.associate = (models) => {
+    Organization.hasMany(models.Clinic, {
+      foreignKey: 'organizationId',
+      sourceKey: 'organizationId',
+      as: 'clinics'
+    });
+  };
+
+  return Organization;
+};

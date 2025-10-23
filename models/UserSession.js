@@ -1,13 +1,52 @@
-// models/UserSession.js
-const mongoose = require('mongoose');
-const { Schema } = mongoose;
+const { DataTypes } = require('sequelize');
 
-const userSessionSchema = new Schema({
-  userId:     { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
-  loginTime:  { type: Date, required: true, default: Date.now },
-  logoutTime: { type: Date, default: null },
-  ipAddress:  { type: String },
-  device:     { type: String }
-}, { timestamps: true });
+module.exports = (sequelize, DataTypes) => {
+  const UserSession = sequelize.define('UserSession', {
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true
+    },
+    userId: {
+      type: DataTypes.UUID,
+      allowNull: false,
+      references: {
+        model: 'User',
+        key: 'id'
+      }
+    },
+    loginTime: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW
+    },
+    logoutTime: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    ipAddress: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    device: {
+      type: DataTypes.STRING,
+      allowNull: true
+    }
+  }, {
+    tableName: 'UserSession',
+    timestamps: true,
+    indexes: [
+      { fields: ['userId'] },
+      { fields: ['loginTime'] }
+    ]
+  });
 
-module.exports = mongoose.model('UserSession', userSessionSchema);
+  UserSession.associate = (models) => {
+    UserSession.belongsTo(models.User, {
+      foreignKey: 'userId',
+      as: 'user'
+    });
+  };
+
+  return UserSession;
+};

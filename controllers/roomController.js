@@ -1,8 +1,6 @@
-const Room = require('../models/Room');
-const Patient = require('../models/Patient');
-const Admission = require('../models/Admission');
-const Clinic = require('../models/Clinic');
-const Organization = require('../models/Organization');
+const { Room, Patient, Admission, Clinic, Organization } = require('../models');
+const { Op } = require('sequelize');
+const { sequelize } = require('../config/db');
 
 //create room
 const createRoom = async (req, res) => {
@@ -24,8 +22,10 @@ const createRoom = async (req, res) => {
       }
 
       const clinic = await Clinic.findOne({
-      clinicId: bodyClinicId,
-      organizationId: userOrgId,
+        where: {
+          clinicId: bodyClinicId,
+          organizationId: userOrgId,
+        }
       });
 
       if (!clinic) {
@@ -38,7 +38,7 @@ const createRoom = async (req, res) => {
         return res.status(403).json({ error: "Manager has no clinic assignment" });
       }
 
-      const clinic = await Clinic.findOne({ _id: userClinicId });
+      const clinic = await Clinic.findByPk(userClinicId);
       if (!clinic) {
         return res.status(404).json({ error: "Assigned clinic not found" });
       }
@@ -48,14 +48,13 @@ const createRoom = async (req, res) => {
       return res.status(403).json({ error: "Unauthorized role" });
     }
 
-    // ✅ Save room with normalized clinicId
-    const room = new Room({
+    // Save room with normalized clinicId
+    const room = await Room.create({
       ...req.body,
       organizationId: userOrgId,
       clinicId,
     });
 
-    await room.save();
     res.status(201).json(room);
   } catch (err) {
     console.error("Error creating room:", err);
@@ -66,15 +65,22 @@ const createRoom = async (req, res) => {
 // Get all rooms with dynamic occupancy info
 const getRooms = async (req, res) => {
   try {
-    const rooms = await Room.find(req.scopeFilter || {});
+    const rooms = await Room.findAll({ where: req.scopeFilter || {} });
 
     const enrichedRooms = await Promise.all(
       rooms.map(async (room) => {
         // Find active admissions for this room
-        const admissions = await Admission.find({
-          room: room._id,
-          status: 'Active'
-        }).populate('patientId', 'name');
+        const admissions = await Admission.findAll({
+          where: {
+            room: room.id,
+            status: 'Active'
+          },
+          include: [{
+            model: Patient,
+            as: 'patientId',
+            attributes: ['name']
+          }]
+        });
 
         const occupiedBeds = admissions.length;
         const occupants = admissions
@@ -82,7 +88,7 @@ const getRooms = async (req, res) => {
           .filter(Boolean);
 
         return {
-          roomId: room._id,
+          roomId: room.id,
           roomNumber: room.roomNumber,
           organizationId: room.organizationId,
           clinicId: room.clinicId,
@@ -102,13 +108,13 @@ const getRooms = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-   
+
 
 //get room by id
 const getRoomById = async (req, res) => {
   try {
-    const query = { _id: req.params.id, ...req.scopeFilter };
-    const room = await Room.findOne(query);
+    const query = { id: req.params.id, ...req.scopeFilter };
+    const room = await Room.findOne({ where: query });
     if (!room) return res.status(404).json({ error: 'Room not found' });
     res.json(room);
   } catch (err) {
@@ -128,27 +134,37 @@ const getAvailableRooms = async (req, res) => {
     if (roomType) roomFilter.roomType = roomType;
 
     // Fetch rooms
-    const rooms = await Room.find(roomFilter).lean();
+    const rooms = await Room.findAll({ where: roomFilter });
 
     // For each room, count active admissions
-    const roomIds = rooms.map(r => r._id);
-    const activeAdmissions = await Admission.aggregate([
-      { $match: { roomId: { $in: roomIds }, status: "Active" } },
-      { $group: { _id: "$roomId", count: { $sum: 1 } } }
-    ]);
+    const roomIds = rooms.map(r => r.id);
+
+    const activeAdmissions = await Admission.findAll({
+      where: {
+        roomId: { [Op.in]: roomIds },
+        status: "Active"
+      },
+      attributes: [
+        'roomId',
+        [sequelize.fn('COUNT', sequelize.col('id')), 'count']
+      ],
+      group: ['roomId'],
+      raw: true
+    });
 
     // Map roomId → occupancy count
     const occupancyMap = {};
     activeAdmissions.forEach(a => {
-      occupancyMap[a._id.toString()] = a.count;
+      occupancyMap[a.roomId] = parseInt(a.count) || 0;
     });
 
     // Add availability info
     const enrichedRooms = rooms.map(room => {
-      const occupied = occupancyMap[room._id.toString()] || 0;
-      const availableBeds = room.capacity - occupied;
+      const roomData = room.get({ plain: true });
+      const occupied = occupancyMap[roomData.id] || 0;
+      const availableBeds = roomData.capacity - occupied;
       return {
-        ...room,
+        ...roomData,
         occupied,
         availableBeds,
         isAvailable: availableBeds > 0
@@ -165,9 +181,11 @@ const getAvailableRooms = async (req, res) => {
 //update room
 const updateRoom = async (req, res) => {
   try {
-    const query = { _id: req.params.id, ...req.scopeFilter };
-    const room = await Room.findOneAndUpdate(query, req.body, { new: true });
+    const query = { id: req.params.id, ...req.scopeFilter };
+    const room = await Room.findOne({ where: query });
     if (!room) return res.status(404).json({ error: 'Room not found' });
+
+    await room.update(req.body);
     res.json(room);
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -177,9 +195,11 @@ const updateRoom = async (req, res) => {
 //delete room
 const deleteRoom = async (req, res) => {
   try {
-    const query = { _id: req.params.id, ...req.scopeFilter };
-    const room = await Room.findOneAndDelete(query);
+    const query = { id: req.params.id, ...req.scopeFilter };
+    const room = await Room.findOne({ where: query });
     if (!room) return res.status(404).json({ error: 'Room not found' });
+
+    await room.destroy();
     res.json({ message: 'Room deleted successfully' });
   } catch (err) {
     res.status(500).json({ error: err.message });

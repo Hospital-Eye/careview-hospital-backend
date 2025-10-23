@@ -1,32 +1,89 @@
-const mongoose = require("mongoose");
+const { DataTypes } = require('sequelize');
 
-const scanSchema = new mongoose.Schema({
-    organizationId: { type: String, required: true },
-    clinicId: { type: String, required: true },
-    patientId: { type: mongoose.Schema.Types.ObjectId, ref: "Patient", required: true },
-    mrn: { type: String},
-    uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User"},
-
-    scanType: { type: String, 
-                enum: [ 'Brain CT', 'Chest CT', 'Abdominal CT', 'Pelvic CT', 'Spine CT', 'Other' ],
-                required: true
-            },
-    
-    urgencyLevel: { type: String,
-                    enum: [ 'Routine', 'Urgent', 'Critical' ]
-                },
-
-    status: { 
-        type: String, 
-        enum: ['Pending Review', 'Reviewed', 'Archived'], 
-        default: 'Pending Review' 
+module.exports = (sequelize, DataTypes) => {
+  const Scan = sequelize.define('Scan', {
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true
     },
+    organizationId: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    clinicId: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    patientId: {
+      type: DataTypes.UUID,
+      allowNull: false,
+      references: {
+        model: 'Patient',
+        key: 'id'
+      }
+    },
+    mrn: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    uploadedBy: {
+      type: DataTypes.UUID,
+      allowNull: true,
+      references: {
+        model: 'User',
+        key: 'id'
+      }
+    },
+    scanType: {
+      type: DataTypes.ENUM(
+        'Brain CT',
+        'Chest CT',
+        'Abdominal CT',
+        'Pelvic CT',
+        'Spine CT',
+        'Other'
+      ),
+      allowNull: false
+    },
+    urgencyLevel: {
+      type: DataTypes.ENUM('Routine', 'Urgent', 'Critical'),
+      allowNull: true
+    },
+    status: {
+      type: DataTypes.ENUM('Pending Review', 'Reviewed', 'Archived'),
+      allowNull: false,
+      defaultValue: 'Pending Review'
+    },
+    fileUrl: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    notes: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    }
+  }, {
+    tableName: 'Scan',
+    timestamps: true,
+    indexes: [
+      { fields: ['patientId'] },
+      { fields: ['organizationId'] },
+      { fields: ['clinicId'] },
+      { fields: ['status'] }
+    ]
+  });
 
-    // store relative path
-    fileUrl: { type: String, required: true }, 
+  Scan.associate = (models) => {
+    Scan.belongsTo(models.Patient, {
+      foreignKey: 'patientId',
+      as: 'patient'
+    });
+    Scan.belongsTo(models.User, {
+      foreignKey: 'uploadedBy',
+      as: 'uploader'
+    });
+  };
 
-    notes: { type: String },
-    createdAt: { type: Date, default: Date.now }
-});
-
-module.exports = mongoose.model("Scan", scanSchema);
+  return Scan;
+};

@@ -1,20 +1,53 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
 
-const deviceLogSchema = new mongoose.Schema({
-  timestamp: { type: Date, default: Date.now },
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  action: { type: String, required: true },
-  entity: {
-    type: {
-      type: String,
-      required: true,
-    },
+module.exports = (sequelize, DataTypes) => {
+  const DeviceLog = sequelize.define('DeviceLog', {
     id: {
-      type: mongoose.Schema.Types.ObjectId,
-      required: true,
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true
+    },
+    timestamp: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW
+    },
+    userId: {
+      type: DataTypes.UUID,
+      allowNull: false,
+      references: {
+        model: 'User',
+        key: 'id'
+      }
+    },
+    action: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    entity: {
+      type: DataTypes.JSONB,
+      allowNull: false
+    },
+    details: {
+      type: DataTypes.TEXT,
+      allowNull: true
     }
-  },
-  details: { type: String }
-});
+  }, {
+    tableName: 'DeviceLog',
+    timestamps: true,
+    indexes: [
+      { fields: ['userId'] },
+      { fields: ['timestamp'] },
+      { fields: ['action'] }
+    ]
+  });
 
-module.exports = mongoose.model('DeviceLog', deviceLogSchema);
+  DeviceLog.associate = (models) => {
+    DeviceLog.belongsTo(models.User, {
+      foreignKey: 'userId',
+      as: 'user'
+    });
+  };
+
+  return DeviceLog;
+};

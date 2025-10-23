@@ -1,14 +1,51 @@
-// models/CVEvent.js
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
 
-const cvEventSchema = new mongoose.Schema({
-  cameraId: { type: mongoose.Schema.Types.ObjectId, ref: 'Camera', index: true },
-  type: { type: String, enum: ['people-stats','enter','exit'], index: true },
-  ts: { type: Number, index: true },           // epoch ms from cv-service
-  data: { type: Object }                        // counts or track info
-}, { timestamps: true });
+module.exports = (sequelize, DataTypes) => {
+  const CVEvent = sequelize.define('CVEvent', {
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true
+    },
+    cameraId: {
+      type: DataTypes.UUID,
+      allowNull: true,
+      references: {
+        model: 'Camera',
+        key: 'id'
+      }
+    },
+    type: {
+      type: DataTypes.ENUM('people-stats', 'enter', 'exit'),
+      allowNull: true
+    },
+    ts: {
+      type: DataTypes.BIGINT,
+      allowNull: true,
+      comment: 'Epoch milliseconds from cv-service'
+    },
+    data: {
+      type: DataTypes.JSONB,
+      allowNull: true
+    }
+  }, {
+    tableName: 'CVEvent',
+    timestamps: true,
+    indexes: [
+      { fields: ['cameraId'] },
+      { fields: ['type'] },
+      { fields: ['ts'] },
+      { fields: ['cameraId', 'ts'] },
+      { fields: ['createdAt'] }
+    ]
+  });
 
-cvEventSchema.index({ cameraId: 1, ts: -1 });
-cvEventSchema.index({ createdAt: 1 }, { expireAfterSeconds: 72 * 3600 }); // TTL
+  CVEvent.associate = (models) => {
+    CVEvent.belongsTo(models.Camera, {
+      foreignKey: 'cameraId',
+      as: 'camera'
+    });
+  };
 
-module.exports = mongoose.model('CVEvent', cvEventSchema);
+  return CVEvent;
+};

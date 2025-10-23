@@ -1,33 +1,63 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
 
-const alertSchema = new mongoose.Schema({
-  type: { type: String, required: true }, // e.g., "Patient Safety"
-  title: { type: String, required: true }, // e.g., "CRITICAL: Fall Detected"
-  severity: { type: String, enum: ['Low', 'Moderate', 'High', 'Critical'], required: true },
-  source: {
-    type: {
-      type: String, required: true // e.g., "CV System"
+module.exports = (sequelize, DataTypes) => {
+  const ComplianceAlert = sequelize.define('ComplianceAlert', {
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true
     },
-    eventId: { type: mongoose.Schema.Types.ObjectId, ref: 'CVDetection' }
-  },
-  recipients: [
-    {
-      staffId: { type: mongoose.Schema.Types.ObjectId, ref: 'Staff' },
-      acknowledgedAt: { type: Date, default: null }
+    type: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    title: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    severity: {
+      type: DataTypes.ENUM('Low', 'Moderate', 'High', 'Critical'),
+      allowNull: false
+    },
+    source: {
+      type: DataTypes.JSONB,
+      allowNull: true
+    },
+    recipients: {
+      type: DataTypes.JSONB,
+      allowNull: true,
+      defaultValue: []
+    },
+    status: {
+      type: DataTypes.ENUM('Pending', 'Acknowledged', 'Resolved'),
+      allowNull: false,
+      defaultValue: 'Pending'
+    },
+    timestamps: {
+      type: DataTypes.JSONB,
+      allowNull: true
+    },
+    associatedIds: {
+      type: DataTypes.JSONB,
+      allowNull: true
+    },
+    resolutionNotes: {
+      type: DataTypes.TEXT,
+      allowNull: true
     }
-  ],
-  status: { type: String, enum: ['Pending', 'Acknowledged', 'Resolved'], default: 'Pending' },
-  timestamps: {
-    created: { type: Date, default: Date.now },
-    resolved: { type: Date, default: null }
-  },
-  associatedIds: {
-    organizationId: { type: mongoose.Schema.Types.ObjectId, ref: "Organization", required: true },
-    clinic: { type: mongoose.Schema.Types.ObjectId, ref: "Clinic", required: true },
-    patientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Patient' },
-    roomId: { type: mongoose.Schema.Types.ObjectId, ref: 'Room' }
-  },
-  resolutionNotes: { type: String }
-});
+  }, {
+    tableName: 'ComplianceAlert',
+    timestamps: true,
+    indexes: [
+      { fields: ['status'] },
+      { fields: ['severity'] },
+      { fields: ['createdAt'] }
+    ]
+  });
 
-module.exports = mongoose.model('Alert', alertSchema);
+  ComplianceAlert.associate = (models) => {
+    // No direct foreign key associations due to JSONB fields
+  };
+
+  return ComplianceAlert;
+};

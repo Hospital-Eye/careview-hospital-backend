@@ -1,29 +1,81 @@
-const mongoose = require('mongoose');
-const { Schema } = mongoose;
+const { DataTypes } = require('sequelize');
 
-const clinicSchema = new Schema({
-  clinicId: { type: String, required: true },
-  organizationId: {type: String, required: true},
-  name: { type: String, required: true },
-  registrationNumber: { type: String, required: true },
-  dateOfEstablishment: Date,
-  type: { type: String, enum: ['Diagnostic', 'Hospital', 'Clinic', 'Branch', 'Emergency Center', 'Medical Center', 'General Practice'], required: true },
-  address: { type: String, required: true },
-  /*
-  location: {
-    type: {
-      type: String,
-      enum: ["Point"]
+module.exports = (sequelize, DataTypes) => {
+  const Clinic = sequelize.define('Clinic', {
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true
     },
-    /*
-    coordinates: {
-      type: [Number],  // [longitude, latitude]
-      required: true
+    clinicId: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true
+    },
+    organizationId: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    registrationNumber: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    dateOfEstablishment: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    type: {
+      type: DataTypes.ENUM(
+        'Diagnostic',
+        'Hospital',
+        'Clinic',
+        'Branch',
+        'Emergency Center',
+        'Medical Center',
+        'General Practice'
+      ),
+      allowNull: false
+    },
+    address: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    location: {
+      type: DataTypes.JSONB,
+      allowNull: true,
+      comment: 'GeoJSON location data - commented out as in MongoDB schema'
+    },
+    contactEmail: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        isEmail: true
+      }
+    },
+    contactPhone: {
+      type: DataTypes.STRING,
+      allowNull: false
     }
-  },*/
-  contactEmail: { type: String, required: true },
-  contactPhone: { type: String, required: true },
-  createdAt: { type: Date, default: Date.now }
-});
+  }, {
+    tableName: 'Clinic',
+    timestamps: true,
+    indexes: [
+      { fields: ['clinicId'], unique: true },
+      { fields: ['organizationId'] }
+    ]
+  });
 
-module.exports = mongoose.model('Clinic', clinicSchema);
+  Clinic.associate = (models) => {
+    Clinic.belongsTo(models.Organization, {
+      foreignKey: 'organizationId',
+      targetKey: 'organizationId',
+      as: 'organization'
+    });
+  };
+
+  return Clinic;
+};

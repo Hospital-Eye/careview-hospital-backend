@@ -49,7 +49,7 @@
 //     const ffmpegPath = 'ffmpeg'; // make sure `which ffmpeg` shows a path
 
 
-//     // Minimal, robust args. Start with "copy". If no segments or browser can’t play,
+//     // Minimal, robust args. Start with "copy". If no segments or browser can't play,
 //     // set forceEncode=true in the POST body to re-encode to H.264.
 //     // const baseArgs = [
 //     //   '-loglevel', 'warning',
@@ -107,9 +107,9 @@
 //         '-hls_segment_filename', path.join(outDir,'seg_%03d.ts'),
 //         path.join(outDir,'index.m3u8'),
 //       ];
-      
-      
-      
+
+
+
 //     // Logs (super helpful for debugging)
 //     console.log('🛠 FFmpeg path:', ffmpegPath);
 //     console.log('🎯 RTSP URL:', rtsp_url);
@@ -152,7 +152,9 @@
 
 
 // controllers/cameraController.js
-const Camera = require('../models/Camera'); // <-- NEW (for CRUD + start by id)
+const { Camera } = require('../models');
+const { Op } = require('sequelize');
+const { sequelize } = require('../config/db');
 const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
@@ -273,26 +275,28 @@ exports.createCamera = async (req, res) => {
 };
 
 exports.listCameras = async (_req, res) => {
-  const cams = await Camera.find().sort({ createdAt: -1 });
+  const cams = await Camera.findAll({ order: [['createdAt', 'DESC']] });
   res.json(cams);
 };
 
 exports.getCamera = async (req, res) => {
-  const cam = await Camera.findById(req.params.id);
+  const cam = await Camera.findByPk(req.params.id);
   if (!cam) return res.status(404).json({ error: 'not found' });
   res.json(cam);
 };
 
 exports.updateCamera = async (req, res) => {
-  const cam = await Camera.findByIdAndUpdate(req.params.id, req.body, { new: true });
+  const cam = await Camera.findByPk(req.params.id);
   if (!cam) return res.status(404).json({ error: 'not found' });
+
+  await cam.update(req.body);
   res.json(cam);
 };
 
 exports.deleteCamera = async (req, res) => {
   const { id } = req.params;
   const p = procs.get(id); if (p) { try { p.kill('SIGTERM'); } catch {} procs.delete(id); }
-  await Camera.findByIdAndDelete(id);
+  await Camera.destroy({ where: { id } });
   res.json({ ok: true });
 };
 
@@ -300,7 +304,7 @@ exports.deleteCamera = async (req, res) => {
 exports.startById = async (req, res) => {
   try {
     const { id } = req.params;
-    const cam = await Camera.findById(id);
+    const cam = await Camera.findByPk(id);
     if (!cam) return res.status(404).json({ error: 'camera not found' });
     if (procs.has(id)) return res.json({ ok: true, message: 'already running', hls: `/streams/${id}/index.m3u8` });
 
