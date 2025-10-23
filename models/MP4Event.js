@@ -1,32 +1,55 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
 
-const MP4EventSchema = new mongoose.Schema({
-  mp4FileId: { 
-    type: mongoose.Schema.Types.ObjectId, 
-    ref: 'MP4File', 
-    required: true,
-    index: true 
-  },
-  filename: { 
-    type: String, 
-    required: true,
-    index: true 
-  },
-  type: { 
-    type: String, 
-    enum: ['people-stats', 'enter', 'exit', 'processing-complete'], 
-    index: true 
-  },
-  ts: { 
-    type: Number, 
-    index: true 
-  },
-  data: { 
-    type: Object 
-  }
-}, { timestamps: true });
+module.exports = (sequelize, DataTypes) => {
+  const MP4Event = sequelize.define('MP4Event', {
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true
+    },
+    mp4FileId: {
+      type: DataTypes.UUID,
+      allowNull: false,
+      references: {
+        model: 'MP4File',
+        key: 'id'
+      }
+    },
+    filename: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    type: {
+      type: DataTypes.ENUM('people-stats', 'enter', 'exit', 'processing-complete'),
+      allowNull: true
+    },
+    ts: {
+      type: DataTypes.BIGINT,
+      allowNull: true
+    },
+    data: {
+      type: DataTypes.JSONB,
+      allowNull: true
+    }
+  }, {
+    tableName: 'MP4Event',
+    timestamps: true,
+    indexes: [
+      { fields: ['mp4FileId'] },
+      { fields: ['filename'] },
+      { fields: ['type'] },
+      { fields: ['ts'] },
+      { fields: ['mp4FileId', 'ts'] },
+      { fields: ['filename', 'ts'] }
+    ]
+  });
 
-MP4EventSchema.index({ mp4FileId: 1, ts: -1 });
-MP4EventSchema.index({ filename: 1, ts: -1 });
+  MP4Event.associate = (models) => {
+    MP4Event.belongsTo(models.MP4File, {
+      foreignKey: 'mp4FileId',
+      as: 'mp4File'
+    });
+  };
 
-module.exports = mongoose.model('MP4Event', MP4EventSchema);
+  return MP4Event;
+};

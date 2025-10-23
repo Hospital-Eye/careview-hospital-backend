@@ -1,10 +1,11 @@
-const CVDetection = require('../models/CVDetection');
+const { CVDetection } = require('../models');
+const { Op } = require('sequelize');
+const { sequelize } = require('../config/db');
 
 // Create a new detection
 const createDetection = async (req, res) => {
   try {
-    const detection = new CVDetection(req.body);
-    await detection.save();
+    const detection = await CVDetection.create(req.body);
     res.status(201).json(detection);
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -14,7 +15,12 @@ const createDetection = async (req, res) => {
 // Get all detections
 const getDetections = async (req, res) => {
   try {
-    const detections = await CVDetection.find().populate('personId triggeredAlertId');
+    const detections = await CVDetection.findAll({
+      include: [
+        { model: require('../models').Patient, as: 'personId' },
+        { model: require('../models').ComplianceAlert, as: 'triggeredAlertId' }
+      ]
+    });
     res.json(detections);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -24,7 +30,12 @@ const getDetections = async (req, res) => {
 // Get detection by ID
 const getDetectionById = async (req, res) => {
   try {
-    const detection = await CVDetection.findById(req.params.id).populate('personId triggeredAlertId');
+    const detection = await CVDetection.findByPk(req.params.id, {
+      include: [
+        { model: require('../models').Patient, as: 'personId' },
+        { model: require('../models').ComplianceAlert, as: 'triggeredAlertId' }
+      ]
+    });
     if (!detection) return res.status(404).json({ error: 'Detection not found' });
     res.json(detection);
   } catch (err) {
@@ -35,8 +46,11 @@ const getDetectionById = async (req, res) => {
 // Update detection
 const updateDetection = async (req, res) => {
   try {
-    const updated = await CVDetection.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    res.json(updated);
+    const detection = await CVDetection.findByPk(req.params.id);
+    if (!detection) return res.status(404).json({ error: 'Detection not found' });
+
+    await detection.update(req.body);
+    res.json(detection);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -45,7 +59,8 @@ const updateDetection = async (req, res) => {
 // Delete detection
 const deleteDetection = async (req, res) => {
   try {
-    await CVDetection.findByIdAndDelete(req.params.id);
+    const deleted = await CVDetection.destroy({ where: { id: req.params.id } });
+    if (!deleted) return res.status(404).json({ error: 'Detection not found' });
     res.json({ message: 'Detection deleted' });
   } catch (err) {
     res.status(500).json({ error: err.message });

@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(while read file)",
+      "Bash(do mv \"$file\" \"$file%.js.mongoose.js\")",
+      "Bash(done)",
+      "Bash(npm run migrate:undo:*)",
+      "Bash(powershell -Command \"(Get-Content ''20250101000000-create-all-tables.js'') -replace \"\"defaultValue: ''\\{\\}''\"\", \"\"defaultValue: Sequelize.literal(\\\"\"''{}''\\\"\")\"\" | Set-Content ''20250101000000-create-all-tables.js''\")",
+      "Bash(npm run migrate:*)",
+      "Bash(npm run migrate:status:*)",
+      "Bash(psql:*)",
+      "Bash(timeout 5 psql:*)",
+      "Bash(node -e:*)",
+      "Read(//c/Users/shrut/Desktop/Parksense/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

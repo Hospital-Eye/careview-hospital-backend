@@ -1,39 +1,43 @@
-const Patient = require('../models/Patient'); 
-const Vital = require('../models/Vital');     
-const Room = require('../models/Room');       
-const Staff = require('../models/Staff');
-const Admission = require('../models/Admission');
+const { Patient, Vital, Room, Staff, Admission } = require('../models');
+const { Op } = require('sequelize');
+const { sequelize } = require('../config/db');
 
 const getDashboardMetrics = async (req, res) => {
     try {
         // --- Date Range for Metrics ---
         const today = new Date();
-        today.setHours(0, 0, 0, 0); 
+        today.setHours(0, 0, 0, 0);
         const endOfToday = new Date(today);
-        endOfToday.setHours(23, 59, 59, 999); 
+        endOfToday.setHours(23, 59, 59, 999);
 
         const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000); // 24 hours ago
 
         // --- 1. Calculate Visitors Today (Unique) ---
-        const visitorsTodayCount = await Admission.distinct("patientId", {
-        checkInTime: { $gte: today, $lte: endOfToday }
-        }).then(uniquePatients => uniquePatients.length);
+        const uniquePatientIds = await Admission.findAll({
+            where: {
+                checkInTime: { [Op.gte]: today, [Op.lte]: endOfToday }
+            },
+            attributes: [[sequelize.fn('DISTINCT', sequelize.col('patientId')), 'patientId']],
+            raw: true
+        });
+        const visitorsTodayCount = uniquePatientIds.length;
 
         // --- 2. Calculate Current Occupancy ---
         //total number of rooms
-        const totalRooms = await Room.countDocuments({});
+        const totalRooms = await Room.count();
 
         //rooms currently occupied, based on unique roomId documents
-        const occupiedRoomsAgg = await Admission.aggregate([
-        { $match: { dischargeDate: null } },
-        { $group: { _id: "$roomId" } }
-        ]);
+        const occupiedRoomsData = await Admission.findAll({
+            where: { dischargeDate: null },
+            attributes: [[sequelize.fn('DISTINCT', sequelize.col('roomId')), 'roomId']],
+            raw: true
+        });
 
-        const occupiedRooms = occupiedRoomsAgg.length;
+        const occupiedRooms = occupiedRoomsData.length;
 
         // --- 3. Calculate Equipment Utilization Rate ---
         const equipmentUtilizationData = [
-            { 
+            {
                 name: 'CT Scanner',
                 percentage: 78, // Placeholder value for now, needs real data
                 scans: 42,
@@ -48,20 +52,44 @@ const getDashboardMetrics = async (req, res) => {
         ];
 
         // --- 4. Calculate Active Cases Today by Workflow Stage ---
-        const totalActiveCasesToday = await Patient.countDocuments({
-            updatedAt: { $gte: today, $lte: endOfToday },
-            status: { $ne: 'Discharged' }
+        const totalActiveCasesToday = await Patient.count({
+            where: {
+                updatedAt: { [Op.gte]: today, [Op.lte]: endOfToday },
+                status: { [Op.ne]: 'Discharged' }
+            }
         });
 
-        const checkedInCases = await Patient.countDocuments({ currentStage: 'Checked-In', updatedAt: { $gte: today, $lte: endOfToday } });
-        const inThermalCases = await Patient.countDocuments({ currentStage: 'In Thermal', updatedAt: { $gte: today, $lte: endOfToday } });
-        const inCTCases = await Patient.countDocuments({ currentStage: 'In CT', updatedAt: { $gte: today, $lte: endOfToday } });
-        const awaitingResultsCases = await Patient.countDocuments({ currentStage: 'Awaiting Results', updatedAt: { $gte: today, $lte: endOfToday } });
+        const checkedInCases = await Patient.count({
+            where: {
+                currentStage: 'Checked-In',
+                updatedAt: { [Op.gte]: today, [Op.lte]: endOfToday }
+            }
+        });
+        const inThermalCases = await Patient.count({
+            where: {
+                currentStage: 'In Thermal',
+                updatedAt: { [Op.gte]: today, [Op.lte]: endOfToday }
+            }
+        });
+        const inCTCases = await Patient.count({
+            where: {
+                currentStage: 'In CT',
+                updatedAt: { [Op.gte]: today, [Op.lte]: endOfToday }
+            }
+        });
+        const awaitingResultsCases = await Patient.count({
+            where: {
+                currentStage: 'Awaiting Results',
+                updatedAt: { [Op.gte]: today, [Op.lte]: endOfToday }
+            }
+        });
 
         // --- 5. Calculate Average Turnaround Time (TAT) ---
-        const completedCasesLast24Hours = await Patient.find({
-            finalReportSentTime: { $gte: last24Hours },
-            checkInTime: { $ne: null }
+        const completedCasesLast24Hours = await Patient.findAll({
+            where: {
+                finalReportSentTime: { [Op.gte]: last24Hours },
+                checkInTime: { [Op.ne]: null }
+            }
         });
 
         let totalTATMinutes = 0;

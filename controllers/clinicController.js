@@ -1,12 +1,13 @@
-const Clinic = require('../models/Clinic');
-const Organization = require('../models/Organization');
+const { Clinic, Organization } = require('../models');
+const { Op } = require('sequelize');
+const { sequelize } = require('../config/db');
 
 //create a new clinic
 const createClinic = async (req, res) => {
   try {
     const { name, registrationNumber, type, address, contactEmail, contactPhone, location } = req.body;
 
-    const { organizationId }  = req.user;  // ✅ take org from logged-in user
+    const { organizationId }  = req.user;  // take org from logged-in user
 
     console.log("Create Clinic Request Body:", req.body);
 
@@ -18,18 +19,24 @@ const createClinic = async (req, res) => {
       return res.status(400).json({ error: "Clinic name is required" });
     }
 
-    // 🔹 generate a base prefix from the name (strip spaces, lowercase)
+    // generate a base prefix from the name (strip spaces, lowercase)
     const prefix = name.split(" ")[0].toLowerCase(); // e.g. "New Hope Life Scan" → "new"
     // Better: take first two words
     const base = name.replace(/\s+/g, "").toLowerCase(); // "New Hope Life Scan 1" → "newhopelifescan1"
 
-    // 🔹 find existing clinics with same base prefix
-    const existingClinics = await Clinic.find({ clinicId: new RegExp(`^${base}-`, "i") });
+    // find existing clinics with same base prefix
+    const existingClinics = await Clinic.findAll({
+      where: {
+        clinicId: {
+          [Op.like]: `${base}-%`
+        }
+      }
+    });
     const nextNumber = existingClinics.length + 1;
 
     const clinicId = `${base}-${nextNumber}`;
 
-    const clinic = new Clinic({
+    const clinic = await Clinic.create({
       clinicId,
       organizationId,
       name,
@@ -40,7 +47,6 @@ const createClinic = async (req, res) => {
       contactPhone
     });
 
-    await clinic.save();
     res.status(201).json(clinic);
   } catch (err) {
     console.error("Error creating clinic:", err);
@@ -51,8 +57,8 @@ const createClinic = async (req, res) => {
 // get all clinics (with scope)
 const getClinics = async (req, res) => {
   try {
-    const filter = req.scopeFilter || {}; 
-    const clinics = await Clinic.find(filter);
+    const filter = req.scopeFilter || {};
+    const clinics = await Clinic.findAll({ where: filter });
     res.status(200).json(clinics);
   } catch (error) {
     console.error("Error fetching clinics:", error);
@@ -63,7 +69,7 @@ const getClinics = async (req, res) => {
 //get clinic by clinic id
 const getClinicById = async (req, res) => {
   try {
-    const clinic = await Clinic.findOne({ clinicId: req.params.id });
+    const clinic = await Clinic.findOne({ where: { clinicId: req.params.id } });
     if (!clinic) {
       return res.status(404).send();
     }
@@ -78,15 +84,13 @@ const editClinic = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const clinic = await Clinic.findByIdAndUpdate(
-      id,
-      { $set: req.body },
-      { new: true, runValidators: true }
-    );
+    const clinic = await Clinic.findByPk(id);
 
     if (!clinic) {
       return res.status(404).json({ message: "Clinic not found" });
     }
+
+    await clinic.update(req.body);
 
     res.status(200).json(clinic);
   } catch (error) {
@@ -98,8 +102,8 @@ const editClinic = async (req, res) => {
 const deleteClinic = async (req, res) => {
   try {
     const { id } = req.params;
-    const clinic = await Clinic.findByIdAndDelete(id);
-    if (!clinic) {
+    const deleted = await Clinic.destroy({ where: { id } });
+    if (!deleted) {
       return res.status(404).json({ message: "Clinic not found" });
     }
     res.status(200).json({ message: "Clinic deleted successfully" });

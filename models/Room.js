@@ -1,19 +1,72 @@
-const mongoose = require('mongoose');
-const Patient = require('./Patient');
+const { DataTypes } = require('sequelize');
 
-const roomSchema = new mongoose.Schema({
-  organizationId: { type: String, required: true },
-  clinicId: { type: String, required: true },
-  roomNumber: { type: String, required: true },
-  unit: { type: String, required: true },
-  roomType: { type: String, required: true },
-  capacity: { type: Number, required: true },
-  occupiedBeds: { type: Number, default: 0 },
-  equipment: [String],
-  cameraIds: [String],
-  accessRestrictions: [String],
-});
+module.exports = (sequelize, DataTypes) => {
+  const Room = sequelize.define('Room', {
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true
+    },
+    organizationId: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    clinicId: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    roomNumber: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    unit: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    roomType: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    capacity: {
+      type: DataTypes.INTEGER,
+      allowNull: false
+    },
+    occupiedBeds: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0
+    },
+    equipment: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      allowNull: true,
+      defaultValue: []
+    },
+    cameraIds: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      allowNull: true,
+      defaultValue: []
+    },
+    accessRestrictions: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      allowNull: true,
+      defaultValue: []
+    }
+  }, {
+    tableName: 'Room',
+    timestamps: true,
+    indexes: [
+      { fields: ['organizationId'] },
+      { fields: ['clinicId'] },
+      { fields: ['roomNumber', 'clinicId'] }
+    ]
+  });
 
-module.exports = mongoose.model('Room', roomSchema);
+  Room.associate = (models) => {
+    Room.hasMany(models.Admission, {
+      foreignKey: 'room',
+      as: 'admissions'
+    });
+  };
 
-
+  return Room;
+};

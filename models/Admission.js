@@ -1,96 +1,146 @@
-const mongoose = require('mongoose');
-const { Schema } = mongoose;
+const { DataTypes } = require('sequelize');
 
-const admissionSchema = new Schema({
-    patientId: {type: Schema.Types.ObjectId, ref: 'Patient', required: true, index: true},
-
-    organizationId: { type: String, required: true },
-    clinicId: { type: String, required: true },
-
-    checkInTime: {type: Date, required: true, default: Date.now},
-
-    admissionDate: {type: Date, default: Date.now},
-
-    reportSentTime: {type: Date, default: null},
-
-    dischargeDate: {type: Date, default: null},
-
+module.exports = (sequelize, DataTypes) => {
+  const Admission = sequelize.define('Admission', {
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true
+    },
+    patientId: {
+      type: DataTypes.UUID,
+      allowNull: false,
+      references: {
+        model: 'Patient',
+        key: 'id'
+      }
+    },
+    organizationId: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    clinicId: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    checkInTime: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW
+    },
+    admissionDate: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW
+    },
+    reportSentTime: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    dischargeDate: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
     currentWorkflowStage: {
-        type: String,
-        enum: [
-            'Checked-In',
-            'In Preparation', 
-            'In Thermal',
-            'In CT',
-            'Awaiting Results',
-            'Review with Physician',
-            'Report Sent',
-            'Discharged',
-            'Canceled', 
-            'On Hold'   
-        ],
-        default: 'Checked-In',
-        required: true
+      type: DataTypes.ENUM(
+        'Checked-In',
+        'In Preparation',
+        'In Thermal',
+        'In CT',
+        'Awaiting Results',
+        'Review with Physician',
+        'Report Sent',
+        'Discharged',
+        'Canceled',
+        'On Hold'
+      ),
+      allowNull: false,
+      defaultValue: 'Checked-In'
     },
-
     acuityLevel: {
-        type: Number,
-        required: true
+      type: DataTypes.INTEGER,
+      allowNull: false
     },
-
-    status: {           
-        type: String,
-        enum: ['Active', 'Completed', 'Canceled', 'On Hold'],
-        default: 'Active',
-        required: true
+    status: {
+      type: DataTypes.ENUM('Active', 'Completed', 'Canceled', 'On Hold'),
+      allowNull: false,
+      defaultValue: 'Active'
     },
-
-    admittedByStaffId: {type: mongoose.Schema.Types.ObjectId, ref: 'Staff', default: null},
-
-    attendingPhysicianId: {type: mongoose.Schema.Types.ObjectId, ref: 'Staff', default: null},
-
-    admissionReason: {type: String, required: true},
-
-    room: { type: mongoose.Schema.Types.ObjectId, ref: 'Room', required: true },
-
-    diagnoses: [{type: String}],
-
+    admittedByStaffId: {
+      type: DataTypes.UUID,
+      allowNull: true,
+      references: {
+        model: 'Staff',
+        key: 'id'
+      }
+    },
+    attendingPhysicianId: {
+      type: DataTypes.UUID,
+      allowNull: true,
+      references: {
+        model: 'Staff',
+        key: 'id'
+      }
+    },
+    admissionReason: {
+      type: DataTypes.TEXT,
+      allowNull: false
+    },
+    room: {
+      type: DataTypes.UUID,
+      allowNull: false,
+      references: {
+        model: 'Room',
+        key: 'id'
+      }
+    },
+    diagnoses: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      allowNull: true,
+      defaultValue: []
+    },
     carePlan: {
-    notes: {
-      type: String,
+      type: DataTypes.JSONB,
+      allowNull: true
     },
-    medicationSchedule: [
-      {
-        name: { type: String },
-        rxnorm: { type: String },
-        dosage: { type: String },
-        route: { type: String },
-        frequency: { type: String },
-      }
-    ],
-    scheduledProcedures: [
-      {
-        name: { type: String },
-        datetime: { type: Date },
-        status: { type: String },
-        cpt: { type: String },
-      }
-    ],
-  },
+    documentation: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      allowNull: true,
+      defaultValue: []
+    },
+    dietaryRestrictions: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    }
+  }, {
+    tableName: 'Admission',
+    timestamps: true,
+    indexes: [
+      { fields: ['patientId'] },
+      { fields: ['status', 'checkInTime'] },
+      { fields: ['currentWorkflowStage', 'updatedAt'] },
+      { fields: ['organizationId'] },
+      { fields: ['clinicId'] }
+    ]
+  });
 
-  documentation: [{
-    type: String,
-  }],
+  Admission.associate = (models) => {
+    Admission.belongsTo(models.Patient, {
+      foreignKey: 'patientId',
+      as: 'patient'
+    });
+    Admission.belongsTo(models.Staff, {
+      foreignKey: 'admittedByStaffId',
+      as: 'admittedByStaff'
+    });
+    Admission.belongsTo(models.Staff, {
+      foreignKey: 'attendingPhysicianId',
+      as: 'attendingPhysician'
+    });
+    Admission.belongsTo(models.Room, {
+      foreignKey: 'room',
+      as: 'roomDetails'
+    });
+  };
 
-  dietaryRestrictions: {
-    type: String,
-  },
-},
-
-  {timestamps: true });
-
-// Add indexes for efficient querying for dashboard KPIs
-admissionSchema.index({ status: 1, checkInTime: -1 }); // For filtering active/completed by date
-admissionSchema.index({ currentWorkflowStage: 1, updatedAt: -1 }); // For active cases by stage
-
-module.exports = mongoose.model('Admission', admissionSchema);
+  return Admission;
+};

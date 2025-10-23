@@ -1,39 +1,65 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
 
-const MP4FileSchema = new mongoose.Schema({
-  filename: { 
-    type: String, 
-    required: true, 
-    unique: true 
-  },
-  originalName: { 
-    type: String, 
-    required: true 
-  },
-  filePath: { 
-    type: String, 
-    required: true 
-  },
-  size: { 
-    type: Number, 
-    required: true 
-  },
-  mimetype: { 
-    type: String, 
-    required: true 
-  },
-  analyticsStatus: {
-    type: String,
-    enum: ['idle', 'running', 'completed', 'error'],
-    default: 'idle'
-  },
-  analyticsStartedAt: Date,
-  analyticsStoppedAt: Date,
-  analyticsResults: {
-    peopleCount: Number,
-    processingTime: Number,
-    framesProcessed: Number
-  }
-}, { timestamps: true });
+module.exports = (sequelize, DataTypes) => {
+  const MP4File = sequelize.define('MP4File', {
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true
+    },
+    filename: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true
+    },
+    originalName: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    filePath: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    size: {
+      type: DataTypes.BIGINT,
+      allowNull: false
+    },
+    mimetype: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    analyticsStatus: {
+      type: DataTypes.ENUM('idle', 'running', 'completed', 'error'),
+      allowNull: false,
+      defaultValue: 'idle'
+    },
+    analyticsStartedAt: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    analyticsStoppedAt: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    analyticsResults: {
+      type: DataTypes.JSONB,
+      allowNull: true
+    }
+  }, {
+    tableName: 'MP4File',
+    timestamps: true,
+    indexes: [
+      { fields: ['filename'], unique: true },
+      { fields: ['analyticsStatus'] }
+    ]
+  });
 
-module.exports = mongoose.model('MP4File', MP4FileSchema);
+  MP4File.associate = (models) => {
+    MP4File.hasMany(models.MP4Event, {
+      foreignKey: 'mp4FileId',
+      as: 'events'
+    });
+  };
+
+  return MP4File;
+};

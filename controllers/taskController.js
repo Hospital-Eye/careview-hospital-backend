@@ -1,4 +1,6 @@
-const Task = require('../models/Task');
+const { Task } = require('../models');
+const { Op } = require('sequelize');
+const { sequelize } = require('../config/db');
 
 // Create a new task
 const createTask = async (req, res) => {
@@ -36,7 +38,7 @@ const createTask = async (req, res) => {
       return res.status(403).json({ error: "Unauthorized role" });
     }
 
-    const task = new Task({
+    const task = await Task.create({
       taskType,
       description,
       patientId: taskType === "Patient-Related" ? patientId : null,
@@ -50,7 +52,6 @@ const createTask = async (req, res) => {
       ...otherFields,
     });
 
-    await task.save();
     res.status(201).json(task);
   } catch (err) {
     console.error("Error creating task:", err);
@@ -75,10 +76,14 @@ const getTasks = async (req, res) => {
       query.priority = req.query.priority; // Low / Normal / High / Urgent
     }
 
-    const tasks = await Task.find(query)
-      .populate('assignedStaffId', 'name role contact')
-      .populate('patientId', 'name mrn')
-      .populate('dependencies', 'taskType status');
+    const tasks = await Task.findAll({
+      where: query,
+      include: [
+        { model: require('../models').Staff, as: 'assignedStaffId', attributes: ['name', 'role', 'contact'] },
+        { model: require('../models').Patient, as: 'patientId', attributes: ['name', 'mrn'] },
+        { model: Task, as: 'dependencies', attributes: ['taskType', 'status'] }
+      ]
+    });
 
     res.json(tasks);
   } catch (err) {
@@ -90,7 +95,13 @@ const getTasks = async (req, res) => {
 // Get single task by ID
 const getTaskById = async (req, res) => {
     try {
-        const task = await Task.findById(req.params.id).populate('assignedStaffId patientId dependencies');
+        const task = await Task.findByPk(req.params.id, {
+          include: [
+            { model: require('../models').Staff, as: 'assignedStaffId' },
+            { model: require('../models').Patient, as: 'patientId' },
+            { model: Task, as: 'dependencies' }
+          ]
+        });
         if (!task) return res.status(404).json({ error: 'Task not found' });
         res.json(task);
     } catch (err) {
@@ -102,14 +113,14 @@ const getTaskById = async (req, res) => {
 const updateTask = async (req, res) => {
   try {
     const scopeFilter = req.scopeFilter || {};
-    const updated = await Task.findOneAndUpdate(
-      { _id: req.params.id, ...scopeFilter },
-      { $set: req.body }, // ✅ only set provided fields
-      { new: true, runValidators: true, context: "query" } // ✅ context avoids some validator quirks
-    );
+    const task = await Task.findOne({
+      where: { id: req.params.id, ...scopeFilter }
+    });
 
-    if (!updated) return res.status(404).json({ error: "Task not found" });
-    res.json(updated);
+    if (!task) return res.status(404).json({ error: "Task not found" });
+
+    await task.update(req.body);
+    res.json(task);
   } catch (err) {
     console.error("Error updating task:", err);
     res.status(400).json({ error: err.message });
@@ -121,7 +132,9 @@ const updateTask = async (req, res) => {
 const deleteTask = async (req, res) => {
   try {
     const scopeFilter = req.scopeFilter || {};
-    const deleted = await Task.findOneAndDelete({ _id: req.params.id, ...scopeFilter });
+    const deleted = await Task.destroy({
+      where: { id: req.params.id, ...scopeFilter }
+    });
 
     if (!deleted) {
       return res.status(404).json({ error: "Task not found or not accessible" });

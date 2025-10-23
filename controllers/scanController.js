@@ -1,5 +1,6 @@
-const Scan = require("../models/Scan");
-const Patient = require("../models/Patient");
+const { Scan, Patient } = require('../models');
+const { Op } = require('sequelize');
+const { sequelize } = require('../config/db');
 const path = require("path");
 const fs = require("fs");
 
@@ -16,10 +17,14 @@ const getScans = async (req, res) => {
       filter.mrn = req.query.mrn;
     }
 
-    const scans = await Scan.find(filter)
-      .populate("patientId", "name mrn email")   // show patient details
-      .populate("uploadedBy", "name role email")      // show staff details
-      .sort({ createdAt: -1 });                       // newest first
+    const scans = await Scan.findAll({
+      where: filter,
+      include: [
+        { model: Patient, as: 'patientId', attributes: ['name', 'mrn', 'email'] },
+        { model: Patient, as: 'uploadedBy', attributes: ['name', 'role', 'email'] }
+      ],
+      order: [['createdAt', 'DESC']] // newest first
+    });
 
     res.status(200).json(scans);
   } catch (err) {
@@ -36,16 +41,16 @@ const uploadScan = async (req, res) => {
     console.log("Uploader inside uploadScan:", req.user);
 
     // 1️⃣ Find patient using patientName + MRN
-    const patient = await Patient.findOne({ name: patientName, mrn });
+    const patient = await Patient.findOne({ where: { name: patientName, mrn } });
     if (!patient) {
       return res.status(404).json({ error: "Patient not found" });
     }
 
     // 3️⃣ Create scan
-    const scan = new Scan({
+    const scan = await Scan.create({
       organizationId: patient.organizationId,
       clinicId: patient.clinicId,
-      patientId: patient._id,
+      patientId: patient.id,
       mrn: patient.mrn,
       uploadedBy: req.user.id,
       scanType,
@@ -54,7 +59,6 @@ const uploadScan = async (req, res) => {
       notes,
     });
 
-    await scan.save();
     res.status(201).json(scan);
 
   } catch (err) {
@@ -63,18 +67,20 @@ const uploadScan = async (req, res) => {
   }
 };
 
-// --- GET scans by MRN (metadata + image file content) --- 
+// --- GET scans by MRN (metadata + image file content) ---
 const getScanByMrn = async (req, res) => {
   try {
     const { mrn } = req.params;
 
-    const patient = await Patient.findOne({ mrn });
+    const patient = await Patient.findOne({ where: { mrn } });
     if (!patient) return res.status(404).json({ error: "Patient not found" });
 
     // fetch latest scan for this patient
-    const scan = await Scan.findOne({ patientId: patient._id })
-      .populate("uploadedBy", "name role")
-      .sort({ createdAt: -1 });
+    const scan = await Scan.findOne({
+      where: { patientId: patient.id },
+      include: [{ model: Patient, as: 'uploadedBy', attributes: ['name', 'role'] }],
+      order: [['createdAt', 'DESC']]
+    });
 
     if (!scan) {
       return res.status(404).json({ error: "No scans found for this MRN" });
@@ -88,7 +94,7 @@ const getScanByMrn = async (req, res) => {
 
     // send metadata + file
     res.status(200).json({
-      _id: scan._id,
+      id: scan.id,
       patientId: scan.patientId,
       mrn: scan.mrn,
       uploadedBy: scan.uploadedBy,
@@ -115,22 +121,26 @@ const addDoctorReviewByMrn = async (req, res) => {
     const { mrn } = req.params;
     const { notes, scanId } = req.body; // optional: specify exact scan
 
-    const patient = await Patient.findOne({ mrn });
+    const patient = await Patient.findOne({ where: { mrn } });
     if (!patient) return res.status(404).json({ error: "Patient not found" });
 
     // pick scan
     let scan;
     if (scanId) {
-      scan = await Scan.findOne({ _id: scanId, patientId: patient._id });
+      scan = await Scan.findOne({ where: { id: scanId, patientId: patient.id } });
     } else {
-      scan = await Scan.findOne({ patientId: patient._id }).sort({ createdAt: -1 }); // latest scan
+      scan = await Scan.findOne({
+        where: { patientId: patient.id },
+        order: [['createdAt', 'DESC']]
+      }); // latest scan
     }
 
     if (!scan) return res.status(404).json({ error: "Scan not found" });
 
-    scan.notes = notes || scan.notes;
-    scan.status = "Reviewed";
-    await scan.save();
+    await scan.update({
+      notes: notes || scan.notes,
+      status: "Reviewed"
+    });
 
     res.status(200).json({ message: "Doctor review saved", scan });
   } catch (err) {

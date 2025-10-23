@@ -2,7 +2,9 @@
 // Node 18+ has global fetch. If you're on older Node, install node-fetch and use:
 // const fetch = (...a) => import('node-fetch').then(({default: f}) => f(...a));
 
-const Camera = require('../models/Camera');
+const { Camera } = require('../models');
+const { Op } = require('sequelize');
+const { sequelize } = require('../config/db');
 
 const CV_SHARED_SECRET   = process.env.CV_SHARED_SECRET   || 'dev-secret';
 const CV_URL             = process.env.CV_URL             || 'http://localhost:8001';        // FastAPI service
@@ -20,7 +22,7 @@ function buildRtsp(cam, { channel = cam.defaultChannel, stream = cam.defaultStre
 exports.startTracking = async (req, res) => {
   try {
     const { cameraId } = req.params;
-    const cam = await Camera.findById(cameraId);
+    const cam = await Camera.findByPk(cameraId);
     if (!cam) return res.status(404).json({ error: 'Camera not found' });
 
     // optional overrides from request body

@@ -1,6 +1,6 @@
-const User = require('../models/User');
-const Clinic = require('../models/Clinic');
-const Organization = require('../models/Organization');
+const { User, Clinic, Organization } = require('../models');
+const { Op } = require('sequelize');
+const { sequelize } = require('../config/db');
 
 //create manager
 const createManager = async (req, res) => {
@@ -12,27 +12,28 @@ const createManager = async (req, res) => {
 
     if (!email) return res.status(400).json({ error: "Email is required." });
 
-    const clinic = await Clinic.findById(clinicId);
+    const clinic = await Clinic.findByPk(clinicId);
     if (!clinic) return res.status(404).json({ error: "Clinic not found" });
 
-    let user = await User.findOne({ email });
+    let user = await User.findOne({ where: { email } });
 
     if (user) {
-  // Update existing user
-  user.role = "manager";
-  user.clinicId = clinicId; // ✅ assign directly (not array)
-} else {
-  // Create new user
-  user = new User({
-    name,
-    email,
-    role: "manager",
-    organizationId: req.user.organizationId,
-    clinicId: clinicId, 
-  });
-}
+      // Update existing user
+      await user.update({
+        role: "manager",
+        clinicId: clinicId // assign directly (not array)
+      });
+    } else {
+      // Create new user
+      user = await User.create({
+        name,
+        email,
+        role: "manager",
+        organizationId: req.user.organizationId,
+        clinicId: clinicId,
+      });
+    }
 
-    await user.save();
     res.status(201).json(user);
   } catch (err) {
     console.error("Error creating manager:", err);
@@ -60,13 +61,13 @@ const createAdmin = async (req, res) => {
     }
 
     //Ensure organization exists
-    const org = await Organization.findOne({ organizationId });
+    const org = await Organization.findOne({ where: { organizationId } });
     if (!org) {
       return res.status(404).json({ error: "Organization not found" });
     }
 
     //Ensure clinic exists
-    const clinic = await Clinic.findOne({ clinicId, organizationId });
+    const clinic = await Clinic.findOne({ where: { clinicId, organizationId } });
     if (!clinic) {
       return res
         .status(404)
@@ -74,14 +75,16 @@ const createAdmin = async (req, res) => {
     }
 
     // Check if user already exists
-    let user = await User.findOne({ email });
+    let user = await User.findOne({ where: { email } });
 
     if (user) {
-      user.role = "admin";
-      user.clinicId = clinicId;
+      await user.update({
+        role: "admin",
+        clinicId: clinicId
+      });
     } else {
       // Create new admin
-      user = new User({
+      user = await User.create({
         name,
         email,
         role: "admin",
@@ -90,7 +93,6 @@ const createAdmin = async (req, res) => {
       });
     }
 
-    await user.save();
     return res.status(201).json(user);
   } catch (err) {
     console.error("Error creating admin:", err);
@@ -102,10 +104,13 @@ const createAdmin = async (req, res) => {
 //get all managers
 const getManagers = async (req, res) => {
   try {
-    const managers = await User.find({
-      role: 'manager',
-      organizationId: req.user.organizationId
-    }).populate('clinicId', 'name address type'); // show clinic details
+    const managers = await User.findAll({
+      where: {
+        role: 'manager',
+        organizationId: req.user.organizationId
+      },
+      include: [{ model: Clinic, as: 'clinicId', attributes: ['name', 'address', 'type'] }]
+    });
 
     res.json(managers);
   } catch (err) {
@@ -113,18 +118,22 @@ const getManagers = async (req, res) => {
   }
 };
 
-//update manager 
+//update manager
 const updateManager = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const manager = await User.findOneAndUpdate(
-      { _id: id, role: 'manager', organizationId: req.user.organizationId },
-      req.body,
-      { new: true }
-    );
+    const manager = await User.findOne({
+      where: {
+        id: id,
+        role: 'manager',
+        organizationId: req.user.organizationId
+      }
+    });
 
     if (!manager) return res.status(404).json({ error: 'Manager not found' });
+
+    await manager.update(req.body);
     res.json(manager);
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -136,13 +145,15 @@ const deleteManager = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const manager = await User.findOneAndDelete({
-      _id: id,
-      role: 'manager',
-      organizationId: req.user.organizationId
+    const deleted = await User.destroy({
+      where: {
+        id: id,
+        role: 'manager',
+        organizationId: req.user.organizationId
+      }
     });
 
-    if (!manager) return res.status(404).json({ error: 'Manager not found' });
+    if (!deleted) return res.status(404).json({ error: 'Manager not found' });
     res.json({ message: 'Manager deleted successfully' });
   } catch (err) {
     res.status(500).json({ error: err.message });

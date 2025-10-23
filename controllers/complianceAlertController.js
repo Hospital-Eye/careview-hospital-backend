@@ -1,10 +1,11 @@
-const Alert = require('../models/ComplianceAlert');
+const { ComplianceAlert } = require('../models');
+const { Op } = require('sequelize');
+const { sequelize } = require('../config/db');
 
 // Create a new alert
 const createAlert = async (req, res) => {
   try {
-    const alert = new Alert(req.body);
-    await alert.save();
+    const alert = await ComplianceAlert.create(req.body);
     res.status(201).json(alert);
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -14,11 +15,14 @@ const createAlert = async (req, res) => {
 // Get all alerts
 const getAlerts = async (req, res) => {
   try {
-    const alerts = await Alert.find()
-      .populate('source.eventId')
-      .populate('recipients.staffId')
-      .populate('associatedIds.patientId')
-      .populate('associatedIds.roomId');
+    const alerts = await ComplianceAlert.findAll({
+      include: [
+        { model: require('../models').AnalyticsEvent, as: 'source.eventId' },
+        { model: require('../models').Staff, as: 'recipients.staffId' },
+        { model: require('../models').Patient, as: 'associatedIds.patientId' },
+        { model: require('../models').Room, as: 'associatedIds.roomId' }
+      ]
+    });
     res.json(alerts);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -28,11 +32,14 @@ const getAlerts = async (req, res) => {
 // Get alert by ID
 const getAlertById = async (req, res) => {
   try {
-    const alert = await Alert.findById(req.params.id)
-      .populate('source.eventId')
-      .populate('recipients.staffId')
-      .populate('associatedIds.patientId')
-      .populate('associatedIds.roomId');
+    const alert = await ComplianceAlert.findByPk(req.params.id, {
+      include: [
+        { model: require('../models').AnalyticsEvent, as: 'source.eventId' },
+        { model: require('../models').Staff, as: 'recipients.staffId' },
+        { model: require('../models').Patient, as: 'associatedIds.patientId' },
+        { model: require('../models').Room, as: 'associatedIds.roomId' }
+      ]
+    });
     if (!alert) return res.status(404).json({ error: 'Alert not found' });
     res.json(alert);
   } catch (err) {
@@ -43,8 +50,11 @@ const getAlertById = async (req, res) => {
 // Update alert
 const updateAlert = async (req, res) => {
   try {
-    const updated = await Alert.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    res.json(updated);
+    const alert = await ComplianceAlert.findByPk(req.params.id);
+    if (!alert) return res.status(404).json({ error: 'Alert not found' });
+
+    await alert.update(req.body);
+    res.json(alert);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -53,7 +63,8 @@ const updateAlert = async (req, res) => {
 // Delete alert
 const deleteAlert = async (req, res) => {
   try {
-    await Alert.findByIdAndDelete(req.params.id);
+    const deleted = await ComplianceAlert.destroy({ where: { id: req.params.id } });
+    if (!deleted) return res.status(404).json({ error: 'Alert not found' });
     res.json({ message: 'Alert deleted' });
   } catch (err) {
     res.status(500).json({ error: err.message });

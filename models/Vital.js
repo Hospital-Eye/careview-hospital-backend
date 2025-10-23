@@ -1,37 +1,65 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
 
-const vitalSchema = new mongoose.Schema({
-  patientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Patient' },
-  mrn: { type: String },
-  timestamp: { type: Date, default: Date.now },
-  measurements: {
-    heartRate: Number,
-    bloodPressure: {
-      systolic: Number,
-      diastolic: Number
+module.exports = (sequelize, DataTypes) => {
+  const Vital = sequelize.define('Vital', {
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true
     },
-    respiratoryRate: Number,
-    temperature: {
-      value: Number,
-      unit: String
+    patientId: {
+      type: DataTypes.UUID,
+      allowNull: true,
+      references: {
+        model: 'Patient',
+        key: 'id'
+      }
     },
-    oxygenSaturation: {
-      value: Number,
-      method: String
+    mrn: {
+      type: DataTypes.STRING,
+      allowNull: true
     },
-    painScale: {
-      value: Number,
-      scale: String
+    timestamp: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW
     },
-    weight: {
-      value: Number,
-      unit: String
+    measurements: {
+      type: DataTypes.JSONB,
+      allowNull: true
     },
+    recordedBy: {
+      type: DataTypes.UUID,
+      allowNull: true,
+      references: {
+        model: 'Staff',
+        key: 'id'
+      }
+    },
+    notes: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    }
+  }, {
+    tableName: 'Vital',
+    timestamps: true,
+    indexes: [
+      { fields: ['patientId'] },
+      { fields: ['timestamp'] },
+      { fields: ['recordedBy'] }
+    ]
+  });
 
-    physicalDistress: String,
-  },
-  recordedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'Staff' },
-  notes: String
-});
+  Vital.associate = (models) => {
+    Vital.belongsTo(models.Patient, {
+      foreignKey: 'patientId',
+      as: 'patient'
+    });
+    Vital.belongsTo(models.Staff, {
+      foreignKey: 'recordedBy',
+      as: 'recorder'
+    });
+  };
 
-module.exports = mongoose.model('Vital', vitalSchema);
+  return Vital;
+};

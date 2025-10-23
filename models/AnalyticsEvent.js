@@ -1,11 +1,62 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
 
-const analyticsEventSchema = new mongoose.Schema({
-  eventType: String,
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  patientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Patient' },
-  metadata: mongoose.Schema.Types.Mixed,
-  timestamp: { type: Date, default: Date.now }
-});
+module.exports = (sequelize, DataTypes) => {
+  const AnalyticsEvent = sequelize.define('AnalyticsEvent', {
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true
+    },
+    eventType: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    userId: {
+      type: DataTypes.UUID,
+      allowNull: true,
+      references: {
+        model: 'User',
+        key: 'id'
+      }
+    },
+    patientId: {
+      type: DataTypes.UUID,
+      allowNull: true,
+      references: {
+        model: 'Patient',
+        key: 'id'
+      }
+    },
+    metadata: {
+      type: DataTypes.JSONB,
+      allowNull: true
+    },
+    timestamp: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW
+    }
+  }, {
+    tableName: 'AnalyticsEvent',
+    timestamps: true,
+    indexes: [
+      { fields: ['userId'] },
+      { fields: ['patientId'] },
+      { fields: ['eventType'] },
+      { fields: ['timestamp'] }
+    ]
+  });
 
-module.exports = mongoose.model('AnalyticsEvent', analyticsEventSchema);
+  AnalyticsEvent.associate = (models) => {
+    AnalyticsEvent.belongsTo(models.User, {
+      foreignKey: 'userId',
+      as: 'user'
+    });
+    AnalyticsEvent.belongsTo(models.Patient, {
+      foreignKey: 'patientId',
+      as: 'patient'
+    });
+  };
+
+  return AnalyticsEvent;
+};

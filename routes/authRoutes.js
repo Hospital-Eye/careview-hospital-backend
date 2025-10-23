@@ -1,7 +1,7 @@
 const express = require('express');
 const axios = require('axios');
 const jwt = require('jsonwebtoken');
-const User = require('../models/User'); 
+const { User } = require('../models');
 require('dotenv').config();
 
 //This function will be called by server.js, passing the variables
@@ -57,10 +57,10 @@ module.exports = (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI, F
         }
 
         // --- Find or create user ---
-        let user = await User.findOne({ email: userEmail });
+        let user = await User.findOne({ where: { email: userEmail } });
 
         if (!user) {
-        user = new User({
+        user = await User.create({
             googleId: profile.id,
             email: userEmail,
             name: profile.name,
@@ -70,22 +70,22 @@ module.exports = (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI, F
             clinicId: "newhope-1",
             isActive: true,
         });
-        await user.save();
         console.log(`🆕 New ${role} registered: ${userEmail}`);
         } else {
         if (!user.isActive) {
             return res.redirect(`${FRONTEND_BASE_URL}/login?error=account_inactive`);
         }
-        user.googleId = profile.id;
-        user.name = profile.name;
-        user.profilePicture = profile.picture;
-        await user.save();
+        await user.update({
+            googleId: profile.id,
+            name: profile.name,
+            profilePicture: profile.picture
+        });
         console.log(`✅ Existing ${role} logged in: ${userEmail}`);
         }
 
         // --- JWT ---
         const payload = {
-        id: user._id,
+        id: user.id,
         email: user.email,
         role: user.role,
         organizationId: user.organizationId,
@@ -98,11 +98,12 @@ module.exports = (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI, F
 
     } catch (err) {
         console.error("Google OAuth error:", err.message);
+        console.error("Full error:", err);
         return res.redirect(`${FRONTEND_BASE_URL}/login?error=google_oauth_failed`);
     }
     });
 
-        
+
     router.get('/logout', (req, res) => {
         res.redirect(`${FRONTEND_BASE_URL}/login`);
     });
