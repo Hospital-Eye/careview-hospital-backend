@@ -77,14 +77,14 @@ const getRooms = async (req, res) => {
           },
           include: [{
             model: Patient,
-            as: 'patientId',
+            as: 'patient',
             attributes: ['name']
           }]
         });
 
         const occupiedBeds = admissions.length;
         const occupants = admissions
-          .map(ad => ad.patientId?.name)
+          .map(ad => ad.patient?.name)
           .filter(Boolean);
 
         return {
