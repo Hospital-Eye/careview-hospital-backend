@@ -1,5 +1,5 @@
 const multer = require("multer");
-const { Storage } = require("@google-cloud/storage");
+//onst { Storage } = require("@google-cloud/storage");
 const { Patient, Vital, Admission, User, Organization, Clinic, Counter } = require('../models');
 const { Op } = require('sequelize');
 const { sequelize } = require('../config/db');
@@ -8,11 +8,11 @@ const { validate: isUUID } = require('uuid');
 //create patient with automatic room assignment based on availability and patient needs, and document upload to GCS
 
 // Configure Multer for file uploads
-const upload = multer({ storage: multer.memoryStorage() });
+//const upload = multer({ storage: multer.memoryStorage() });
 
 // Init GCS client
-const storage = new Storage();
-const bucket = storage.bucket(process.env.GCS_BUCKET_NAME);
+//const storage = new Storage();
+//const bucket = storage.bucket(process.env.GCS_BUCKET_NAME);
 
 // --- create new patient ---
 const createPatient = async (req, res) => {

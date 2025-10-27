@@ -56,8 +56,24 @@ module.exports = (sequelize, DataTypes) => {
   });
 
   ComplianceAlert.associate = (models) => {
-    // No direct foreign key associations due to JSONB fields
-  };
+  ComplianceAlert.belongsTo(models.AnalyticsEvent, {
+    foreignKey: 'eventId',
+    as: 'sourceEvent'
+  });
+  ComplianceAlert.belongsTo(models.Staff, {
+    foreignKey: 'staffId',
+    as: 'recipientStaff'
+  });
+  ComplianceAlert.belongsTo(models.Patient, {
+    foreignKey: 'patientId',
+    as: 'associatedPatient'
+  });
+  ComplianceAlert.belongsTo(models.Room, {
+    foreignKey: 'roomId',
+    as: 'associatedRoom'
+  });
+};
+
 
   return ComplianceAlert;
 };

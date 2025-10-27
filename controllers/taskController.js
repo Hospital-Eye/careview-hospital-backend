@@ -79,10 +79,9 @@ const getTasks = async (req, res) => {
     const tasks = await Task.findAll({
       where: query,
       include: [
-        { model: require('../models').Staff, as: 'assignedStaffId', attributes: ['name', 'role', 'contact'] },
-        { model: require('../models').Patient, as: 'patientId', attributes: ['name', 'mrn'] },
-        { model: Task, as: 'dependencies', attributes: ['taskType', 'status'] }
-      ]
+      { model: require('../models').Staff, as: 'assignedStaff', attributes: ['name', 'role', 'contact'] },
+      { model: require('../models').Patient, as: 'patient', attributes: ['name', 'mrn'] }
+    ]
     });
 
     res.json(tasks);
@@ -97,10 +96,10 @@ const getTaskById = async (req, res) => {
     try {
         const task = await Task.findByPk(req.params.id, {
           include: [
-            { model: require('../models').Staff, as: 'assignedStaffId' },
-            { model: require('../models').Patient, as: 'patientId' },
-            { model: Task, as: 'dependencies' }
-          ]
+          { model: require('../models').Staff, as: 'assignedStaff' },
+          { model: require('../models').Patient, as: 'patient' },
+          { model: Task, as: 'dependencies' }
+        ]
         });
         if (!task) return res.status(404).json({ error: 'Task not found' });
         res.json(task);

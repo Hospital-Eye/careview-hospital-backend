@@ -16,12 +16,12 @@ const createAlert = async (req, res) => {
 const getAlerts = async (req, res) => {
   try {
     const alerts = await ComplianceAlert.findAll({
-      include: [
-        { model: require('../models').AnalyticsEvent, as: 'source.eventId' },
-        { model: require('../models').Staff, as: 'recipients.staffId' },
-        { model: require('../models').Patient, as: 'associatedIds.patientId' },
-        { model: require('../models').Room, as: 'associatedIds.roomId' }
-      ]
+    include: [
+      { model: require('../models').AnalyticsEvent, as: 'sourceEvent' },
+      { model: require('../models').Staff, as: 'recipientStaff' },
+      { model: require('../models').Patient, as: 'associatedPatient' },
+      { model: require('../models').Room, as: 'associatedRoom' }
+    ]
     });
     res.json(alerts);
   } catch (err) {

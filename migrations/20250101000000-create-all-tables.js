@@ -27,8 +27,8 @@ module.exports = {
         allowNull: false
       },
       profilePicture: {
-        type: Sequelize.STRING,
-        allowNull: true
+        type: Sequelize.TEXT, 
+        allowNull: true,
       },
       clinicId: {
         type: Sequelize.STRING,
