@@ -21,3 +21,6 @@ uploads/
 **/*.mp4
 **/*.mkv
 **/*.mov
+
+# Migration logs
+scripts/migration-logs/
