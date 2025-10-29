@@ -36,4 +36,7 @@ Object.keys(db).forEach(modelName => {
   }
 });
 
+console.log('✅ Associations loaded:');
+console.log(Object.keys(db.User.associations));
+
 module.exports = db;
