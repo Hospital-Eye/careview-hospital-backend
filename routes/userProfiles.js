@@ -1,19 +1,22 @@
 const express = require('express');
-const User = require('../models/User');
-const Patient = require('../models/Patient');
-const { protect, authorize, scope } = require('../middleware/authMiddleware');
+const { User, Patient, Staff, Clinic, Organization } = require('../models');
+const { protect } = require('../middleware/authMiddleware');
+
+console.log('User model methods:', Object.keys(User));
 
 const router = express.Router();
 
-// GET /api/profile
-// profile.js
 router.get('/', protect, async (req, res) => {
   try {
-    const email = req.user.email; // comes from JWT middleware
+    const email = req.user.email;
 
-    const user = await User.findOne({ email })
-      .populate('clinicId')
-      .populate('organizationId');
+    const user = await User.findOne({
+  where: { email },
+  include: [
+    { model: require('../models').Clinic, as: 'clinic' },
+    { model: require('../models').Organization, as: 'organization' }
+  ]
+});
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
@@ -27,26 +30,20 @@ router.get('/', protect, async (req, res) => {
     };
 
     if (user.role === 'patient') {
-      const patientDetails = await Patient.findOne({ userId: user._id }).lean();
+      const patientDetails = await Patient.findOne({ where: { userId: user.id } });
       profileData.details = patientDetails || null;
-
-      // use organization and clinic from User (or Patient if you prefer)
-      profileData.organizationId = user.organizationId || null;
-      profileData.clinicId = user.clinicId || null;
-    } 
-    else {
-      const Staff = await import('../models/Staff.js'); // use import for ESM
-      const staffDetails = await Staff.default.findOne({ userId: user._id }).lean();
-
+      profileData.organizationId = user.organizationId;
+      profileData.clinicId = user.clinicId;
+    } else {
+      const staffDetails = await Staff.findOne({ where: { userId: user.id } });
       if (staffDetails) {
         profileData.details = staffDetails;
         profileData.employeeId = staffDetails.employeeId;
-        profileData.organizationId = staffDetails.organizationId || user.organizationId || null;
-        profileData.clinicId = staffDetails.clinicId || user.clinicId || null;
+        profileData.organizationId = staffDetails.organizationId || user.organizationId;
+        profileData.clinicId = staffDetails.clinicId || user.clinicId;
       } else {
-        // fallback in case Staff record doesn't exist
-        profileData.organizationId = user.organizationId || null;
-        profileData.clinicId = user.clinicId || null;
+        profileData.organizationId = user.organizationId;
+        profileData.clinicId = user.clinicId;
       }
     }
 
@@ -56,6 +53,5 @@ router.get('/', protect, async (req, res) => {
     res.status(500).json({ message: 'Server error', error: err.message });
   }
 });
-
 
 module.exports = router;

@@ -84,6 +84,19 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'uploadedBy',
       as: 'uploadedScans'
     });
+
+    User.belongsTo(models.Clinic, {
+    foreignKey: 'clinicId',
+    targetKey: 'clinicId', 
+    as: 'clinic'
+  });
+    User.belongsTo(models.Organization, {
+    foreignKey: 'organizationId',
+    targetKey: 'organizationId',
+    as: 'organization'
+  });
+
+
   };
 
   return User;
