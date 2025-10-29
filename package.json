@@ -7,7 +7,11 @@
     "start": "node server.js",
     "migrate": "sequelize-cli db:migrate",
     "migrate:undo": "sequelize-cli db:migrate:undo",
-    "migrate:status": "sequelize-cli db:migrate:status"
+    "migrate:status": "sequelize-cli db:migrate:status",
+    "export-data": "node scripts/export-data.js",
+    "import-data": "node scripts/import-data.js",
+    "import-data:append": "node scripts/import-data.js --append",
+    "import-data:skip": "node scripts/import-data.js --skip-existing"
   },
   "keywords": [],
   "author": "",
