@@ -23,30 +23,32 @@ const mongoose = require('mongoose');
 const { v4: uuidv4 } = require('uuid');
 const db = require('../models');
 const { sequelize } = require('../config/db');
+const fs = require('fs');
+const path = require('path');
 
 // MongoDB models (using .mongoose.js files)
 const MongoModels = {
-  User: require('../models/User.mongoose.js'),
-  Organization: require('../models/Organization.mongoose.js'),
-  Clinic: require('../models/Clinic.mongoose.js'),
-  Patient: require('../models/Patient.mongoose.js'),
-  Staff: require('../models/Staff.mongoose.js'),
-  Room: require('../models/Room.mongoose.js'),
-  Admission: require('../models/Admission.mongoose.js'),
-  Task: require('../models/Task.mongoose.js'),
-  Vital: require('../models/Vital.mongoose.js'),
-  Scan: require('../models/Scan.mongoose.js'),
-  Notification: require('../models/Notification.mongoose.js'),
-  ComplianceAlert: require('../models/ComplianceAlert.mongoose.js'),
-  Camera: require('../models/Camera.mongoose.js'),
-  CVDetection: require('../models/CVDetection.mongoose.js'),
-  CVEvent: require('../models/CVEvent.mongoose.js'),
-  MP4File: require('../models/MP4File.mongoose.js'),
-  MP4Event: require('../models/MP4Event.mongoose.js'),
-  AnalyticsEvent: require('../models/AnalyticsEvent.mongoose.js'),
-  DeviceLog: require('../models/DeviceLog.mongoose.js'),
-  UserSession: require('../models/UserSession.mongoose.js'),
-  Counter: require('../models/Counter.mongoose.js')
+  User: require('../models_mongo/User.mongoose.js'),
+  Organization: require('../models_mongo/Organization.mongoose.js'),
+  Clinic: require('../models_mongo/Clinic.mongoose.js'),
+  Patient: require('../models_mongo/Patient.mongoose.js'),
+  Staff: require('../models_mongo/Staff.mongoose.js'),
+  Room: require('../models_mongo/Room.mongoose.js'),
+  Admission: require('../models_mongo/Admission.mongoose.js'),
+  Task: require('../models_mongo/Task.mongoose.js'),
+  Vital: require('../models_mongo/Vital.mongoose.js'),
+  Scan: require('../models_mongo/Scan.mongoose.js'),
+  Notification: require('../models_mongo/Notification.mongoose.js'),
+  ComplianceAlert: require('../models_mongo/ComplianceAlert.mongoose.js'),
+  Camera: require('../models_mongo/Camera.mongoose.js'),
+  CVDetection: require('../models_mongo/CVDetection.mongoose.js'),
+  CVEvent: require('../models_mongo/CVEvent.mongoose.js'),
+  MP4File: require('../models_mongo/MP4File.mongoose.js'),
+  MP4Event: require('../models_mongo/MP4Event.mongoose.js'),
+  AnalyticsEvent: require('../models_mongo/AnalyticsEvent.mongoose.js'),
+  DeviceLog: require('../models_mongo/DeviceLog.mongoose.js'),
+  UserSession: require('../models_mongo/UserSession.mongoose.js'),
+  Counter: require('../models_mongo/Counter.mongoose.js')
 };
 
 // ID mapping: MongoDB ObjectId -> PostgreSQL UUID
@@ -111,6 +113,70 @@ async function connectPostgreSQL() {
   console.log('✅ PostgreSQL connected');
 }
 
+async function migrateCollection(ModelName, mongoModel, pgModel, fkMap = {}, idMap = {}) {
+  console.log(`\n🚀 Migrating ${ModelName}...`);
+  const docs = await mongoModel.find().lean();
+  let success = 0;
+  let errors = 0;
+  const failedDocs = [];
+
+  for (const doc of docs) {
+    try {
+      const transformed = { ...doc };
+
+      // 🔁 Replace _id with new Postgres-compatible ID
+      delete transformed._id;
+
+      // 🔗 Replace foreign key ObjectIds using the idMap
+      for (const [pgField, refModel] of Object.entries(fkMap)) {
+        const mongoRefId = doc[pgField];
+        if (mongoRefId && idMap[refModel] && idMap[refModel][mongoRefId]) {
+          transformed[pgField] = idMap[refModel][mongoRefId];
+        } else if (mongoRefId) {
+          // Log missing FK but still try inserting with null
+          console.warn(`⚠️ Missing FK in ${ModelName}.${pgField}: ${mongoRefId}`);
+          transformed[pgField] = null;
+        }
+      }
+
+      // 🗄️ Insert into Postgres
+      const created = await pgModel.create(transformed, { validate: false });
+
+      // 🧭 Keep ID map for future references
+      idMap[ModelName] = idMap[ModelName] || {};
+      idMap[ModelName][doc._id] = created.id;
+
+      success++;
+
+    } catch (error) {
+      errors++;
+      failedDocs.push({
+        mongoId: doc._id,
+        error: error.message,
+        model: ModelName,
+        document: doc,
+      });
+      console.error(`❌ Error migrating ${ModelName} document ${doc._id}:`, error.message);
+    }
+  }
+
+  // 💾 Write failures to file if any
+  if (failedDocs.length > 0) {
+    const dir = path.resolve(__dirname, 'migration-logs');
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir);
+    const filePath = path.join(dir, `failed_${ModelName}.json`);
+    fs.writeFileSync(filePath, JSON.stringify(failedDocs, null, 2));
+    console.log(`📁 Logged ${failedDocs.length} failed ${ModelName} records to ${filePath}`);
+  }
+
+  console.log(`✅ ${ModelName}: ${success}/${docs.length} migrated successfully.`);
+  return { success, errors };
+}
+
+
+
+
+/*
 async function migrateCollection(ModelName, mongoModel, pgModel, foreignKeys = {}) {
   console.log(`\n🔄 Migrating ${ModelName}...`);
 
@@ -125,6 +191,8 @@ async function migrateCollection(ModelName, mongoModel, pgModel, foreignKeys = {
 
     let success = 0;
     let errors = 0;
+
+    if (docs.length > 0) console.log(`Sample doc from ${ModelName}:`, docs[0]);
 
     for (const doc of docs) {
       try {
@@ -143,7 +211,7 @@ async function migrateCollection(ModelName, mongoModel, pgModel, foreignKeys = {
     console.error(`   ❌ Failed to migrate ${ModelName}:`, error.message);
     return { success: 0, errors: -1 };
   }
-}
+}*/
 
 async function runMigration() {
   const stats = {
