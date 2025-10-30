@@ -1,4 +1,4 @@
-const { Scan, Patient } = require('../models');
+const { Scan, Patient, User } = require('../models');
 const { Op } = require('sequelize');
 const { sequelize } = require('../config/db');
 const path = require("path");
@@ -20,8 +20,8 @@ const getScans = async (req, res) => {
     const scans = await Scan.findAll({
       where: filter,
       include: [
-        { model: Patient, as: 'patientId', attributes: ['name', 'mrn', 'email'] },
-        { model: Patient, as: 'uploadedBy', attributes: ['name', 'role', 'email'] }
+        { model: Patient, as: 'patient', attributes: ['name', 'mrn', 'emailId'] },
+        { model: User, as: 'uploader', attributes: ['name', 'role', 'email'] }
       ],
       order: [['createdAt', 'DESC']] // newest first
     });
