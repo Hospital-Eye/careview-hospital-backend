@@ -8,7 +8,7 @@ module.exports = {
     host: process.env.POSTGRES_HOST || 'localhost',
     port: process.env.POSTGRES_PORT || 5432,
     dialect: 'postgres',
-    logging: console.log,
+    logging: false,
     pool: {
       max: 5,
       min: 0,

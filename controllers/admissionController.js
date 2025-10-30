@@ -7,7 +7,7 @@ const { validate: isUUID } = require('uuid');
 const createAdmission = async (req, res) => {
   console.log("🩺 createAdmission endpoint hit");
 
-  console.log(req.body);
+  console.log("Create Admission Body: ", req.body);
 
   const t = await sequelize.transaction();
 
