@@ -56,7 +56,7 @@ module.exports = (sequelize, DataTypes) => {
   });
 
   ComplianceAlert.associate = (models) => {
-  ComplianceAlert.belongsTo(models.AnalyticsEvent, {
+    ComplianceAlert.belongsTo(models.AnalyticsEvent, {
     foreignKey: 'eventId',
     as: 'sourceEvent'
   });
