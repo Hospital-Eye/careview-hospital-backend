@@ -2,16 +2,18 @@ const { Admission, Patient, Staff, Room } = require('../models');
 const { Op } = require('sequelize');
 const { sequelize } = require('../config/db');
 const { validate: isUUID } = require('uuid');
+const { logger } = require('../utils/logger');
 
 // Create a new admission
 const createAdmission = async (req, res) => {
-  console.log("🩺 createAdmission endpoint hit");
 
-  console.log("Create Admission Body: ", req.body);
+  logger.info('POST /admission endpoint hit');
 
   const t = await sequelize.transaction();
 
   try {
+    logger.debug(`Request body: ${JSON.stringify(req.body)}`);
+
     const {
       patientId,
       admittedByStaffId,      // employeeId of admitting staff
@@ -132,7 +134,13 @@ const createAdmission = async (req, res) => {
 
 // get all admissions for the user's clinic & org
 const getAdmissions = async (req, res) => {
+
+  logger.info('POST /admissions endpoint hit');
+
   try {
+
+    logger.debug(`Request body: ${JSON.stringify(req.body)}`);
+    logger.debug(`Requesting user: ${JSON.stringify(req.user)}`);
     // assuming you attach clinicId & organizationId to req.user in your auth middleware
     const { clinicId, organizationId } = req.user;
 
@@ -165,7 +173,7 @@ const getAdmissions = async (req, res) => {
 
     res.json(result);
   } catch (err) {
-    console.error(err);
+    logger.error(`Error in getAdmissions controller: ${err.stack}`);
     res.status(500).json({ error: 'Server error' });
   }
 };
@@ -174,7 +182,10 @@ const getAdmissions = async (req, res) => {
 
 // get admission by ID
 const getAdmissionById = async (req, res) => {
+   logger.info('POST /admission/:id endpoint hit');
   try {
+    logger.debug(`Request body: ${JSON.stringify(req.body)}`);
+
     const admission = await Admission.findByPk(req.params.id, {
       include: [
         { model: Patient, as: 'patient' },
@@ -185,7 +196,9 @@ const getAdmissionById = async (req, res) => {
     });
     if (!admission) return res.status(404).json({ error: 'Admission not found' });
     res.json(admission);
+    logger.info('Response sent successfully');
   } catch (err) {
+    logger.error(`Error in getAdmissionById controller: ${err.stack}`);
     res.status(400).json({ error: err.message });
   }
 };
