@@ -32,9 +32,9 @@ const protect = (req, res, next) => {
 const authorize = (...roles) => {
     return (req, res, next) => {
         // Check if user object exists from 'protect' middleware and if user's role is in allowed roles
-        if (!req.user || !req.user.role || !roles.includes(req.user.role)) {
-            console.warn(`Authorization Failed: User ${req.user ? req.user.email : 'unknown'} with role ${req.user ? req.user.role : 'none'} tried to access restricted resource. Required roles: ${roles.join(', ')}`);
-            return res.status(403).json({ message: `Forbidden. You do not have the required role.` });
+        if (!req.user || !req.user.role || !roles.map(r => r.toLowerCase()).includes(req.user.role.toLowerCase())) {
+          console.warn(`Authorization Failed: User ${req.user ? req.user.email : 'unknown'} with role ${req.user ? req.user.role : 'none'} tried to access restricted resource. Required roles: ${roles.join(', ')}`);
+          return res.status(403).json({ message: 'Forbidden. You do not have the required role.' });
         }
         next(); 
     };

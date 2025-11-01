@@ -13,7 +13,7 @@ const {
 router.post('/', protect, authorize('admin', 'manager', 'doctor', 'nurse'), createPatient);
 router.get('/', protect, authorize('admin', 'manager', 'doctor', 'nurse'), scope('Patient'), getPatients);
 router.get('/:mrn', protect, authorize('admin', 'manager', 'doctor', 'nurse'), scope('Patient'), getPatientByMRN);
-router.put('/:mrn', protect, authorize('admin', 'manager'), scope('Patient'), updatePatientByMRN);
+router.put('/:mrn', protect, authorize('admin', 'manager', 'doctor'), scope('Patient'), updatePatientByMRN);
 router.delete('/:mrn', protect, authorize('admin', 'manager'), scope('Patient'), deletePatientByMRN);
 
 module.exports = router;

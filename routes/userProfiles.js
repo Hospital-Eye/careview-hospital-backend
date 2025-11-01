@@ -2,8 +2,6 @@ const express = require('express');
 const { User, Patient, Staff, Clinic, Organization } = require('../models');
 const { protect } = require('../middleware/authMiddleware');
 
-console.log('User model methods:', Object.keys(User));
-
 const router = express.Router();
 
 router.get('/', protect, async (req, res) => {

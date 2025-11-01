@@ -303,6 +303,7 @@ exports.deleteCamera = async (req, res) => {
 /* -------------------- Streaming by camera ID (DB) -------------------- */
 exports.startById = async (req, res) => {
   try {
+    console.log('Camera start request params:', req.params);
     const { id } = req.params;
     const cam = await Camera.findByPk(id);
     if (!cam) return res.status(404).json({ error: 'camera not found' });

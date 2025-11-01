@@ -1,75 +1,96 @@
 const { Room, Patient, Admission, Clinic, Organization } = require('../models');
 const { Op } = require('sequelize');
 const { sequelize } = require('../config/db');
+const logger = require('../utils/logger');
 
 //create room
 const createRoom = async (req, res) => {
+  logger.info('POST /rooms endpoint hit');
+
   try {
     const { clinicId: bodyClinicId } = req.body;
     const { role, organizationId: userOrgId, clinicId: userClinicId } = req.user;
 
-    console.log(req.body);
+    logger.debug(`Request body: ${JSON.stringify(req.body)}`);
+    logger.debug(`User context: role=${role}, orgId=${userOrgId}, clinicId=${userClinicId}`);
 
     if (!userOrgId) {
-      return res.status(403).json({ error: "Missing organizationId in user context" });
+      logger.warn('Missing organizationId in user context');
+      return res.status(403).json({ error: 'Missing organizationId in user context' });
     }
 
     let clinicId;
 
-    if (role === "admin") {
+    // --- Admin Role ---
+    if (role === 'admin') {
       if (!bodyClinicId) {
-        return res.status(400).json({ error: "Admin must provide clinicId" });
+        logger.warn('Admin did not provide clinicId');
+        return res.status(400).json({ error: 'Admin must provide clinicId' });
       }
 
       const clinic = await Clinic.findOne({
-        where: {
-          clinicId: bodyClinicId,
-          organizationId: userOrgId,
-        }
+        where: { clinicId: bodyClinicId, organizationId: userOrgId },
       });
 
       if (!clinic) {
-        return res.status(404).json({ error: "Clinic not found" });
+        logger.warn(`Clinic not found for clinicId=${bodyClinicId}, orgId=${userOrgId}`);
+        return res.status(404).json({ error: 'Clinic not found' });
       }
 
       clinicId = clinic.clinicId;
-    } else if (role === "manager") {
+      logger.debug(`Admin assigned clinicId=${clinicId}`);
+
+    // --- Manager Role ---
+    } else if (role === 'manager') {
       if (!userClinicId) {
-        return res.status(403).json({ error: "Manager has no clinic assignment" });
+        logger.warn('Manager has no clinic assignment');
+        return res.status(403).json({ error: 'Manager has no clinic assignment' });
       }
 
       const clinic = await Clinic.findByPk(userClinicId);
       if (!clinic) {
-        return res.status(404).json({ error: "Assigned clinic not found" });
+        logger.warn(`Assigned clinic not found for clinicId=${userClinicId}`);
+        return res.status(404).json({ error: 'Assigned clinic not found' });
       }
 
       clinicId = clinic.clinicId;
+      logger.debug(`Manager assigned clinicId=${clinicId}`);
+
+    // --- Other Roles ---
     } else {
-      return res.status(403).json({ error: "Unauthorized role" });
+      logger.warn(`Unauthorized role: ${role}`);
+      return res.status(403).json({ error: 'Unauthorized role' });
     }
 
-    // Save room with normalized clinicId
+    // --- Create Room ---
     const room = await Room.create({
       ...req.body,
       organizationId: userOrgId,
       clinicId,
     });
 
+    logger.info(`✅ Room created successfully (roomId=${room.id}, clinicId=${clinicId})`);
     res.status(201).json(room);
+
   } catch (err) {
-    console.error("Error creating room:", err);
+    logger.error(`Error in createRoom: ${err.stack}`);
     res.status(400).json({ error: err.message });
   }
 };
 
-// Get all rooms with dynamic occupancy info
+//GET all rooms
 const getRooms = async (req, res) => {
+  logger.info('GET /rooms endpoint hit');
+
   try {
-    const rooms = await Room.findAll({ where: req.scopeFilter || {} });
+    const scope = req.scopeFilter || {};
+    logger.debug(`Room query filter: ${JSON.stringify(scope)}`);
+
+    const rooms = await Room.findAll({ where: scope });
+    logger.debug(`Fetched ${rooms.length} rooms from database`);
 
     const enrichedRooms = await Promise.all(
       rooms.map(async (room) => {
-        // Find active admissions for this room
         const admissions = await Admission.findAll({
           where: {
             room: room.id,
@@ -87,6 +108,10 @@ const getRooms = async (req, res) => {
           .map(ad => ad.patient?.name)
           .filter(Boolean);
 
+        logger.debug(
+          `Room ${room.roomNumber}: ${occupiedBeds}/${room.capacity} beds occupied`
+        );
+
         return {
           roomId: room.id,
           roomNumber: room.roomNumber,
@@ -102,42 +127,67 @@ const getRooms = async (req, res) => {
       })
     );
 
+    logger.info('✅ Successfully fetched and enriched all room data');
     res.json(enrichedRooms);
+
   } catch (err) {
-    console.error("Error fetching rooms:", err);
-    res.status(500).json({ error: err.message });
+    logger.error(`Error in getRooms: ${err.stack}`);
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
 
 
 //get room by id
 const getRoomById = async (req, res) => {
+  logger.info(`GET /rooms/${req.params.id} endpoint hit`);
+
   try {
     const query = { id: req.params.id, ...req.scopeFilter };
+    logger.debug(`Room query filter: ${JSON.stringify(query)}`);
+
     const room = await Room.findOne({ where: query });
-    if (!room) return res.status(404).json({ error: 'Room not found' });
+
+    if (!room) {
+      logger.warn(`Room not found with id=${req.params.id}`);
+      return res.status(404).json({ error: 'Room not found' });
+    }
+
+    logger.info(`✅ Room found: id=${room.id}, roomNumber=${room.roomNumber}`);
     res.json(room);
+
   } catch (err) {
+    logger.error(`Error in getRoomById: ${err.stack}`);
     res.status(500).json({ error: err.message });
   }
 };
 
+
+//GET available rooms
 const getAvailableRooms = async (req, res) => {
+  logger.info('GET /rooms/available endpoint hit');
+
   try {
     const { unit, roomType } = req.query; // optional filters
-
-    // Base filter (scoped to org/clinic)
     const scopeFilter = req.scopeFilter || {};
     const roomFilter = { ...scopeFilter };
 
     if (unit) roomFilter.unit = unit;
     if (roomType) roomFilter.roomType = roomType;
 
+    logger.debug(`Room filter applied: ${JSON.stringify(roomFilter)}`);
+
     // Fetch rooms
     const rooms = await Room.findAll({ where: roomFilter });
+    logger.info(`Fetched ${rooms.length} rooms from DB`);
 
-    // For each room, count active admissions
+    if (rooms.length === 0) {
+      logger.warn('No rooms found for given filter');
+      return res.json([]);
+    }
+
+    // Get active admissions for those rooms
     const roomIds = rooms.map(r => r.id);
+    logger.debug(`Room IDs to check admissions: [${roomIds.join(', ')}]`);
 
     const activeAdmissions = await Admission.findAll({
       where: {
@@ -152,7 +202,9 @@ const getAvailableRooms = async (req, res) => {
       raw: true
     });
 
-    // Map roomId → occupancy count
+    logger.info(`Fetched active admissions for ${activeAdmissions.length} rooms`);
+
+    // Build occupancy map
     const occupancyMap = {};
     activeAdmissions.forEach(a => {
       occupancyMap[a.roomId] = parseInt(a.count) || 0;
@@ -163,6 +215,7 @@ const getAvailableRooms = async (req, res) => {
       const roomData = room.get({ plain: true });
       const occupied = occupancyMap[roomData.id] || 0;
       const availableBeds = roomData.capacity - occupied;
+
       return {
         ...roomData,
         occupied,
@@ -171,37 +224,61 @@ const getAvailableRooms = async (req, res) => {
       };
     });
 
+    logger.info(`✅ Successfully enriched ${enrichedRooms.length} rooms with availability data`);
     res.json(enrichedRooms);
+
   } catch (err) {
-    console.error("Error fetching available rooms:", err);
+    logger.error(`Error in getAvailableRooms: ${err.stack}`);
     res.status(500).json({ error: "Server error while fetching available rooms" });
   }
 };
 
+
 //update room
 const updateRoom = async (req, res) => {
+  logger.info(`PUT /rooms/${req.params.id} endpoint hit`);
+
   try {
     const query = { id: req.params.id, ...req.scopeFilter };
+    logger.debug(`Update room query: ${JSON.stringify(query)}`);
+
     const room = await Room.findOne({ where: query });
-    if (!room) return res.status(404).json({ error: 'Room not found' });
+    if (!room) {
+      logger.warn(`Room not found for ID ${req.params.id}`);
+      return res.status(404).json({ error: 'Room not found' });
+    }
 
     await room.update(req.body);
+    logger.info(`Room ${req.params.id} updated successfully`);
     res.json(room);
+
   } catch (err) {
+    logger.error(`Error in updateRoom: ${err.stack}`);
     res.status(400).json({ error: err.message });
   }
 };
 
+
 //delete room
 const deleteRoom = async (req, res) => {
+  logger.info(`DELETE /rooms/${req.params.id} endpoint hit`);
+
   try {
     const query = { id: req.params.id, ...req.scopeFilter };
+    logger.debug(`Delete room query: ${JSON.stringify(query)}`);
+
     const room = await Room.findOne({ where: query });
-    if (!room) return res.status(404).json({ error: 'Room not found' });
+    if (!room) {
+      logger.warn(`Room not found for deletion: ID ${req.params.id}`);
+      return res.status(404).json({ error: 'Room not found' });
+    }
 
     await room.destroy();
+    logger.info(`Room ${req.params.id} deleted successfully`);
     res.json({ message: 'Room deleted successfully' });
+
   } catch (err) {
+    logger.error(`Error in deleteRoom: ${err.stack}`);
     res.status(500).json({ error: err.message });
   }
 };
