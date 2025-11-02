@@ -2,7 +2,7 @@ const { Admission, Patient, Staff, Room } = require('../models');
 const { Op } = require('sequelize');
 const { sequelize } = require('../config/db');
 const { validate: isUUID } = require('uuid');
-const { logger } = require('../utils/logger');
+const logger = require('../utils/logger');
 
 // Create a new admission
 const createAdmission = async (req, res) => {

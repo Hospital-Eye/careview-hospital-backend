@@ -31,6 +31,7 @@ const protect = (req, res, next) => {
 // Middleware for role-based authorization
 const authorize = (...roles) => {
     return (req, res, next) => {
+      console.log("User role from token:", req.user.role);
         // Check if user object exists from 'protect' middleware and if user's role is in allowed roles
         if (!req.user || !req.user.role || !roles.map(r => r.toLowerCase()).includes(req.user.role.toLowerCase())) {
           console.warn(`Authorization Failed: User ${req.user ? req.user.email : 'unknown'} with role ${req.user ? req.user.role : 'none'} tried to access restricted resource. Required roles: ${roles.join(', ')}`);
