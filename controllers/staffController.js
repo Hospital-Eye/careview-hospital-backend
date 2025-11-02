@@ -131,47 +131,26 @@ const createStaff = async (req, res) => {
   }
 };
 
-// Get all staff (restricted by role/org/clinic + scope)
+//GET all staff 
 const getAllStaff = async (req, res) => {
   try {
-    const { role, organizationId, clinicId } = req.user; // from JWT
-    const scopeFilter = req.scopeFilter || {};
+    const { role } = req.user;
 
-    let filter = { ...scopeFilter }; // start with scope
-
-    if (role === "admin") {
-      // Admin can see all staff in the organization (within scope)
-      filter.organizationId = organizationId;
-    } else if (role === "manager") {
-      // Manager can only see staff in their clinic (within scope)
-      filter.organizationId = organizationId;
-      filter.clinicId = clinicId;
-    } else {
+    if (!["admin", "manager", "doctor"].includes(role.toLowerCase())) {
       return res
         .status(403)
-        .json({ error: "Forbidden. Only admins or managers can view staff." });
+        .json({ error: "Forbidden. Only admins, managers, or doctors can view staff." });
     }
 
-    const staff = await Staff.findAll({ where: filter });
+    const staff = await Staff.findAll({ where: req.scopeFilter });
 
-    // Normalize so frontend never breaks
-    const normalized = staff.map((s) => {
-      const staffData = s.get({ plain: true });
-      return {
-        ...staffData,
-        contact: {
-          email: staffData.contact?.email || staffData.email || "",
-          phone: staffData.contact?.phone || "",
-        },
-      };
-    });
-
-    res.json(normalized);
+    res.json(staff);
   } catch (err) {
     console.error("Error fetching staff:", err);
     res.status(500).json({ error: "Server error" });
   }
 };
+
 
 // Get one staff
 const getStaffById = async (req, res) => {

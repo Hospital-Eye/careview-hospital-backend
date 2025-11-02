@@ -3,7 +3,7 @@ const { Op } = require('sequelize');
 const { sequelize } = require('../config/db');
 const path = require("path");
 const fs = require("fs");
-const { logger } = require('../utils/logger');
+const logger = require('../utils/logger');
 
 // --- GET all scans ---
 const getScans = async (req, res) => {

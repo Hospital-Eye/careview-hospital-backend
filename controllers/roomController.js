@@ -191,14 +191,14 @@ const getAvailableRooms = async (req, res) => {
 
     const activeAdmissions = await Admission.findAll({
       where: {
-        roomId: { [Op.in]: roomIds },
+        room: { [Op.in]: roomIds },
         status: "Active"
       },
       attributes: [
-        'roomId',
+        'room',
         [sequelize.fn('COUNT', sequelize.col('id')), 'count']
       ],
-      group: ['roomId'],
+      group: ['room'],
       raw: true
     });
 
@@ -207,7 +207,7 @@ const getAvailableRooms = async (req, res) => {
     // Build occupancy map
     const occupancyMap = {};
     activeAdmissions.forEach(a => {
-      occupancyMap[a.roomId] = parseInt(a.count) || 0;
+      occupancyMap[a.room] = parseInt(a.count) || 0;
     });
 
     // Add availability info
@@ -227,10 +227,17 @@ const getAvailableRooms = async (req, res) => {
     logger.info(`✅ Successfully enriched ${enrichedRooms.length} rooms with availability data`);
     res.json(enrichedRooms);
 
-  } catch (err) {
-    logger.error(`Error in getAvailableRooms: ${err.stack}`);
-    res.status(500).json({ error: "Server error while fetching available rooms" });
+  }  catch (err) {
+  logger.error(`❌ Error in getAvailableRooms: ${err.message}`);
+  if (err.original) {
+    logger.error(`📄 SQL Error Detail: ${err.original.detail || 'No detail'}`);
+    logger.error(`📘 SQL Error Hint: ${err.original.hint || 'No hint'}`);
+    logger.error(`📜 SQL Error SQL: ${err.original.sql || 'No SQL logged'}`);
   }
+  logger.error(err.stack);
+  res.status(500).json({ error: "Server error while fetching available rooms" });
+  }
+
 };
 
 
