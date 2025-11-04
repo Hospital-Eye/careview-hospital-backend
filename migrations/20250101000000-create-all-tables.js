@@ -30,6 +30,7 @@ module.exports = {
         type: Sequelize.TEXT, 
         allowNull: true,
       },
+  
       clinicId: {
         type: Sequelize.STRING,
         allowNull: true
@@ -847,6 +848,46 @@ module.exports = {
       resolutionNotes: {
         type: Sequelize.TEXT,
         allowNull: true
+      },
+      eventId: {
+        type: Sequelize.UUID,
+        allowNull: true,
+        references: {
+          model: 'AnalyticsEvent',
+          key: 'id'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'SET NULL'
+      },
+      staffId: {
+        type: Sequelize.UUID,
+        allowNull: true,
+        references: {
+          model: 'Staff',
+          key: 'id'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'SET NULL'
+      },
+      patientId: {
+        type: Sequelize.UUID,
+        allowNull: true,
+        references: {
+          model: 'Patient',
+          key: 'id'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'SET NULL'
+      },
+      roomId: {
+        type: Sequelize.UUID,
+        allowNull: true,
+        references: {
+          model: 'Room',
+          key: 'id'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'SET NULL'
       },
       createdAt: {
         type: Sequelize.DATE,
