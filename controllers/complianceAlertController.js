@@ -1,4 +1,4 @@
-const { ComplianceAlert } = require('../models');
+const { ComplianceAlert, AnalyticsEvent, Staff, Patient, Room } = require('../models');
 const { Op } = require('sequelize');
 const { sequelize } = require('../config/db');
 const logger = require('../utils/logger');
