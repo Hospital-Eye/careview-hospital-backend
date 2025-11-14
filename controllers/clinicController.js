@@ -1,4 +1,4 @@
-const { Clinic, Organization } = require('../models');
+const { Clinic, Organization, User } = require('../models');
 const { Op } = require('sequelize');
 const { sequelize } = require('../config/db');
 const logger = require('../utils/logger');
@@ -69,22 +69,35 @@ const createClinic = async (req, res) => {
   }
 };
 
-
-// --- Get all clinics (with scope) ---
+// --- Get all clinics (with managers) ---
 const getClinics = async (req, res) => {
   try {
     logger.info(`📥 [getClinics] Incoming request from user=${req.user?.email || 'unknown'}`);
     const filter = req.scopeFilter || {};
     logger.debug(`🔍 [getClinics] Using scope filter: ${JSON.stringify(filter)}`);
 
-    const clinics = await Clinic.findAll({ where: filter });
+    const clinics = await Clinic.findAll({
+      where: filter,
+      include: [
+        {
+          model: User,
+          as: 'managers',           
+          where: { role: 'manager' },
+          required: false           // include clinics even if they have no managers
+        }
+      ]
+    });
+
     logger.info(`✅ [getClinics] Found ${clinics.length} clinics`);
+
     res.status(200).json(clinics);
+
   } catch (error) {
     logger.error(`❌ [getClinics] Error fetching clinics: ${error.message}`, { stack: error.stack });
     res.status(500).json({ message: "Server error" });
   }
 };
+
 
 // --- Get clinic by clinicId ---
 const getClinicById = async (req, res) => {
