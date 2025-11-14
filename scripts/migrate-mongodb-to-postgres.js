@@ -113,10 +113,88 @@ async function connectPostgreSQL() {
   console.log('✅ PostgreSQL connected');
 }
 
-async function migrateCollection(ModelName, mongoModel, pgModel, fkMap = {}, idMap = {}) {
+// Global ID mapping shared across all migrations
+const globalIdMap = {};
+
+async function migrateCollection(ModelName, mongoModel, pgModel, fkMap = {}) {
   console.log(`\n🚀 Migrating ${ModelName}...`);
+
   const docs = await mongoModel.find().lean();
+  console.log(`   Found ${docs.length} documents in MongoDB`);
+
+  // Load existing PostgreSQL records and try to map them back to MongoDB IDs
+  // This is needed when re-running migration after partial completion
+  const existingRecords = await pgModel.findAll({ raw: true });
+  console.log(`   Found ${existingRecords.length} existing records in PostgreSQL`);
+
+  // Initialize globalIdMap for this model
+  globalIdMap[ModelName] = globalIdMap[ModelName] || {};
+
+  // Try to match existing PG records to MongoDB docs by comparing unique fields
+  if (existingRecords.length > 0 && docs.length > 0) {
+    // For models with unique identifiers, map them
+    if (ModelName === 'User' && docs[0].googleId) {
+      existingRecords.forEach(pgRec => {
+        const matchingDoc = docs.find(d => d.googleId === pgRec.googleId || d.email === pgRec.email);
+        if (matchingDoc) {
+          globalIdMap[ModelName][matchingDoc._id.toString()] = pgRec.id;
+        }
+      });
+    } else if (ModelName === 'Patient' && docs[0].mrn) {
+      existingRecords.forEach(pgRec => {
+        const matchingDoc = docs.find(d => d.mrn === pgRec.mrn);
+        if (matchingDoc) {
+          globalIdMap[ModelName][matchingDoc._id.toString()] = pgRec.id;
+        }
+      });
+    } else if (ModelName === 'Staff' && docs[0].employeeId) {
+      existingRecords.forEach(pgRec => {
+        const matchingDoc = docs.find(d => d.employeeId === pgRec.employeeId);
+        if (matchingDoc) {
+          globalIdMap[ModelName][matchingDoc._id.toString()] = pgRec.id;
+        }
+      });
+    } else if (ModelName === 'Room' && docs[0].roomNumber) {
+      existingRecords.forEach(pgRec => {
+        const matchingDoc = docs.find(d => d.roomNumber === pgRec.roomNumber && d.clinicId === pgRec.clinicId);
+        if (matchingDoc) {
+          globalIdMap[ModelName][matchingDoc._id.toString()] = pgRec.id;
+        }
+      });
+    } else if (ModelName === 'Clinic' && docs[0].clinicId) {
+      existingRecords.forEach(pgRec => {
+        const matchingDoc = docs.find(d => d.clinicId === pgRec.clinicId);
+        if (matchingDoc) {
+          globalIdMap[ModelName][matchingDoc._id.toString()] = pgRec.id;
+        }
+      });
+    } else if (ModelName === 'Organization' && docs[0].organizationId) {
+      existingRecords.forEach(pgRec => {
+        const matchingDoc = docs.find(d => d.organizationId === pgRec.organizationId);
+        if (matchingDoc) {
+          globalIdMap[ModelName][matchingDoc._id.toString()] = pgRec.id;
+        }
+      });
+    } else if (ModelName === 'Camera' && docs[0].ip) {
+      existingRecords.forEach(pgRec => {
+        const matchingDoc = docs.find(d => d.ip === pgRec.ip && d.name === pgRec.name);
+        if (matchingDoc) {
+          globalIdMap[ModelName][matchingDoc._id.toString()] = pgRec.id;
+        }
+      });
+    } else if (ModelName === 'MP4File' && docs[0].filename) {
+      existingRecords.forEach(pgRec => {
+        const matchingDoc = docs.find(d => d.filename === pgRec.filename);
+        if (matchingDoc) {
+          globalIdMap[ModelName][matchingDoc._id.toString()] = pgRec.id;
+        }
+      });
+    }
+    console.log(`   Mapped ${Object.keys(globalIdMap[ModelName]).length} existing records to MongoDB IDs`);
+  }
+
   let success = 0;
+  let skipped = 0;
   let errors = 0;
   const failedDocs = [];
 
@@ -125,26 +203,62 @@ async function migrateCollection(ModelName, mongoModel, pgModel, fkMap = {}, idM
       const transformed = { ...doc };
 
       // 🔁 Replace _id with new Postgres-compatible ID
+      const mongoIdStr = doc._id.toString();
       delete transformed._id;
+      delete transformed.__v;
 
-      // 🔗 Replace foreign key ObjectIds using the idMap
+      // Check if already migrated (skip if exists in globalIdMap)
+      if (globalIdMap[ModelName] && globalIdMap[ModelName][mongoIdStr]) {
+        skipped++;
+        continue;
+      }
+
+      // 🔗 Replace foreign key ObjectIds using the globalIdMap
       for (const [pgField, refModel] of Object.entries(fkMap)) {
         const mongoRefId = doc[pgField];
-        if (mongoRefId && idMap[refModel] && idMap[refModel][mongoRefId]) {
-          transformed[pgField] = idMap[refModel][mongoRefId];
-        } else if (mongoRefId) {
-          // Log missing FK but still try inserting with null
-          console.warn(`⚠️ Missing FK in ${ModelName}.${pgField}: ${mongoRefId}`);
-          transformed[pgField] = null;
+        if (mongoRefId) {
+          const mongoRefIdStr = mongoRefId.toString();
+          if (globalIdMap[refModel] && globalIdMap[refModel][mongoRefIdStr]) {
+            transformed[pgField] = globalIdMap[refModel][mongoRefIdStr];
+          } else {
+            // Log missing FK but still try inserting with null
+            console.warn(`⚠️ Missing FK in ${ModelName}.${pgField}: ${mongoRefIdStr} (ref: ${refModel})`);
+            transformed[pgField] = null;
+          }
         }
+      }
+
+      // 🔄 Transform comma-separated strings to arrays for Room model
+      if (ModelName === 'Room') {
+        if (typeof transformed.equipment === 'string') {
+          transformed.equipment = transformed.equipment.split(',').map(s => s.trim());
+        }
+        if (typeof transformed.cameraIds === 'string') {
+          transformed.cameraIds = transformed.cameraIds.split(',').map(s => s.trim());
+        }
+        if (typeof transformed.accessRestrictions === 'string') {
+          transformed.accessRestrictions = transformed.accessRestrictions.split(',').map(s => s.trim());
+        }
+      }
+
+      // 🔄 Fix MP4File enum value
+      if (ModelName === 'MP4File' && transformed.analyticsStatus === 'stopped') {
+        transformed.analyticsStatus = 'idle'; // Map 'stopped' to 'idle'
+      }
+
+      // 🔄 Fix DeviceLog - skip if userId is missing (data inconsistency)
+      if (ModelName === 'DeviceLog' && !doc.userId) {
+        console.warn(`⚠️ Skipping DeviceLog ${mongoIdStr} - missing userId (has 'user' field instead)`);
+        skipped++;
+        continue;
       }
 
       // 🗄️ Insert into Postgres
       const created = await pgModel.create(transformed, { validate: false });
 
       // 🧭 Keep ID map for future references
-      idMap[ModelName] = idMap[ModelName] || {};
-      idMap[ModelName][doc._id] = created.id;
+      globalIdMap[ModelName] = globalIdMap[ModelName] || {};
+      globalIdMap[ModelName][mongoIdStr] = created.id;
 
       success++;
 
@@ -169,8 +283,8 @@ async function migrateCollection(ModelName, mongoModel, pgModel, fkMap = {}, idM
     console.log(`📁 Logged ${failedDocs.length} failed ${ModelName} records to ${filePath}`);
   }
 
-  console.log(`✅ ${ModelName}: ${success}/${docs.length} migrated successfully.`);
-  return { success, errors };
+  console.log(`✅ ${ModelName}: ${success} migrated, ${skipped} skipped, ${errors} errors (${success}/${docs.length} total)`);
+  return { success, errors, skipped };
 }
 
 
@@ -240,9 +354,7 @@ async function runMigration() {
     // 2. Tables with User foreign keys
     await migrateCollection('Patient', MongoModels.Patient, db.Patient, { userId: 'User' });
     await migrateCollection('Staff', MongoModels.Staff, db.Staff, { userId: 'User' });
-    await migrateCollection('UserSession', MongoModels.UserSession, db.UserSession, { userId: 'User' });
     await migrateCollection('DeviceLog', MongoModels.DeviceLog, db.DeviceLog, { userId: 'User' });
-    await migrateCollection('Notification', MongoModels.Notification, db.Notification, { recipient: 'User' });
 
     // 3. Room (no foreign keys)
     await migrateCollection('Room', MongoModels.Room, db.Room);

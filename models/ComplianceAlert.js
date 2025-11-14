@@ -7,17 +7,18 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true
     },
-    type: {
-      type: DataTypes.STRING,
-      allowNull: false
-    },
-    title: {
-      type: DataTypes.STRING,
+    description: {
+      type: DataTypes.TEXT,
       allowNull: false
     },
     severity: {
-      type: DataTypes.ENUM('Low', 'Moderate', 'High', 'Critical'),
-      allowNull: false
+      type: DataTypes.ENUM('Low', 'Medium', 'High'),
+      allowNull: false,
+      defaultValue: 'Medium'
+    },
+    room: {
+      type: DataTypes.STRING,
+      allowNull: true
     },
     source: {
       type: DataTypes.JSONB,
