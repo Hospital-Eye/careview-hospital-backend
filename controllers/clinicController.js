@@ -9,37 +9,46 @@ const createClinic = async (req, res) => {
     logger.info(`🏥 [createClinic] Incoming request from user=${req.user?.email || 'unknown'}`);
     logger.debug(`📩 [createClinic] Request body: ${JSON.stringify(req.body)}`);
 
-    const { name, registrationNumber, type, address, contactEmail, contactPhone, location } = req.body;
-    const { organizationId } = req.user;  // take org from logged-in user
+    const { name, registrationNumber, type, address, contactEmail, contactPhone } = req.body;
+    const { organizationId } = req.user;
 
     if (!organizationId) {
-      logger.warn(`⚠️ [createClinic] Missing organizationId in user context for user=${req.user?.email || 'unknown'}`);
+      logger.warn(`⚠️ [createClinic] Missing organizationId`);
       return res.status(403).json({ error: "Missing organizationId in user context" });
     }
 
     if (!name) {
-      logger.warn(`⚠️ [createClinic] Clinic name missing in request`);
+      logger.warn(`⚠️ [createClinic] Clinic name missing`);
       return res.status(400).json({ error: "Clinic name is required" });
     }
 
-    // Generate a base prefix from the clinic name
-    const base = name.replace(/\s+/g, "").toLowerCase();
-    logger.debug(`🔤 [createClinic] Generated base prefix: ${base}`);
+    // ============================
+    // 🔹 CLINIC ID GENERATION
+    // ============================
 
-    // Find existing clinics with same base prefix
-    const existingClinics = await Clinic.findAll({
-      where: {
-        clinicId: {
-          [Op.like]: `${base}-%`
-        }
-      }
-    });
+    // 1. Extract first two words
+    let base = name
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .join('')
+      .toLowerCase();
 
-    const nextNumber = existingClinics.length + 1;
-    const clinicId = `${base}-${nextNumber}`;
-    logger.info(`🏷️ [createClinic] Generated new clinicId=${clinicId} for organizationId=${organizationId}`);
+    // 2. Extract ending -number if present
+    const numberMatch = name.match(/-(\d+)$/);
 
-    // Create the new clinic
+    let clinicId = base;
+
+    if (numberMatch) {
+      clinicId = `${base}-${numberMatch[1]}`;
+    }
+
+    logger.info(`🏷️ [createClinic] Final clinicId = ${clinicId}`);
+
+    // ============================
+    // 🔹 CREATE THE CLINIC
+    // ============================
+
     const clinic = await Clinic.create({
       clinicId,
       organizationId,
@@ -51,14 +60,15 @@ const createClinic = async (req, res) => {
       contactPhone
     });
 
-    logger.info(`✅ [createClinic] Clinic created successfully: id=${clinic.id}, clinicId=${clinic.clinicId}, orgId=${organizationId}`);
+    logger.info(`✅ Clinic created successfully: id=${clinic.id}, clinicId=${clinic.clinicId}`);
     res.status(201).json(clinic);
 
   } catch (err) {
-    logger.error(`❌ [createClinic] Error creating clinic: ${err.message}`, { stack: err.stack });
+    logger.error(`❌ [createClinic] Error: ${err.message}`, { stack: err.stack });
     res.status(400).json({ error: err.message });
   }
 };
+
 
 // --- Get all clinics (with scope) ---
 const getClinics = async (req, res) => {
