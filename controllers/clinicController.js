@@ -53,6 +53,7 @@ const createClinic = async (req, res) => {
       clinicId,
       organizationId,
       name,
+      dateOfEstablishment: req.body.dateOfEstablishment || null,
       registrationNumber,
       type,
       address,
