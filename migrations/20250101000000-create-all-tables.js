@@ -810,17 +810,18 @@ module.exports = {
         defaultValue: Sequelize.literal('uuid_generate_v4()'),
         primaryKey: true
       },
-      type: {
-        type: Sequelize.STRING,
-        allowNull: false
-      },
-      title: {
-        type: Sequelize.STRING,
+      description: {
+        type: Sequelize.TEXT,
         allowNull: false
       },
       severity: {
-        type: Sequelize.ENUM('Low', 'Moderate', 'High', 'Critical'),
-        allowNull: false
+        type: Sequelize.ENUM('Low', 'Medium', 'High'),
+        allowNull: false,
+        defaultValue: 'Medium'
+      },
+      room: {
+        type: Sequelize.STRING,
+        allowNull: true
       },
       source: {
         type: Sequelize.JSONB,
