@@ -20,6 +20,18 @@ module.exports = (sequelize, DataTypes) => {
         isEmail: true
       }
     },
+    password: {
+      type: DataTypes.STRING,   
+      allowNull: true,          
+    },
+    otp: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    otpExpiresAt: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
     name: {
       type: DataTypes.STRING,
       allowNull: false
