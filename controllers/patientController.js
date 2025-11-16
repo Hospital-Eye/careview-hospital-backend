@@ -1,5 +1,4 @@
 const multer = require("multer");
-//onst { Storage } = require("@google-cloud/storage");
 const { Patient, Vital, Admission, User, Organization, Clinic, Counter } = require('../models');
 const { Op } = require('sequelize');
 const { sequelize } = require('../config/db');
@@ -15,13 +14,13 @@ const logger = require('../utils/logger');
 //const storage = new Storage();
 //const bucket = storage.bucket(process.env.GCS_BUCKET_NAME);
 
-// --- create new patient ---
+//Create new patient
 const createPatient = async (req, res) => {
   const endpoint = 'createPatient';
   const userEmail = req.user?.email || 'unknown';
   const startTime = Date.now();
 
-  logger.info(`🧍‍♀️ [${endpoint}] Request received from ${userEmail}`, {
+  logger.info(`🧍[${endpoint}] Request received from ${userEmail}`, {
     method: req.method,
     url: req.originalUrl,
     body: req.body,
@@ -31,13 +30,13 @@ const createPatient = async (req, res) => {
     const { emailId, clinicId: bodyClinicId, name, dob, gender } = req.body;
     let userId;
 
-    // Ensure email exists
+    //ensure email exists
     if (!emailId) {
       logger.warn(`[${endpoint}] Missing emailId in request`, { user: userEmail });
       return res.status(400).json({ error: "Email is required to create a patient." });
     }
 
-    // --- Find or Create User ---
+    //find or create user
     let user = await User.findOne({ where: { email: emailId } });
     if (user) {
       logger.debug(`[${endpoint}] Existing user found`, { email: emailId, userId: user.id });
@@ -61,7 +60,7 @@ const createPatient = async (req, res) => {
       return res.status(403).json({ error: "Missing organizationId in user context" });
     }
 
-    // ----------------- Resolve Clinic -----------------
+    //validate clinic
     let clinic;
     let clinicId;
 
@@ -111,7 +110,7 @@ const createPatient = async (req, res) => {
       return res.status(403).json({ error: "Unauthorized role" });
     }
 
-    // --- Prevent duplicate patient ---
+    //prevent duplicate patient
     const existingPatient = await Patient.findOne({ where: { userId } });
     if (existingPatient) {
       logger.info(`[${endpoint}] Existing patient found, returning existing record`, {
@@ -120,7 +119,7 @@ const createPatient = async (req, res) => {
       return res.status(200).json(existingPatient);
     }
 
-    // ----------------- MRN Generation -----------------
+    //MRN Generation
     function clinicPrefix(clinicId) {
       const parts = clinicId.split("-");
       const name = parts[0].substring(0, 3).toUpperCase();
@@ -148,7 +147,7 @@ const createPatient = async (req, res) => {
 
     logger.debug(`[${endpoint}] Generated MRN`, { mrn, prefix, lastSeq, nextNumber });
 
-    // ----------------- Create Patient -----------------
+    //create patient
     const patient = await Patient.create({
       ...req.body,
       userId,
@@ -158,7 +157,7 @@ const createPatient = async (req, res) => {
     });
 
     const duration = Date.now() - startTime;
-    logger.info(`✅ [${endpoint}] Patient created successfully`, {
+    logger.info(`[${endpoint}] Patient created successfully`, {
       patientId: patient.id,
       mrn,
       clinicId,
@@ -168,7 +167,7 @@ const createPatient = async (req, res) => {
 
     res.status(201).json(patient);
   } catch (err) {
-    logger.error(`❌ [${endpoint}] Error creating patient`, {
+    logger.error(`[${endpoint}] Error creating patient`, {
       error: err.message,
       stack: err.stack,
       user: userEmail,
@@ -177,22 +176,22 @@ const createPatient = async (req, res) => {
   }
 };
 
-// Get all patients, optionally filtered by status
+//Get all patients, optionally filtered by status
 const getPatients = async (req, res) => {
   const endpoint = 'getPatients';
   const userEmail = req.user?.email || 'unknown';
   const startTime = Date.now();
 
-  logger.info(`📋 [${endpoint}] Request received from ${userEmail}`, {
+  logger.info(`[${endpoint}] Request received from ${userEmail}`, {
     method: req.method,
     url: req.originalUrl,
     query: req.query,
   });
 
   try {
-    const { status } = req.query; // e.g., ?status=Active or ?status=Discharged
+    const { status } = req.query; 
 
-    // Apply org/clinic scope
+    //Apply org/clinic scope
     const patientFilter = { ...req.scopeFilter };
     if (status) patientFilter.status = status;
 
@@ -204,7 +203,7 @@ const getPatients = async (req, res) => {
       admissionFilter,
     });
 
-    // Fetch patients with associations
+    //Fetch patients with associations
     const patients = await Patient.findAll({
       where: patientFilter,
       include: [
@@ -231,7 +230,7 @@ const getPatients = async (req, res) => {
 
     logger.debug(`[${endpoint}] Found ${patients.length} patient records`);
 
-    // Flatten data
+    //Flatten data
     const reshapedPatients = patients.map((p) => {
       const plainPatient = p.get({ plain: true });
       const latestAdmission =
@@ -251,14 +250,14 @@ const getPatients = async (req, res) => {
     });
 
     const duration = Date.now() - startTime;
-    logger.info(`✅ [${endpoint}] Successfully fetched ${reshapedPatients.length} patients in ${duration}ms`, {
+    logger.info(`[${endpoint}] Successfully fetched ${reshapedPatients.length} patients in ${duration}ms`, {
       user: userEmail,
       filters: req.query,
     });
 
     res.json(reshapedPatients);
   } catch (err) {
-    logger.error(`❌ [${endpoint}] Error fetching patients`, {
+    logger.error(`[${endpoint}] Error fetching patients`, {
       error: err.message,
       stack: err.stack,
       user: userEmail,
@@ -267,7 +266,7 @@ const getPatients = async (req, res) => {
   }
 };
 
-// Get a patient by MRN (including admission history + vitals)
+//Get a patient by MRN (including admission history + vitals)
 const getPatientByMRN = async (req, res) => {
   const endpoint = 'getPatientByMRN';
   const userEmail = req.user?.email || 'unknown';
@@ -286,7 +285,7 @@ const getPatientByMRN = async (req, res) => {
     const patient = await Patient.findOne({ where: { mrn } });
 
     if (!patient) {
-      logger.warn(`⚠️ [${endpoint}] No patient found with MRN: ${mrn}`);
+      logger.warn(`[${endpoint}] No patient found with MRN: ${mrn}`);
       return res.status(404).json({ error: 'Patient not found' });
     }
 
@@ -323,13 +322,13 @@ const getPatientByMRN = async (req, res) => {
       ],
     });
 
-    // Prepare base patient data
+    //Prepare base patient data
     const patientDetails = patient.get({ plain: true });
 
-    // Add admission history
+    //Add admission history
     patientDetails.admissionHistory = admissions.map(a => a.get({ plain: true }));
 
-    // Flatten latest admission details for convenience
+    //Flatten latest admission details for convenience
     if (latestAdmission) {
       const plainAdmission = latestAdmission.get({ plain: true });
       Object.assign(patientDetails, {
@@ -355,15 +354,15 @@ const getPatientByMRN = async (req, res) => {
       });
     }
 
-    // Add vitals history
+    //Add vitals history
     patientDetails.vitalsHistory = vitalsHistory.map(v => v.get({ plain: true }));
 
     const duration = Date.now() - startTime;
-    logger.info(`✅ [${endpoint}] Successfully fetched patient MRN: ${mrn} in ${duration}ms by ${userEmail}`);
+    logger.info(`[${endpoint}] Successfully fetched patient MRN: ${mrn} in ${duration}ms by ${userEmail}`);
 
     res.json(patientDetails);
   } catch (err) {
-    logger.error(`❌ [${endpoint}] Error fetching patient MRN: ${req.params.mrn} — ${err.message}`, {
+    logger.error(`[${endpoint}] Error fetching patient MRN: ${req.params.mrn} — ${err.message}`, {
       stack: err.stack,
     });
     res.status(500).json({ error: 'Server error: Error fetching patient by MRN' });
@@ -371,13 +370,13 @@ const getPatientByMRN = async (req, res) => {
 };
 
 
-// Update a patient by MRN (+ discharge patient)
+//Update a patient by MRN (+ discharge patient)
 const updatePatientByMRN = async (req, res) => {
   const endpoint = 'updatePatientByMRN';
   const userEmail = req.user?.email || 'unknown';
   const mrn = String(req.params.mrn).trim();
 
-  logger.info(`🩺 [${endpoint}] Request received from ${userEmail}`, {
+  logger.info(`[${endpoint}] Request received from ${userEmail}`, {
     method: req.method,
     url: req.originalUrl,
     params: req.params,
@@ -390,17 +389,17 @@ const updatePatientByMRN = async (req, res) => {
     const patient = await Patient.findOne({ where: { mrn } });
 
     if (!patient) {
-      logger.warn(`⚠️ [${endpoint}] No patient found with MRN: ${mrn}`);
+      logger.warn(`[${endpoint}] No patient found with MRN: ${mrn}`);
       return res.status(404).json({ message: 'Patient not found' });
     }
 
     const updateData = { ...req.body };
 
-    // Handle discharge
+    //Handle discharge
     if (updateData.status && updateData.status.toLowerCase() === 'discharged') {
       updateData.status = 'Discharged';
       updateData.dischargeDate = new Date();
-      logger.info(`🏥 [${endpoint}] Discharging patient MRN: ${mrn}`);
+      logger.info(`[${endpoint}] Discharging patient MRN: ${mrn}`);
 
       const latestAdmission = await Admission.findOne({
         where: {
@@ -421,15 +420,15 @@ const updatePatientByMRN = async (req, res) => {
       }
     }
 
-    // Update patient data
+    //Update patient data
     await patient.update(updateData);
     const updatedPatient = await Patient.findOne({ where: { mrn } });
 
-    logger.info(`✅ [${endpoint}] Patient MRN: ${mrn} updated successfully by ${userEmail}`);
+    logger.info(`[${endpoint}] Patient MRN: ${mrn} updated successfully by ${userEmail}`);
     res.json(updatedPatient);
 
   } catch (err) {
-    logger.error(`❌ [${endpoint}] Error updating patient MRN: ${mrn} — ${err.message}`, {
+    logger.error(`[${endpoint}] Error updating patient MRN: ${mrn} — ${err.message}`, {
       stack: err.stack
     });
     res.status(500).json({ message: 'Server error: Unable to update patient' });
@@ -437,27 +436,27 @@ const updatePatientByMRN = async (req, res) => {
 };
 
 
-// Delete a patient by MRN
+//Delete a patient by MRN
 const deletePatientByMRN = async (req, res) => {
   const endpoint = 'deletePatientByMRN';
   const userEmail = req.user?.email || 'unknown';
   const mrn = String(req.params.mrn);
 
-  logger.info(`🗑️ [${endpoint}] Request received from ${userEmail} to delete patient with MRN: ${mrn}`);
+  logger.info(`[${endpoint}] Request received from ${userEmail} to delete patient with MRN: ${mrn}`);
 
   try {
     const deleted = await Patient.destroy({ where: { mrn } });
 
     if (!deleted) {
-      logger.warn(`⚠️ [${endpoint}] No patient found with MRN: ${mrn}`);
+      logger.warn(`[${endpoint}] No patient found with MRN: ${mrn}`);
       return res.status(404).json({ error: 'Patient not found' });
     }
 
-    logger.info(`✅ [${endpoint}] Patient with MRN: ${mrn} deleted successfully by ${userEmail}`);
+    logger.info(`[${endpoint}] Patient with MRN: ${mrn} deleted successfully by ${userEmail}`);
     res.json({ message: 'Patient deleted successfully' });
 
   } catch (err) {
-    logger.error(`❌ [${endpoint}] Error deleting patient with MRN: ${mrn} — ${err.message}`, { stack: err.stack });
+    logger.error(`[${endpoint}] Error deleting patient with MRN: ${mrn} — ${err.message}`, { stack: err.stack });
     res.status(500).json({ error: err.message });
   }
 };

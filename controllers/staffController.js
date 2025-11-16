@@ -6,8 +6,9 @@ const canActOn = require("../middleware/canActOn");
 const roleHierarchy = require("../models/roleHierarchy");
 const logger = require('../utils/logger');
 
-//create staff
-// ----------------- Helper: Generate Unique 10-Digit Employee ID -----------------
+//Create staff
+
+//geenrate unique employee ID
 const existingEmployeeIds = new Set();
 
 async function generateUniqueEmployeeId() {
@@ -15,13 +16,13 @@ async function generateUniqueEmployeeId() {
   let exists = true;
 
   while (exists) {
-    // Generate a random 10-digit number (string)
+    //generate a random 10-digit number (string)
     id = Math.floor(1000000000 + Math.random() * 9000000000).toString();
 
-    // Quick in-memory check
+    //quick in-memory check
     if (existingEmployeeIds.has(id)) continue;
 
-    // Check DB to avoid collision across server restarts or multiple instances
+    //check DB to avoid collision across server restarts or multiple instances
     const found = await Staff.findOne({ where: { employeeId: id } });
     if (!found) {
       exists = false;
@@ -32,14 +33,13 @@ async function generateUniqueEmployeeId() {
   return id;
 }
 
-// ----------------- Controller: Create Staff -----------------
 const createStaff = async (req, res) => {
   const endpoint = 'createStaff';
   const userEmail = req.user?.email || 'unknown';
   const userRole = req.user?.role || 'unknown';
   const t = await sequelize.transaction();
 
-  logger.info(`📋 [${endpoint}] Request received from ${userEmail} (role: ${userRole})`, {
+  logger.info(`[${endpoint}] Request received from ${userEmail} (role: ${userRole})`, {
     body: req.body,
   });
 
@@ -48,9 +48,9 @@ const createStaff = async (req, res) => {
     const email = contact?.email;
     const phone = contact?.phone;
 
-    // ----------------- Validation -----------------
+    //validate staff role
     if (!email || !staffRole) {
-      logger.warn(`⚠️ [${endpoint}] Missing required fields: email or role`);
+      logger.warn(`[${endpoint}] Missing required fields: email or role`);
       await t.rollback();
       return res.status(400).json({ error: "Email and role are required." });
     }
@@ -58,42 +58,40 @@ const createStaff = async (req, res) => {
     const { role: requesterRole, organizationId: userOrgId, clinicId: userClinicId } = req.user;
 
     if (!userOrgId) {
-      logger.warn(`⚠️ [${endpoint}] Missing organizationId in user context`);
+      logger.warn(`[${endpoint}] Missing organizationId in user context`);
       await t.rollback();
       return res.status(403).json({ error: "Missing organizationId in user context" });
     }
 
-    // ----------------- Determine clinicId -----------------
+    //determine clinic
     let clinicId;
     if (requesterRole === "admin") {
       clinicId = req.body.clinicId;
       if (!clinicId) {
-        logger.warn(`⚠️ [${endpoint}] Admin did not provide clinicId in request`);
+        logger.warn(`[${endpoint}] Admin did not provide clinicId in request`);
         await t.rollback();
         return res.status(400).json({ error: "clinicId is required in request body for admins" });
       }
     } else if (requesterRole === "manager") {
       clinicId = userClinicId;
       if (!clinicId) {
-        logger.warn(`⚠️ [${endpoint}] Manager missing associated clinic`);
+        logger.warn(`[${endpoint}] Manager missing associated clinic`);
         await t.rollback();
         return res.status(400).json({ error: "Manager is not associated with any clinic" });
       }
     } else {
-      logger.warn(`🚫 [${endpoint}] Unauthorized role attempted staff creation: ${requesterRole}`);
+      logger.warn(`[${endpoint}] Unauthorized role attempted staff creation: ${requesterRole}`);
       await t.rollback();
       return res.status(403).json({ error: "Only admins and managers can create staff" });
     }
 
-    // ----------------- Generate Unique Employee ID -----------------
     const employeeId = await generateUniqueEmployeeId();
-    logger.info(`🆔 [${endpoint}] Generated unique employeeId: ${employeeId}`);
+    logger.info(`[${endpoint}] Generated unique employeeId: ${employeeId}`);
 
-    // ----------------- Upsert User -----------------
     let user = await User.findOne({ where: { email }, transaction: t });
 
     if (user) {
-      logger.info(`♻️ [${endpoint}] Existing user found: ${email}, updating user record`);
+      logger.info(`[${endpoint}] Existing user found: ${email}, updating user record`);
       await user.update(
         {
           role: staffRole,
@@ -105,7 +103,7 @@ const createStaff = async (req, res) => {
         { transaction: t }
       );
     } else {
-      logger.info(`🆕 [${endpoint}] Creating new user: ${email}`);
+      logger.info(`[${endpoint}] Creating new user: ${email}`);
       user = await User.create(
         {
           name,
@@ -120,11 +118,10 @@ const createStaff = async (req, res) => {
       );
     }
 
-    // ----------------- Upsert Staff -----------------
     let staff = await Staff.findOne({ where: { userId: user.id }, transaction: t });
 
     if (staff) {
-      logger.info(`♻️ [${endpoint}] Existing staff record found, updating staff for userId: ${user.id}`);
+      logger.info(`[${endpoint}] Existing staff record found, updating staff for userId: ${user.id}`);
       await staff.update(
         {
           name,
@@ -154,12 +151,12 @@ const createStaff = async (req, res) => {
     }
 
     await t.commit();
-    logger.info(`✅ [${endpoint}] Staff created successfully (userId: ${user.id}, employeeId: ${employeeId})`);
+    logger.info(`[${endpoint}] Staff created successfully (userId: ${user.id}, employeeId: ${employeeId})`);
     res.status(201).json({ user, staff });
 
   } catch (err) {
     await t.rollback();
-    logger.error(`❌ [${endpoint}] Error creating staff: ${err.message}`, { stack: err.stack });
+    logger.error(`[${endpoint}] Error creating staff: ${err.message}`, { stack: err.stack });
     res.status(400).json({ error: err.message });
   }
 };
@@ -267,17 +264,17 @@ const createStaff = async (req, res) => {
 };
 */
 
-// GET all staff
+//GET all staff
 const getAllStaff = async (req, res) => {
   const endpoint = 'getAllStaff';
   const userEmail = req.user?.email || 'unknown';
   const role = req.user?.role || 'unknown';
 
-  logger.info(`📡 [${endpoint}] Request received from ${userEmail} (role: ${role})`);
+  logger.info(`[${endpoint}] Request received from ${userEmail} (role: ${role})`);
 
   try {
     if (!["admin", "manager", "doctor"].includes(role.toLowerCase())) {
-      logger.warn(`🚫 [${endpoint}] Forbidden access by role: ${role}`);
+      logger.warn(`[${endpoint}] Forbidden access by role: ${role}`);
       return res.status(403).json({
         error: "Forbidden. Only admins, managers, or doctors can view staff.",
       });
@@ -285,88 +282,88 @@ const getAllStaff = async (req, res) => {
 
     const staff = await Staff.findAll({ where: req.scopeFilter });
 
-    logger.info(`✅ [${endpoint}] Retrieved ${staff.length} staff records`);
+    logger.info(`[${endpoint}] Retrieved ${staff.length} staff records`);
     res.json(staff);
   } catch (err) {
-    logger.error(`❌ [${endpoint}] Error fetching staff: ${err.message}`, { stack: err.stack });
+    logger.error(`[${endpoint}] Error fetching staff: ${err.message}`, { stack: err.stack });
     res.status(500).json({ error: "Server error" });
   }
 };
 
-// GET one staff
+//GET one staff
 const getStaffById = async (req, res) => {
   const endpoint = 'getStaffById';
   const userEmail = req.user?.email || 'unknown';
   const id = req.params.id;
 
-  logger.info(`📡 [${endpoint}] Fetching staff by ID: ${id} (requested by ${userEmail})`);
+  logger.info(`[${endpoint}] Fetching staff by ID: ${id} (requested by ${userEmail})`);
 
   try {
     const staff = await Staff.findByPk(id);
     if (!staff) {
-      logger.warn(`⚠️ [${endpoint}] Staff not found (ID: ${id})`);
+      logger.warn(`[${endpoint}] Staff not found (ID: ${id})`);
       return res.status(404).json({ error: 'Staff not found' });
     }
 
-    logger.info(`✅ [${endpoint}] Staff record retrieved successfully (ID: ${id})`);
+    logger.info(`[${endpoint}] Staff record retrieved successfully (ID: ${id})`);
     res.json(staff);
   } catch (err) {
-    logger.error(`❌ [${endpoint}] Error fetching staff by ID: ${err.message}`, { stack: err.stack });
+    logger.error(`[${endpoint}] Error fetching staff by ID: ${err.message}`, { stack: err.stack });
     res.status(500).json({ error: err.message });
   }
 };
 
-// UPDATE staff
+//UPDATE staff
 const updateStaff = async (req, res) => {
   const endpoint = 'updateStaff';
   const userEmail = req.user?.email || 'unknown';
   const id = req.params.id;
 
-  logger.info(`✏️ [${endpoint}] Update request received for staff ID: ${id} by ${userEmail}`, {
+  logger.info(`[${endpoint}] Update request received for staff ID: ${id} by ${userEmail}`, {
     body: req.body,
   });
 
   try {
     const staff = await Staff.findByPk(id);
     if (!staff) {
-      logger.warn(`⚠️ [${endpoint}] Staff not found (ID: ${id})`);
+      logger.warn(`[${endpoint}] Staff not found (ID: ${id})`);
       return res.status(404).json({ error: 'Staff not found' });
     }
 
     await staff.update(req.body);
-    logger.info(`✅ [${endpoint}] Staff updated successfully (ID: ${id})`);
+    logger.info(`[${endpoint}] Staff updated successfully (ID: ${id})`);
     res.json(staff);
   } catch (err) {
-    logger.error(`❌ [${endpoint}] Error updating staff: ${err.message}`, { stack: err.stack });
+    logger.error(`[${endpoint}] Error updating staff: ${err.message}`, { stack: err.stack });
     res.status(400).json({ error: err.message });
   }
 };
 
-// DELETE staff
+//DELETE staff
 const deleteStaff = async (req, res) => {
   const endpoint = 'deleteStaff';
   const userEmail = req.user?.email || 'unknown';
   const { id } = req.params;
 
-  logger.info(`🗑️ [${endpoint}] Delete request for staff ID: ${id} by ${userEmail}`);
+  logger.info(`[${endpoint}] Delete request for staff ID: ${id} by ${userEmail}`);
 
   try {
     if (!isUUID(id)) {
-      logger.warn(`⚠️ [${endpoint}] Invalid staff ID format: ${id}`);
+      logger.warn(`[${endpoint}] Invalid staff ID format: ${id}`);
       return res.status(400).json({ error: "Invalid staff ID" });
     }
 
     const target = await Staff.findByPk(id);
     if (!target) {
-      logger.warn(`⚠️ [${endpoint}] Staff not found (ID: ${id})`);
+      logger.warn(`[${endpoint}] Staff not found (ID: ${id})`);
       return res.status(404).json({ error: "Staff not found" });
     }
 
     await Staff.destroy({ where: { id } });
-    logger.info(`✅ [${endpoint}] Staff deleted successfully (ID: ${id})`);
+    logger.info(`[${endpoint}] Staff deleted successfully (ID: ${id})`);
     res.json({ message: "Staff deleted successfully" });
   } catch (err) {
-    logger.error(`❌ [${endpoint}] Error deleting staff: ${err.message}`, { stack: err.stack });
+    logger.error(`[${endpoint}] Error deleting staff: ${err.message}`, { stack: err.stack });
     res.status(500).json({ error: "Server error" });
   }
 };

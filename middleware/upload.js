@@ -1,9 +1,8 @@
-// middleware/upload.js
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+const logger = require("../utils/logger");
 
-// Ensure uploads/scans directory exists
 const uploadPath = path.join(__dirname, "../uploads/scans");
 if (!fs.existsSync(uploadPath)) {
   fs.mkdirSync(uploadPath, { recursive: true });

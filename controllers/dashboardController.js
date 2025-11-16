@@ -1,7 +1,7 @@
 const { Patient, Vital, Room, Staff, Admission } = require('../models');
 const { Op } = require('sequelize');
 const { sequelize } = require('../config/db');
-const logger = require('../utils/logger');
+const { logger } = require('../utils/logger');
 
 //GET dashboard metrics
 const getDashboardMetrics = async (req, res) => {
@@ -9,10 +9,10 @@ const getDashboardMetrics = async (req, res) => {
   const userEmail = req.user?.email || 'unknown';
   const startTime = Date.now();
 
-  logger.info(`📊 [${endpoint}] Request received from ${userEmail}`);
+  logger.info(`[Dashboard] Request to view dashboard metrics received from ${userEmail}`);
 
   try {
-    // --- Date Range for Metrics ---
+    //Date Range for Metrics
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -21,9 +21,7 @@ const getDashboardMetrics = async (req, res) => {
 
     const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
-    logger.debug(`[${endpoint}] Date ranges`, { today, endOfToday, last24Hours });
-
-    // --- 1. Visitors Today (Unique Patients) ---
+    //Visitors Today (Unique Patients) 
     const uniquePatientIds = await Admission.findAll({
       where: {
         checkInTime: { [Op.gte]: today, [Op.lte]: endOfToday },
@@ -32,9 +30,9 @@ const getDashboardMetrics = async (req, res) => {
       raw: true,
     });
     const visitorsTodayCount = uniquePatientIds.length;
-    logger.info(`👥 [${endpoint}] Visitors Today: ${visitorsTodayCount}`);
+    logger.info(`[Dashboard] Number of Visitors Today: ${visitorsTodayCount}`);
 
-    // --- 2. Current Occupancy ---
+    //Current Occupancy
     const totalRooms = await Room.count();
     const occupiedRoomsData = await Admission.findAll({
       where: { dischargeDate: null },
@@ -43,19 +41,19 @@ const getDashboardMetrics = async (req, res) => {
     });
     const occupiedRooms = occupiedRoomsData.length;
 
-    logger.info(`🏠 [${endpoint}] Occupancy`, {
+    logger.info(`[Dashboard] Occupancy`, {
       totalRooms,
       occupiedRooms,
     });
 
-    // --- 3. Equipment Utilization (static data for now) ---
+    //Equipment Utilization 
     const equipmentUtilizationData = [
       { name: 'CT Scanner', percentage: 78, scans: 42, scheduledSlots: 54 },
       { name: 'Infrared Unit A', percentage: 65, scans: 38, scheduledSlots: 58 },
     ];
-    logger.debug(`[${endpoint}] Equipment Utilization`, equipmentUtilizationData);
+    logger.debug(`[Dashboard] Equipment Utilization`, equipmentUtilizationData);
 
-    // --- 4. Active Cases by Workflow Stage ---
+    //Active Cases by Workflow Stage
     const totalActiveCasesToday = await Patient.count({
       where: {
         updatedAt: { [Op.gte]: today, [Op.lte]: endOfToday },
@@ -76,12 +74,12 @@ const getDashboardMetrics = async (req, res) => {
       where: { currentWorkflowStage: 'Awaiting Results', updatedAt: { [Op.gte]: today, [Op.lte]: endOfToday } },
     });
 
-    logger.info(`📈 [${endpoint}] Active Cases Today`, {
+    logger.info(`[Dashboard] Active Cases Today`, {
       total: totalActiveCasesToday,
       stages: { checkedInCases, inThermalCases, inCTCases, awaitingResultsCases },
     });
 
-    // --- 5. Average Turnaround Time (TAT) ---
+    //Average Turnaround Time (TAT)
     last24Hours.setHours(last24Hours.getHours() - 24);
     const completedCasesLast24Hours = await Admission.findAll({
       where: {
@@ -105,13 +103,13 @@ const getDashboardMetrics = async (req, res) => {
     const averageTATDisplay =
       averageTATMinutes > 60 ? `${(averageTATMinutes / 60).toFixed(1)} hrs` : `${Math.round(averageTATMinutes)} mins`;
 
-    logger.info(`🧮 [${endpoint}] Average TAT`, {
+    logger.info(`[Dashboard] Average Turn Around Time`, {
       completedCases: completedCasesLast24Hours.length,
       averageTATMinutes,
       averageTATDisplay,
     });
 
-    // --- Construct Final Response ---
+    //Final Response
     const dashboardData = {
       visitorsToday: visitorsTodayCount,
       currentOccupancy: { occupied: occupiedRooms, total: totalRooms },
@@ -132,14 +130,14 @@ const getDashboardMetrics = async (req, res) => {
     };
 
     const durationMs = Date.now() - startTime;
-    logger.info(`✅ [${endpoint}] Dashboard metrics fetched successfully`, {
+    logger.info(`[Dashboard] Dashboard metrics fetched successfully`, {
       user: userEmail,
       durationMs,
     });
 
     res.status(200).json(dashboardData);
   } catch (error) {
-    logger.error(`❌ [${endpoint}] Error fetching dashboard metrics: ${error.message}`, {
+    logger.error(`[Dasboard] Error fetching dashboard metrics: ${error.message}`, {
       stack: error.stack,
       user: userEmail,
     });

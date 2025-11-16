@@ -1,7 +1,8 @@
-const jwt = require('jsonwebtoken'); // For verifying JWTs
+const jwt = require('jsonwebtoken'); 
 const User = require('../models/User'); 
+const { logger } = require('../utils/logger');
 
-// Middleware to protect routes (Authentication)
+//Middleware to protect routes (Authentication)
 const protect = (req, res, next) => {
   let token;
 
@@ -13,26 +14,23 @@ const protect = (req, res, next) => {
       token = req.headers.authorization.split(' ')[1];
 
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      //console.log('Decoded JWT payload:', decoded);
 
       req.user = decoded;
 
-      return next(); // ✅ Add return here so function exits cleanly
+      return next(); 
     } catch (err) {
       console.error('Token verification failed:', err.message);
       return res.status(401).json({ message: 'Not authorized, token failed' });
     }
   }
 
-  // ✅ Only runs if the first if didn't match
   return res.status(401).json({ message: 'Not authorized, no token' });
 };
 
-// Middleware for role-based authorization
+//Middleware for role-based authorization
 const authorize = (...roles) => {
     return (req, res, next) => {
-      console.log("User role from token:", req.user.role);
-        // Check if user object exists from 'protect' middleware and if user's role is in allowed roles
+        //Check if user object exists from 'protect' middleware and if user's role is in allowed roles
         if (!req.user || !req.user.role || !roles.map(r => r.toLowerCase()).includes(req.user.role.toLowerCase())) {
           console.warn(`Authorization Failed: User ${req.user ? req.user.email : 'unknown'} with role ${req.user ? req.user.role : 'none'} tried to access restricted resource. Required roles: ${roles.join(', ')}`);
           return res.status(403).json({ message: 'Forbidden. You do not have the required role.' });
@@ -41,27 +39,27 @@ const authorize = (...roles) => {
     };
 };
 
-// Middleware for clinic/org-based filtering
+//Middleware for clinic/organization-based filtering
 const scope = (modelName) => {
   return (req, res, next) => {
     try {
       const { role, organizationId, clinicId, id } = req.user;
 
-      const filter = { organizationId }; // always org-level first
+      const filter = { organizationId }; //always org-level first
 
       switch (role) {
         case "admin":
-          // Admin: see everything in the org (no clinic filter)
+          //Admin: see everything in the organization
           break;
 
         case "manager":
-          // Manager: restricted to a single clinic
+          //Manager: restricted to a single clinic
           filter.clinicId = clinicId;
           break;
 
         case "doctor":
         case "nurse":
-          // Staff: handle single vs multi-clinic
+          //Staff: handle single vs multi-clinic
           if (Array.isArray(clinicId)) {
             filter.clinicId = { $in: clinicId };
           } else {
@@ -71,7 +69,7 @@ const scope = (modelName) => {
 
         case "patient":
           if (modelName === "Patient") {
-            filter._id = id; // patient sees only themselves
+            filter._id = id; //Patient sees only themselves
           } else {
             return res.status(403).json({ message: "Patients cannot access this resource" });
           }
@@ -90,6 +88,4 @@ const scope = (modelName) => {
   };
 };
 
-
-// Export the middleware functions
 module.exports = { protect, authorize, scope };
