@@ -5,7 +5,7 @@ const connectDB = require('./config/db');
 const upload = require("./middleware/upload");
 const db = require('./models');
 const { initCleanupCron } = require('./utils/cleanup-cron');
-const logger = require('../utils/logger');
+const { logger } = require('./utils/logger');
 
 dotenv.config();
 
@@ -33,7 +33,6 @@ app.use('/api/clinics',           require('./routes/clinicRoutes'));
 app.use('/api/users',             require('./routes/users'));
 app.use('/api/patients',          require('./routes/patients'));
 app.use('/api/tasks',             require('./routes/tasks'));
-app.use('/api/notifications',     require('./routes/notifications'));
 app.use('/api/compliance-alerts', require('./routes/complianceAlerts'));
 app.use('/api/analytics-events',  require('./routes/analyticsEvents'));
 app.use('/api/cv-detections',     require('./routes/cvDetections'));

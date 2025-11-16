@@ -3,7 +3,7 @@ const { Patient, Vital, Admission, User, Organization, Clinic, Counter } = requi
 const { Op } = require('sequelize');
 const { sequelize } = require('../config/db');
 const { validate: isUUID } = require('uuid');
-const logger = require('../utils/logger');
+const { logger } = require('../utils/logger');
 
 //create patient with automatic room assignment based on availability and patient needs, and document upload to GCS
 
@@ -20,11 +20,7 @@ const createPatient = async (req, res) => {
   const userEmail = req.user?.email || 'unknown';
   const startTime = Date.now();
 
-  logger.info(`🧍[${endpoint}] Request received from ${userEmail}`, {
-    method: req.method,
-    url: req.originalUrl,
-    body: req.body,
-  });
+  logger.info(`[Patient] Incoming request to create patient received from user: ${userEmail}`);
 
   try {
     const { emailId, clinicId: bodyClinicId, name, dob, gender } = req.body;
@@ -32,14 +28,14 @@ const createPatient = async (req, res) => {
 
     //ensure email exists
     if (!emailId) {
-      logger.warn(`[${endpoint}] Missing emailId in request`, { user: userEmail });
+      logger.warn(`[Patient] Missing emailId in request to create patient`, { user: userEmail });
       return res.status(400).json({ error: "Email is required to create a patient." });
     }
 
     //find or create user
     let user = await User.findOne({ where: { email: emailId } });
     if (user) {
-      logger.debug(`[${endpoint}] Existing user found`, { email: emailId, userId: user.id });
+      logger.debug(`[Patient] Existing user found`, { email: emailId, userId: user.id });
       userId = user.id;
       req.body.emailId = user.email;
     } else {
@@ -51,12 +47,12 @@ const createPatient = async (req, res) => {
         clinicId: req.user.clinicId,
       });
       userId = user.id;
-      logger.info(`[${endpoint}] Created new user for patient`, { email: emailId, userId });
+      logger.info(`[Patient] Created new user for patient`, { email: emailId, userId });
     }
 
     const { role, organizationId: userOrgId, clinicId: userClinicId } = req.user;
     if (!userOrgId) {
-      logger.warn(`[${endpoint}] Missing organizationId in user context`, { user: userEmail });
+      logger.warn(`[Patient] Missing organizationId in user context`, { user: userEmail });
       return res.status(403).json({ error: "Missing organizationId in user context" });
     }
 
@@ -66,7 +62,7 @@ const createPatient = async (req, res) => {
 
     if (role === "admin") {
       if (!bodyClinicId) {
-        logger.warn(`[${endpoint}] Admin missing clinicId in request`, { user: userEmail });
+        logger.warn(`[Patient] Admin missing clinicId in request to create patient`, { user: userEmail });
         return res.status(400).json({ error: "Admin must provide clinicId" });
       }
 
@@ -77,17 +73,17 @@ const createPatient = async (req, res) => {
       clinic = await Clinic.findOne({ where: query });
 
       if (!clinic) {
-        logger.warn(`[${endpoint}] Clinic not found for admin`, { query });
+        logger.warn(`[Patient] Clinic not found for admin in request for creating patient`, { query });
         return res.status(404).json({ error: "Clinic not found" });
       }
 
       clinicId = clinic.clinicId;
-      logger.debug(`[${endpoint}] Admin resolved clinic`, { clinicId });
+      logger.debug(`[Patient] Admin resolved clinic`, { clinicId });
     }
 
     else if (role === "manager") {
       if (!userClinicId) {
-        logger.warn(`[${endpoint}] Manager has no assigned clinicId`, { user: userEmail });
+        logger.warn(`[Patient] Manager has no assigned clinicId in request to create patient`, { user: userEmail });
         return res.status(400).json({ error: "Manager has no assigned clinicId" });
       }
 
@@ -97,7 +93,7 @@ const createPatient = async (req, res) => {
 
       clinic = await Clinic.findOne({ where: query });
       if (!clinic) {
-        logger.warn(`[${endpoint}] Assigned clinic not found for manager`, { query });
+        logger.warn(`[Patient] Assigned clinic not found for manager`, { query });
         return res.status(404).json({ error: "Assigned clinic not found" });
       }
 

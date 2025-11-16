@@ -1,7 +1,7 @@
 const { Room, Patient, Admission, Clinic, Organization } = require('../models');
 const { Op } = require('sequelize');
 const { sequelize } = require('../config/db');
-const logger = require('../utils/logger');
+const { logger } = require('../utils/logger');
 
 //Create a new room
 const createRoom = async (req, res) => {

@@ -3,11 +3,14 @@ const { Op } = require('sequelize');
 const { sequelize } = require('../config/db');
 const path = require("path");
 const fs = require("fs");
-const logger = require('../utils/logger');
+const { logger } = require('../utils/logger');
 
 //GET all scans
 const getScans = async (req, res) => {
-  logger.info('GET /scans endpoint hit');
+  const endpoint = 'getScans';
+  const userEmail = req.user?.email || 'unknown';
+
+  logger.info(`[${endpoint}] Request to view all scans received from user: ${userEmail}`);
 
   try {
     const filter = { ...req.scopeFilter };
@@ -15,8 +18,6 @@ const getScans = async (req, res) => {
     //apply filters from query
     if (req.query.patientId) filter.patientId = req.query.patientId;
     if (req.query.mrn) filter.mrn = req.query.mrn;
-
-    logger.debug(`Filters applied: ${JSON.stringify(filter)}`);
 
     const scans = await Scan.findAll({
       where: filter,
@@ -28,37 +29,38 @@ const getScans = async (req, res) => {
     });
 
     if (scans.length === 0) {
-      logger.warn(`No scans found for filter: ${JSON.stringify(filter)}`);
+      logger.warn(`[${endpoint}] No scans found for filter: ${JSON.stringify(filter)}`);
       return res.status(200).json([]);
     }
 
-    logger.info(`Fetched ${scans.length} scans from database`);
+    logger.info(`[${endpoint}] Fetched ${scans.length} scans from database`);
     res.status(200).json(scans);
 
   } catch (err) {
-    logger.error(`Error in getScans: ${err.stack}`);
+    logger.error(`[${endpoint}] Error in getScans: ${err.stack}`);
     res.status(500).json({ error: "Server error while fetching scans" });
   }
 };
 
 //Upload a Scan
 const uploadScan = async (req, res) => {
-  logger.info('POST /scans/upload endpoint hit');
+  const endpoint = 'uploadScan';
+  const userEmail = req.user?.email || 'unknown';
+
+  logger.info(`[${endpoint}] Incoming request to upload a new scan from user: ${userEmail}`);
 
   try {
     const { patientName, mrn, scanType, urgencyLevel, notes } = req.body;
 
-    logger.debug(`Upload request body: ${JSON.stringify({ patientName, mrn, scanType, urgencyLevel })}`);
-    logger.debug(`Uploader info: ${JSON.stringify({ id: req.user?.id, email: req.user?.email, role: req.user?.role })}`);
+    logger.debug(`[${endpoint}] Upload request body: ${JSON.stringify({ patientName, mrn, scanType, urgencyLevel })}`);
+    logger.debug(`[${endpoint}] Uploader info: ${JSON.stringify({ id: req.user?.id, email: req.user?.email, role: req.user?.role })}`);
 
     //find patient by name + MRN
     const patient = await Patient.findOne({ where: { name: patientName, mrn } });
     if (!patient) {
-      logger.warn(`Patient not found for name="${patientName}" and MRN="${mrn}"`);
+      logger.warn(`[${endpoint}] Patient not found for name="${patientName}" and MRN="${mrn}"`);
       return res.status(404).json({ error: "Patient not found" });
     }
-
-    logger.info(`Patient found: ID=${patient.id}, MRN=${patient.mrn}, Org=${patient.organizationId}`);
 
     //create new scan record
     const scan = await Scan.create({
@@ -73,33 +75,33 @@ const uploadScan = async (req, res) => {
       notes,
     });
 
-    logger.info(`New scan uploaded successfully by ${req.user?.email || 'unknown'} for patient MRN=${mrn}`);
-    logger.debug(`Created scan record: ${JSON.stringify(scan.toJSON())}`);
+    logger.info(`[${endpoint}] New scan uploaded successfully by ${req.user?.email || 'unknown'} for patient MRN=${mrn}`);
 
     res.status(201).json(scan);
 
   } catch (err) {
-    logger.error(`Error in uploadScan: ${err.stack}`);
+    logger.error(`[${endpoint}] Error in uploadScan: ${err.stack}`);
     res.status(500).json({ error: "Server error while uploading scan" });
   }
 };
 
 //GET scans by MRN (metadata + image file content)
 const getScanByMrn = async (req, res) => {
-  logger.info("GET /scans/:mrn endpoint hit");
+  const endpoint = 'getScanByMrn';
+  const userEmail = req.user?.email || 'unknown';
+  const mrn = req.params.mrn;
+
+  logger.info(`[${endpoint}] Request to view scan of patient having MRN: ${mrn} received from user: ${userEmail}`);
 
   try {
     const { mrn } = req.params;
-    logger.debug(`Request param MRN: ${mrn}`);
 
     //find patient by MRN
     const patient = await Patient.findOne({ where: { mrn } });
     if (!patient) {
-      logger.warn(`Patient not found for MRN="${mrn}"`);
+      logger.warn(`[${endpoint}] Patient not found for MRN="${mrn}"`);
       return res.status(404).json({ error: "Patient not found" });
     }
-
-    logger.info(`Patient found: ID=${patient.id}, MRN=${mrn}`);
 
     //find the most recent scan for this patient
     const scan = await Scan.findOne({
@@ -109,24 +111,23 @@ const getScanByMrn = async (req, res) => {
     });
 
     if (!scan) {
-      logger.warn(`No scans found for patient ID=${patient.id}, MRN="${mrn}"`);
+      logger.warn(`[${endpoint}] No scans found for patient ID=${patient.id}, MRN="${mrn}"`);
       return res.status(404).json({ error: "No scans found for this MRN" });
     }
 
-    logger.info(`Latest scan found: ScanID=${scan.id}, UploadedBy=${scan.uploadedBy}`);
+    logger.info(`[${endpoint}] Latest scan found: ScanID=${scan.id}, UploadedBy=${scan.uploadedBy}`);
 
     //check if file exists
     const filePath = path.join(__dirname, "..", scan.fileUrl);
-    logger.debug(`Resolved file path: ${filePath}`);
 
     if (!fs.existsSync(filePath)) {
-      logger.error(`Scan file missing on disk for ScanID=${scan.id}, path="${filePath}"`);
+      logger.error(`[${endpoint}] Scan file missing on disk for ScanID=${scan.id}, path="${filePath}"`);
       return res.status(404).json({ error: "Scan file not found" });
     }
 
     //read file content
     const fileData = fs.readFileSync(filePath, { encoding: "base64" });
-    logger.info(`Successfully read scan file for MRN=${mrn}`);
+    logger.info(`[${endpoint}] Successfully read scan file for MRN=${mrn}`);
 
     //respond with metadata + base64 file
     res.status(200).json({
@@ -145,14 +146,18 @@ const getScanByMrn = async (req, res) => {
       },
     });
   } catch (err) {
-    logger.error(`Error in getScanByMrn: ${err.stack}`);
+    logger.error(`[${endpoint}] Error in getScanByMrn: ${err.stack}`);
     res.status(500).json({ error: "Server error while fetching scan" });
   }
 };
 
 //Add Doctor Review by MRN ---
 const addDoctorReviewByMrn = async (req, res) => {
-  logger.info("POST /scans/:mrn/review endpoint hit");
+  const endpoint = 'addDoctorReviewByMrn';
+  const userEmail = req.user?.email || 'unknown';
+
+
+  logger.info(`[${endpoint}] Incoming request to add doctor review for scan from user: ${userEmail}`);
 
   try {
     const { mrn } = req.params;

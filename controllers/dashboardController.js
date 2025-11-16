@@ -9,7 +9,7 @@ const getDashboardMetrics = async (req, res) => {
   const userEmail = req.user?.email || 'unknown';
   const startTime = Date.now();
 
-  logger.info(`[Dashboard] Request to view dashboard metrics received from ${userEmail}`);
+  logger.info(`[${endpoint}] Request to view dashboard metrics received from ${userEmail}`);
 
   try {
     //Date Range for Metrics
@@ -30,7 +30,7 @@ const getDashboardMetrics = async (req, res) => {
       raw: true,
     });
     const visitorsTodayCount = uniquePatientIds.length;
-    logger.info(`[Dashboard] Number of Visitors Today: ${visitorsTodayCount}`);
+    logger.info(`[${endpoint}] Number of Visitors Today: ${visitorsTodayCount}`);
 
     //Current Occupancy
     const totalRooms = await Room.count();
@@ -41,7 +41,7 @@ const getDashboardMetrics = async (req, res) => {
     });
     const occupiedRooms = occupiedRoomsData.length;
 
-    logger.info(`[Dashboard] Occupancy`, {
+    logger.info(`[${endpoint}] Occupancy`, {
       totalRooms,
       occupiedRooms,
     });
@@ -51,7 +51,7 @@ const getDashboardMetrics = async (req, res) => {
       { name: 'CT Scanner', percentage: 78, scans: 42, scheduledSlots: 54 },
       { name: 'Infrared Unit A', percentage: 65, scans: 38, scheduledSlots: 58 },
     ];
-    logger.debug(`[Dashboard] Equipment Utilization`, equipmentUtilizationData);
+    logger.debug(`[${endpoint}] Equipment Utilization`, equipmentUtilizationData);
 
     //Active Cases by Workflow Stage
     const totalActiveCasesToday = await Patient.count({
@@ -74,7 +74,7 @@ const getDashboardMetrics = async (req, res) => {
       where: { currentWorkflowStage: 'Awaiting Results', updatedAt: { [Op.gte]: today, [Op.lte]: endOfToday } },
     });
 
-    logger.info(`[Dashboard] Active Cases Today`, {
+    logger.info(`[${endpoint}] Active Cases Today`, {
       total: totalActiveCasesToday,
       stages: { checkedInCases, inThermalCases, inCTCases, awaitingResultsCases },
     });
@@ -103,7 +103,7 @@ const getDashboardMetrics = async (req, res) => {
     const averageTATDisplay =
       averageTATMinutes > 60 ? `${(averageTATMinutes / 60).toFixed(1)} hrs` : `${Math.round(averageTATMinutes)} mins`;
 
-    logger.info(`[Dashboard] Average Turn Around Time`, {
+    logger.info(`[${endpoint}] Average Turn Around Time`, {
       completedCases: completedCasesLast24Hours.length,
       averageTATMinutes,
       averageTATDisplay,
@@ -130,14 +130,14 @@ const getDashboardMetrics = async (req, res) => {
     };
 
     const durationMs = Date.now() - startTime;
-    logger.info(`[Dashboard] Dashboard metrics fetched successfully`, {
+    logger.info(`[${endpoint}] Dashboard metrics fetched successfully`, {
       user: userEmail,
       durationMs,
     });
 
     res.status(200).json(dashboardData);
   } catch (error) {
-    logger.error(`[Dasboard] Error fetching dashboard metrics: ${error.message}`, {
+    logger.error(`[${endpoint}] Error fetching dashboard metrics: ${error.message}`, {
       stack: error.stack,
       user: userEmail,
     });
