@@ -127,7 +127,13 @@ module.exports = {
       },
       organizationId: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
+        references: {
+          model: 'Organization',
+          key: 'organizationId'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'RESTRICT'
       },
       name: {
         type: Sequelize.STRING,
@@ -195,11 +201,23 @@ module.exports = {
       },
       organizationId: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
+        references: {
+          model: 'Organization',
+          key: 'organizationId'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'RESTRICT'
       },
       clinicId: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
+        references: {
+          model: 'Clinic',
+          key: 'clinicId'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'RESTRICT'
       },
       name: {
         type: Sequelize.STRING,
@@ -279,11 +297,23 @@ module.exports = {
       },
       organizationId: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
+        references: {
+          model: 'Organization',
+          key: 'organizationId'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'RESTRICT'
       },
       clinicId: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
+        references: {
+          model: 'Clinic',
+          key: 'clinicId'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'RESTRICT'
       },
       userId: {
         type: Sequelize.UUID,
@@ -355,11 +385,23 @@ module.exports = {
       },
       organizationId: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
+        references: {
+          model: 'Organization',
+          key: 'organizationId'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'RESTRICT'
       },
       clinicId: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
+        references: {
+          model: 'Clinic',
+          key: 'clinicId'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'RESTRICT'
       },
       roomNumber: {
         type: Sequelize.STRING,
@@ -431,11 +473,23 @@ module.exports = {
       },
       organizationId: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
+        references: {
+          model: 'Organization',
+          key: 'organizationId'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'RESTRICT'
       },
       clinicId: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
+        references: {
+          model: 'Clinic',
+          key: 'clinicId'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'RESTRICT'
       },
       checkInTime: {
         type: Sequelize.DATE,
@@ -559,11 +613,23 @@ module.exports = {
       },
       organizationId: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
+        references: {
+          model: 'Organization',
+          key: 'organizationId'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'RESTRICT'
       },
       clinicId: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
+        references: {
+          model: 'Clinic',
+          key: 'clinicId'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'RESTRICT'
       },
       description: {
         type: Sequelize.TEXT,
@@ -690,11 +756,23 @@ module.exports = {
       },
       organizationId: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
+        references: {
+          model: 'Organization',
+          key: 'organizationId'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'RESTRICT'
       },
       clinicId: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
+        references: {
+          model: 'Clinic',
+          key: 'clinicId'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'RESTRICT'
       },
       patientId: {
         type: Sequelize.UUID,
