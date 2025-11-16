@@ -157,7 +157,7 @@ const { sequelize } = require('../config/db');
 const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
-const logger = require('../utils/logger');
+const { logger } = require('../utils/logger');
 
 const STREAM_ROOT = path.join(__dirname, '..', 'public', 'streams');
 if (!fs.existsSync(STREAM_ROOT)) fs.mkdirSync(STREAM_ROOT, { recursive: true });

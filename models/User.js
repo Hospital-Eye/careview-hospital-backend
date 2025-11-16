@@ -64,10 +64,6 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'userId',
       as: 'staff'
     });
-    User.hasMany(models.UserSession, {
-      foreignKey: 'userId',
-      as: 'sessions'
-    });
     User.hasMany(models.DeviceLog, {
       foreignKey: 'userId',
       as: 'deviceLogs'
@@ -75,10 +71,6 @@ module.exports = (sequelize, DataTypes) => {
     User.hasMany(models.AnalyticsEvent, {
       foreignKey: 'userId',
       as: 'analyticsEvents'
-    });
-    User.hasMany(models.Notification, {
-      foreignKey: 'recipient',
-      as: 'notifications'
     });
     User.hasMany(models.Scan, {
       foreignKey: 'uploadedBy',

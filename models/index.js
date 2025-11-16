@@ -17,7 +17,6 @@ db.Admission = require('./Admission')(sequelize, DataTypes);
 db.Task = require('./Task')(sequelize, DataTypes);
 db.Vital = require('./Vital')(sequelize, DataTypes);
 db.Scan = require('./Scan')(sequelize, DataTypes);
-db.Notification = require('./Notification')(sequelize, DataTypes);
 db.ComplianceAlert = require('./ComplianceAlert')(sequelize, DataTypes);
 db.Camera = require('./Camera')(sequelize, DataTypes);
 db.CVDetection = require('./CVDetection')(sequelize, DataTypes);
@@ -26,7 +25,6 @@ db.MP4File = require('./MP4File')(sequelize, DataTypes);
 db.MP4Event = require('./MP4Event')(sequelize, DataTypes);
 db.AnalyticsEvent = require('./AnalyticsEvent')(sequelize, DataTypes);
 db.DeviceLog = require('./DeviceLog')(sequelize, DataTypes);
-db.UserSession = require('./UserSession')(sequelize, DataTypes);
 db.Counter = require('./Counter')(sequelize, DataTypes);
 
 // Define associations

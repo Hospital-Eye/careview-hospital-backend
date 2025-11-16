@@ -1,7 +1,7 @@
 const { AnalyticsEvent } = require('../models');
 const { Op } = require('sequelize');
 const { sequelize } = require('../config/db');
-const logger = require('../utils/logger');
+const { logger } = require('../utils/logger');
 
 //Create a new analytics event
 exports.createEvent = async (req, res) => {
@@ -9,14 +9,14 @@ exports.createEvent = async (req, res) => {
   const userEmail = user?.email || 'unknown';
   const endpoint = 'createEvent';
 
-  logger.info(`[Analytics Event] Incoming request for creating event from ${userEmail}`, { body });
+  logger.info(`[${endpoint}] Incoming request for creating event from ${userEmail}`, { body });
 
   try {
     const event = await AnalyticsEvent.create(body);
-    logger.info(`[Analytics Event] Analytics event created successfully`, { eventId: event.id });
+    logger.info(`[${endpoint}] Analytics event created successfully`, { eventId: event.id });
     res.status(201).json(event);
   } catch (err) {
-    logger.error(`[Analytics Event] Error creating event: ${err.message}`, {
+    logger.error(`[${endpoint}] Error creating event: ${err.message}`, {
       stack: err.stack,
       user: userEmail,
     });
@@ -30,14 +30,14 @@ exports.getEvents = async (req, res) => {
   const userEmail = user?.email || 'unknown';
   const endpoint = 'getEvents';
 
-  logger.info(`[Analytics Event] Incoming request for viewing all events from ${userEmail}`);
+  logger.info(`[${endpoint}] Incoming request for viewing all events from ${userEmail}`);
 
   try {
     const events = await AnalyticsEvent.findAll();
-    logger.info(`[Analytics Event] Retrieved ${events.length} events`);
+    logger.info(`[${endpoint}] Retrieved ${events.length} events`);
     res.json(events);
   } catch (err) {
-    logger.error(`[Analytics Event] Error fetching events: ${err.message}`, {
+    logger.error(`[${endpoint}] Error fetching events: ${err.message}`, {
       stack: err.stack,
       user: userEmail,
     });

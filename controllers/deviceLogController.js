@@ -1,21 +1,21 @@
 const { DeviceLog, User } = require('../models');
 const { Op } = require('sequelize');
 const { sequelize } = require('../config/db');
-const logger = require('../utils/logger');
+const { logger } = require('../utils/logger');
 
 //Create a new device log
 const createDeviceLog = async (req, res) => {
   const endpoint = 'createDeviceLog';
   const userEmail = req.user?.email || 'unknown';
 
-  logger.info(`[DeviceLog] Request to create device log received from ${userEmail}`);
+  logger.info(`[${endpoint}] Request to create device log received from ${userEmail}`);
 
   try {
     const log = await DeviceLog.create(req.body);
-    logger.info(`[DeviceLog] Device log created successfully`, { id: log.id, user: userEmail });
+    logger.info(`[${endpoint}] Device log created successfully`, { id: log.id, user: userEmail });
     res.status(201).json(log);
   } catch (err) {
-    logger.error(`[DeviceLog] Error creating device log: ${err.message}`, { stack: err.stack });
+    logger.error(`[${endpoint}] Error creating device log: ${err.message}`, { stack: err.stack });
     res.status(400).json({ error: err.message });
   }
 };
@@ -25,17 +25,17 @@ const getDeviceLogs = async (req, res) => {
   const endpoint = 'getDeviceLogs';
   const userEmail = req.user?.email || 'unknown';
 
-  logger.info(`[DeviceLog] Fetching all device logs for ${userEmail}`);
+  logger.info(`[${endpoint}] Fetching all device logs for ${userEmail}`);
 
   try {
     const logs = await DeviceLog.findAll({
       include: [{ model: User, as: 'userId' }]
     });
 
-    logger.info(`[DeviceLog] Retrieved ${logs.length} device logs`);
+    logger.info(`[${endpoint}] Retrieved ${logs.length} device logs`);
     res.json(logs);
   } catch (err) {
-    logger.error(`[DeviceLog] Error fetching device logs: ${err.message}`, { stack: err.stack });
+    logger.error(`[${endpoint}] Error fetching device logs: ${err.message}`, { stack: err.stack });
     res.status(500).json({ error: err.message });
   }
 };
@@ -46,7 +46,7 @@ const getDeviceLogById = async (req, res) => {
   const logId = req.params.id;
   const userEmail = req.user?.email || 'unknown';
 
-  logger.info(`[DeviceLog] Fetching device log with ID: ${logId} (requested by ${userEmail})`);
+  logger.info(`[${endpoint}] Fetching device log with ID: ${logId} (requested by ${userEmail})`);
 
   try {
     const log = await DeviceLog.findByPk(logId, {
@@ -54,14 +54,14 @@ const getDeviceLogById = async (req, res) => {
     });
 
     if (!log) {
-      logger.warn(`[DeviceLog] Device log not found`, { id: logId });
+      logger.warn(`[${endpoint}] Device log not found`, { id: logId });
       return res.status(404).json({ error: 'Log not found' });
     }
 
-    logger.info(`[DeviceLog] Device log retrieved successfully`, { id: logId });
+    logger.info(`[${endpoint}] Device log retrieved successfully`, { id: logId });
     res.json(log);
   } catch (err) {
-    logger.error(`[DeviceLog] Error fetching device log: ${err.message}`, { stack: err.stack });
+    logger.error(`[${endpoint}] Error fetching device log: ${err.message}`, { stack: err.stack });
     res.status(400).json({ error: err.message });
   }
 };
@@ -72,20 +72,20 @@ const deleteDeviceLog = async (req, res) => {
   const logId = req.params.id;
   const userEmail = req.user?.email || 'unknown';
 
-  logger.info(`[DeviceLog] Delete request for log ID: ${logId} (by ${userEmail})`);
+  logger.info(`[${endpoint}] Delete request for log ID: ${logId} (by ${userEmail})`);
 
   try {
     const deleted = await DeviceLog.destroy({ where: { id: logId } });
 
     if (!deleted) {
-      logger.warn(`[DeviceLog] Attempted to delete non-existent log`, { id: logId });
+      logger.warn(`[${endpoint}] Attempted to delete non-existent log`, { id: logId });
       return res.status(404).json({ error: 'Log not found' });
     }
 
-    logger.info(`[DeviceLog] Device log deleted successfully`, { id: logId });
+    logger.info(`[${endpoint}] Device log deleted successfully`, { id: logId });
     res.json({ message: 'Log deleted' });
   } catch (err) {
-    logger.error(`[DeviceLog] Error deleting device log: ${err.message}`, { stack: err.stack });
+    logger.error(`[${endpoint}] Error deleting device log: ${err.message}`, { stack: err.stack });
     res.status(500).json({ error: err.message });
   }
 };

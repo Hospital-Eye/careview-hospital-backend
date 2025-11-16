@@ -4,7 +4,7 @@ const { sequelize } = require('../config/db');
 const { validate: isUUID } = require('uuid');
 const canActOn = require("../middleware/canActOn");
 const roleHierarchy = require("../models/roleHierarchy");
-const logger = require('../utils/logger');
+const { logger } = require('../utils/logger');
 
 //Create staff
 
@@ -39,9 +39,7 @@ const createStaff = async (req, res) => {
   const userRole = req.user?.role || 'unknown';
   const t = await sequelize.transaction();
 
-  logger.info(`[${endpoint}] Request received from ${userEmail} (role: ${userRole})`, {
-    body: req.body,
-  });
+  logger.info(`[${endpoint}] Request received from ${userEmail} (role: ${userRole})`);
 
   try {
     const { name, role: staffRole, status, contact } = req.body;
@@ -162,108 +160,6 @@ const createStaff = async (req, res) => {
 };
 
 
-/*
-// ----------------- Controller: Create Staff -----------------
-const createStaff = async (req, res) => {
-  const t = await sequelize.transaction();
-  try {
-    const { name, role: staffRole, status, contact } = req.body;
-    const email = contact?.email;
-    const phone = contact?.phone;
-
-    // ----------------- Validation -----------------
-    if (!email || !staffRole) {
-      await t.rollback();
-      return res.status(400).json({ error: "Email and role are required." });
-    }
-
-    const { role: requesterRole, organizationId: userOrgId, clinicId: userClinicId } = req.user;
-
-    if (!userOrgId) {
-      await t.rollback();
-      return res.status(403).json({ error: "Missing organizationId in user context" });
-    }
-
-    // ----------------- Determine clinicId -----------------
-    let clinicId;
-    if (requesterRole === "admin") {
-      clinicId = req.body.clinicId;
-      if (!clinicId) {
-        await t.rollback();
-        return res.status(400).json({ error: "clinicId is required in request body for admins" });
-      }
-    } else if (requesterRole === "manager") {
-      clinicId = userClinicId;
-      if (!clinicId) {
-        await t.rollback();
-        return res.status(400).json({ error: "Manager is not associated with any clinic" });
-      }
-    } else {
-      await t.rollback();
-      return res.status(403).json({ error: "Only admins and managers can create staff" });
-    }
-
-    // ----------------- Generate Unique Random Employee ID -----------------
-    const employeeId = await generateUniqueEmployeeId();
-
-    // ----------------- Upsert User -----------------
-    let user = await User.findOne({ where: { email }, transaction: t });
-
-    if (user) {
-      await user.update({
-        role: staffRole,
-        employeeId: user.employeeId || employeeId,
-        organizationId: user.organizationId || userOrgId,
-        clinicId: user.clinicId || clinicId,
-        contact: { email, phone }
-      }, { transaction: t });
-    } else {
-      user = await User.create({
-        name,
-        email,
-        role: staffRole,
-        organizationId: userOrgId,
-        clinicId,
-        contact: { email, phone },
-        employeeId,
-      }, { transaction: t });
-    }
-
-    // ----------------- Upsert Staff -----------------
-    let staff = await Staff.findOne({ where: { userId: user.id }, transaction: t });
-
-    if (staff) {
-      await staff.update({
-        name,
-        role: staffRole,
-        organizationId: userOrgId,
-        clinicId,
-        contact: { email, phone },
-        status: status || staff.status
-      }, { transaction: t });
-    } else {
-      staff = await Staff.create({
-        employeeId,
-        organizationId: userOrgId,
-        clinicId,
-        userId: user.id,
-        name,
-        role: staffRole,
-        contact: { email, phone },
-        status: status || "On-Duty",
-      }, { transaction: t });
-    }
-
-    await t.commit();
-    res.status(201).json({ user, staff });
-  } catch (err) {
-    await t.rollback();
-    console.error("Error creating staff:", err);
-    res.status(400).json({ error: err.message });
-  }
-};
-*/
-
 //GET all staff
 const getAllStaff = async (req, res) => {
   const endpoint = 'getAllStaff';
@@ -319,9 +215,7 @@ const updateStaff = async (req, res) => {
   const userEmail = req.user?.email || 'unknown';
   const id = req.params.id;
 
-  logger.info(`[${endpoint}] Update request received for staff ID: ${id} by ${userEmail}`, {
-    body: req.body,
-  });
+  logger.info(`[${endpoint}] Update request received for staff ID: ${id} by ${userEmail}`);
 
   try {
     const staff = await Staff.findByPk(id);
@@ -345,7 +239,7 @@ const deleteStaff = async (req, res) => {
   const userEmail = req.user?.email || 'unknown';
   const { id } = req.params;
 
-  logger.info(`[${endpoint}] Delete request for staff ID: ${id} by ${userEmail}`);
+  logger.info(`[${endpoint}] Delete request for staff ID: ${id} by user: ${userEmail}`);
 
   try {
     if (!isUUID(id)) {
