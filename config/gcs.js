@@ -1,6 +1,6 @@
 const { Storage } = require('@google-cloud/storage');
 
-// Uses GOOGLE_APPLICATION_CREDENTIALS from env (JSON key or Workload Identity on Cloud Run)
+//Uses GOOGLE_APPLICATION_CREDENTIALS from env (JSON key or Workload Identity on Cloud Run)
 const storage = new Storage();
 
 const bucketName = process.env.GCS_BUCKET_NAME; 

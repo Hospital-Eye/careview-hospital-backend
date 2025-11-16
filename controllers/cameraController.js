@@ -151,13 +151,13 @@
 // };
 
 
-// controllers/cameraController.js
 const { Camera } = require('../models');
 const { Op } = require('sequelize');
 const { sequelize } = require('../config/db');
 const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
+const logger = require('../utils/logger');
 
 const STREAM_ROOT = path.join(__dirname, '..', 'public', 'streams');
 if (!fs.existsSync(STREAM_ROOT)) fs.mkdirSync(STREAM_ROOT, { recursive: true });
@@ -183,7 +183,6 @@ function ffmpegArgs({ rtspUrl, outDir, transport = 'tcp', forceEncode = false })
                            ['-rtsp_transport', 'tcp', '-rtsp_flags', 'prefer_tcp'];
 
   const videoArgs = forceEncode
-    // macOS hardware H.264 (smooth if source is HEVC):
     ? ['-r','15','-vf','scale=-2:540','-c:v','h264_videotoolbox','-b:v','2000k','-maxrate','2200k','-bufsize','4400k']
     // best case: substream H.264 -> copy (no transcode)
     : ['-c:v', 'copy'];
@@ -216,7 +215,7 @@ function spawnFfmpeg({ id, rtspUrl, outDir, transport, forceEncode }) {
 
   const ff = spawn(ffmpegPath, args, { stdio: ['ignore', 'pipe', 'pipe'] });
   procs.set(id, ff);
-  ff.on('error', (e) => console.error(`❌ FFmpeg spawn error (${id}):`, e));
+  ff.on('error', (e) => console.error(`FFmpeg spawn error (${id}):`, e));
   ff.stdout.on('data', (d) => console.log(`[FF:${id}]`, d.toString()));
   ff.stderr.on('data', (d) => console.log(`[FFERR:${id}]`, d.toString()));
   ff.on('close', (code) => {
@@ -225,14 +224,13 @@ function spawnFfmpeg({ id, rtspUrl, outDir, transport, forceEncode }) {
   });
 }
 
-/* -------------------- LEGACY: body-based start/stop/status -------------------- */
 exports.startStream = async (req, res) => {
   try {
     const {
       ip, user, pass,
       id = 'cam1',
       channel = 0,
-      stream = 'sub',           // DEFAULT TO 'sub' for smooth H.264
+      stream = 'sub',           
       rtspPort = 554,
       transport = 'tcp',
       forceEncode = false
@@ -268,7 +266,7 @@ exports.stopStream = (req, res) => {
 
 exports.statusStream = (_req, res) => res.json({ error: 'use /api/cameras/:id/status (DB mode)' });
 
-/* -------------------- CRUD (DB) -------------------- */
+
 exports.createCamera = async (req, res) => {
   try { res.status(201).json(await Camera.create(req.body)); }
   catch (e) { res.status(400).json({ error: e.message }); }
@@ -300,7 +298,6 @@ exports.deleteCamera = async (req, res) => {
   res.json({ ok: true });
 };
 
-/* -------------------- Streaming by camera ID (DB) -------------------- */
 exports.startById = async (req, res) => {
   try {
     console.log('Camera start request params:', req.params);

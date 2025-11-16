@@ -1,8 +1,9 @@
 const { CVDetection } = require('../models');
 const { Op } = require('sequelize');
 const { sequelize } = require('../config/db');
+const { logger } = require('../utils/logger');
 
-// Create a new detection
+//Create a new detection
 const createDetection = async (req, res) => {
   try {
     const detection = await CVDetection.create(req.body);
@@ -12,7 +13,7 @@ const createDetection = async (req, res) => {
   }
 };
 
-// Get all detections
+//Get all detections
 const getDetections = async (req, res) => {
   try {
     const detections = await CVDetection.findAll({
@@ -27,7 +28,7 @@ const getDetections = async (req, res) => {
   }
 };
 
-// Get detection by ID
+//Get detection by ID
 const getDetectionById = async (req, res) => {
   try {
     const detection = await CVDetection.findByPk(req.params.id, {
@@ -43,7 +44,7 @@ const getDetectionById = async (req, res) => {
   }
 };
 
-// Update detection
+//Update detection
 const updateDetection = async (req, res) => {
   try {
     const detection = await CVDetection.findByPk(req.params.id);
@@ -56,7 +57,7 @@ const updateDetection = async (req, res) => {
   }
 };
 
-// Delete detection
+//Delete detection
 const deleteDetection = async (req, res) => {
   try {
     const deleted = await CVDetection.destroy({ where: { id: req.params.id } });

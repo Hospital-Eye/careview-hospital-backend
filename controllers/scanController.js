@@ -5,14 +5,14 @@ const path = require("path");
 const fs = require("fs");
 const logger = require('../utils/logger');
 
-// --- GET all scans ---
+//GET all scans
 const getScans = async (req, res) => {
   logger.info('GET /scans endpoint hit');
 
   try {
     const filter = { ...req.scopeFilter };
 
-    // Apply filters from query
+    //apply filters from query
     if (req.query.patientId) filter.patientId = req.query.patientId;
     if (req.query.mrn) filter.mrn = req.query.mrn;
 
@@ -41,28 +41,26 @@ const getScans = async (req, res) => {
   }
 };
 
-// --- Upload a Scan ---
+//Upload a Scan
 const uploadScan = async (req, res) => {
   logger.info('POST /scans/upload endpoint hit');
 
   try {
     const { patientName, mrn, scanType, urgencyLevel, notes } = req.body;
 
-    // Log request info (excluding sensitive data)
     logger.debug(`Upload request body: ${JSON.stringify({ patientName, mrn, scanType, urgencyLevel })}`);
     logger.debug(`Uploader info: ${JSON.stringify({ id: req.user?.id, email: req.user?.email, role: req.user?.role })}`);
 
-    // 1️⃣ Find patient by name + MRN
+    //find patient by name + MRN
     const patient = await Patient.findOne({ where: { name: patientName, mrn } });
     if (!patient) {
       logger.warn(`Patient not found for name="${patientName}" and MRN="${mrn}"`);
       return res.status(404).json({ error: "Patient not found" });
     }
 
-    // 2️⃣ Log that patient was found
     logger.info(`Patient found: ID=${patient.id}, MRN=${patient.mrn}, Org=${patient.organizationId}`);
 
-    // 3️⃣ Create new scan record
+    //create new scan record
     const scan = await Scan.create({
       organizationId: patient.organizationId,
       clinicId: patient.clinicId,
@@ -71,7 +69,7 @@ const uploadScan = async (req, res) => {
       uploadedBy: req.user.id,
       scanType,
       urgencyLevel,
-      fileUrl: `/uploads/scans/${req.file.filename}`, // local path
+      fileUrl: `/uploads/scans/${req.file.filename}`, 
       notes,
     });
 
@@ -86,7 +84,7 @@ const uploadScan = async (req, res) => {
   }
 };
 
-// --- GET scans by MRN (metadata + image file content) ---
+//GET scans by MRN (metadata + image file content)
 const getScanByMrn = async (req, res) => {
   logger.info("GET /scans/:mrn endpoint hit");
 
@@ -94,7 +92,7 @@ const getScanByMrn = async (req, res) => {
     const { mrn } = req.params;
     logger.debug(`Request param MRN: ${mrn}`);
 
-    // 1️⃣ Find patient by MRN
+    //find patient by MRN
     const patient = await Patient.findOne({ where: { mrn } });
     if (!patient) {
       logger.warn(`Patient not found for MRN="${mrn}"`);
@@ -103,7 +101,7 @@ const getScanByMrn = async (req, res) => {
 
     logger.info(`Patient found: ID=${patient.id}, MRN=${mrn}`);
 
-    // 2️⃣ Find the most recent scan for this patient
+    //find the most recent scan for this patient
     const scan = await Scan.findOne({
       where: { patientId: patient.id },
       include: [{ model: Patient, as: "uploadedBy", attributes: ["name", "role"] }],
@@ -117,7 +115,7 @@ const getScanByMrn = async (req, res) => {
 
     logger.info(`Latest scan found: ScanID=${scan.id}, UploadedBy=${scan.uploadedBy}`);
 
-    // 3️⃣ Check if file exists
+    //check if file exists
     const filePath = path.join(__dirname, "..", scan.fileUrl);
     logger.debug(`Resolved file path: ${filePath}`);
 
@@ -126,11 +124,11 @@ const getScanByMrn = async (req, res) => {
       return res.status(404).json({ error: "Scan file not found" });
     }
 
-    // 4️⃣ Read file content
+    //read file content
     const fileData = fs.readFileSync(filePath, { encoding: "base64" });
     logger.info(`Successfully read scan file for MRN=${mrn}`);
 
-    // 5️⃣ Respond with metadata + base64 file
+    //respond with metadata + base64 file
     res.status(200).json({
       id: scan.id,
       patientId: scan.patientId,
@@ -152,7 +150,7 @@ const getScanByMrn = async (req, res) => {
   }
 };
 
-// --- Add Doctor Review by MRN ---
+//Add Doctor Review by MRN ---
 const addDoctorReviewByMrn = async (req, res) => {
   logger.info("POST /scans/:mrn/review endpoint hit");
 
@@ -162,7 +160,7 @@ const addDoctorReviewByMrn = async (req, res) => {
 
     logger.debug(`Incoming doctor review - MRN: ${mrn}, scanId: ${scanId || "latest"}`);
 
-    // 1️⃣ Find patient
+    //find patient
     const patient = await Patient.findOne({ where: { mrn } });
     if (!patient) {
       logger.warn(`Patient not found for MRN="${mrn}"`);
@@ -171,7 +169,7 @@ const addDoctorReviewByMrn = async (req, res) => {
 
     logger.info(`Patient found: ID=${patient.id}, MRN=${mrn}`);
 
-    // 2️⃣ Identify the scan (either specified or latest)
+    //identify the scan 
     let scan;
     if (scanId) {
       logger.debug(`Fetching scan by explicit ID=${scanId} for patient ID=${patient.id}`);
@@ -191,7 +189,7 @@ const addDoctorReviewByMrn = async (req, res) => {
 
     logger.info(`Reviewing scan ID=${scan.id}, PatientID=${patient.id}, MRN=${mrn}`);
 
-    // 3️⃣ Update scan with review details
+    //update scan with review details
     await scan.update({
       notes: notes || scan.notes,
       status: "Reviewed",

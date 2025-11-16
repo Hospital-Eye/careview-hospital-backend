@@ -1,31 +1,27 @@
-// controllers/cvAnalyticsController.js
-// Node 18+ has global fetch. If you're on older Node, install node-fetch and use:
-// const fetch = (...a) => import('node-fetch').then(({default: f}) => f(...a));
-
 const { Camera } = require('../models');
 const { Op } = require('sequelize');
 const { sequelize } = require('../config/db');
+const { logger } = require('../utils/logger');
 
 const CV_SHARED_SECRET   = process.env.CV_SHARED_SECRET   || 'dev-secret';
-const CV_URL             = process.env.CV_URL             || 'http://localhost:8001';        // FastAPI service
-const PUBLIC_BACKEND_URL = process.env.PUBLIC_BACKEND_URL || 'http://localhost:3000';        // this Node API
+const CV_URL             = process.env.CV_URL             || 'http://localhost:8001';        
+const PUBLIC_BACKEND_URL = process.env.PUBLIC_BACKEND_URL || 'http://localhost:3000';        
 
 function buildRtsp(cam, { channel = cam.defaultChannel, stream = cam.defaultStream } = {}) {
-  const ch = String((channel ?? 0) + 1).padStart(2, '0');        // 01/02/...
-  const st = (stream === 'main' ? 'main' : 'sub');               // default to sub
+  const ch = String((channel ?? 0) + 1).padStart(2, '0');        
+  const st = (stream === 'main' ? 'main' : 'sub');               
   const u  = encodeURIComponent(cam?.auth?.username || '');
   const p  = encodeURIComponent(cam?.auth?.password || '');
   return `rtsp://${u}:${p}@${cam.ip}:${cam.rtspPort}/h264Preview_${ch}_${st}`;
 }
 
-// POST /api/cv-analytics/:cameraId/start
+//POST /api/cv-analytics/:cameraId/start
 exports.startTracking = async (req, res) => {
   try {
     const { cameraId } = req.params;
     const cam = await Camera.findByPk(cameraId);
     if (!cam) return res.status(404).json({ error: 'Camera not found' });
 
-    // optional overrides from request body
     const { channel, stream, line, zone, conf, imgsz, frame_skip, model } = req.body || {};
     const rtsp = buildRtsp(cam, { channel, stream });
 
@@ -56,7 +52,7 @@ exports.startTracking = async (req, res) => {
   }
 };
 
-// POST /api/cv-analytics/:cameraId/stop
+//POST /api/cv-analytics/:cameraId/stop
 exports.stopTracking = async (req, res) => {
   try {
     const { cameraId } = req.params;
@@ -70,7 +66,7 @@ exports.stopTracking = async (req, res) => {
   }
 };
 
-// GET /api/cv-analytics/:cameraId/status
+//GET /api/cv-analytics/:cameraId/status
 exports.statusTracking = async (req, res) => {
   try {
     const { cameraId } = req.params;
