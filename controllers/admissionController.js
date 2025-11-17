@@ -476,6 +476,7 @@ const deleteAdmission = async (req, res) => {
     res.json({ message: 'Admission deleted successfully' });
   } catch (err) {
     await t.rollback();
+    logger.error(`[${endpoint}] Error deleting admission ID=${admissionId}: ${err.message}`, { stack: err.stack });
     res.status(500).json({ error: 'Server error: Unable to delete admission' });
   }
 };

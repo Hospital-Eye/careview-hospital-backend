@@ -2,6 +2,7 @@ const express = require('express');
 const axios = require('axios');
 const jwt = require('jsonwebtoken');
 const { User } = require('../models');
+const { logger } = require("../utils/logger");
 require('dotenv').config();
 
 //This function will be called by server.js, passing the variables
