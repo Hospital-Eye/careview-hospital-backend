@@ -2,7 +2,7 @@ const express = require('express');
 const Patient = require('../models/Patient');
 const Vital = require('../models/Vital');
 const { protect, authorize } = require('../middleware/authMiddleware');
-const { logger } = require('./utils/logger');
+const { logger } = require('../utils/logger');
 
 const router = express.Router();
 
