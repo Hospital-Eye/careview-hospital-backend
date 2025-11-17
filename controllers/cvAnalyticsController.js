@@ -15,12 +15,19 @@ function buildRtsp(cam, { channel = cam.defaultChannel, stream = cam.defaultStre
   return `rtsp://${u}:${p}@${cam.ip}:${cam.rtspPort}/h264Preview_${ch}_${st}`;
 }
 
-//POST /api/cv-analytics/:cameraId/start
+// POST /api/cv-analytics/:cameraId/start
 exports.startTracking = async (req, res) => {
+  const endpoint = 'startTracking';
+  const { cameraId } = req.params;
+
   try {
-    const { cameraId } = req.params;
+    logger.info(`[${endpoint}] Start request for cameraId=${cameraId}`);
+
     const cam = await Camera.findByPk(cameraId);
-    if (!cam) return res.status(404).json({ error: 'Camera not found' });
+    if (!cam) {
+      logger.warn(`[${endpoint}] Camera not found: cameraId=${cameraId}`);
+      return res.status(404).json({ error: 'Camera not found' });
+    }
 
     const { channel, stream, line, zone, conf, imgsz, frame_skip, model } = req.body || {};
     const rtsp = buildRtsp(cam, { channel, stream });
@@ -38,44 +45,71 @@ exports.startTracking = async (req, res) => {
       ...(model ? { model } : {}),
     };
 
+    logger.debug(`[${endpoint}] Sending request to CV service: ${JSON.stringify(body)}`);
     const r = await fetch(`${CV_URL}/track/start`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     });
+
     const data = await r.json();
-    if (!r.ok) return res.status(r.status).json(data);
+    if (!r.ok) {
+      logger.warn(`[${endpoint}] CV service returned error for cameraId=${cameraId}`, { status: r.status, response: data });
+      return res.status(r.status).json(data);
+    }
+
+    logger.info(`[${endpoint}] Tracking started successfully for cameraId=${cameraId}`);
     return res.json({ ok: true, ...data });
   } catch (e) {
-    console.error('startTracking error:', e);
+    logger.error(`[${endpoint}] Error starting tracking for cameraId=${cameraId}: ${e.stack}`);
     return res.status(500).json({ error: 'server error' });
   }
 };
 
-//POST /api/cv-analytics/:cameraId/stop
+// POST /api/cv-analytics/:cameraId/stop
 exports.stopTracking = async (req, res) => {
+  const endpoint = 'stopTracking';
+  const { cameraId } = req.params;
+
   try {
-    const { cameraId } = req.params;
+    logger.info(`[${endpoint}] Stop request for cameraId=${cameraId}`);
+
     const r = await fetch(`${CV_URL}/track/stop/${cameraId}`, { method: 'POST' });
     const data = await r.json();
-    if (!r.ok) return res.status(r.status).json(data);
+
+    if (!r.ok) {
+      logger.warn(`[${endpoint}] CV service returned error for cameraId=${cameraId}`, { status: r.status, response: data });
+      return res.status(r.status).json(data);
+    }
+
+    logger.info(`[${endpoint}] Tracking stopped successfully for cameraId=${cameraId}`);
     return res.json({ ok: true, ...data });
   } catch (e) {
-    console.error('stopTracking error:', e);
+    logger.error(`[${endpoint}] Error stopping tracking for cameraId=${cameraId}: ${e.stack}`);
     return res.status(500).json({ error: 'server error' });
   }
 };
 
-//GET /api/cv-analytics/:cameraId/status
+// GET /api/cv-analytics/:cameraId/status
 exports.statusTracking = async (req, res) => {
+  const endpoint = 'statusTracking';
+  const { cameraId } = req.params;
+
   try {
-    const { cameraId } = req.params;
+    logger.info(`[${endpoint}] Status request for cameraId=${cameraId}`);
+
     const r = await fetch(`${CV_URL}/track/status/${cameraId}`);
     const data = await r.json();
-    if (!r.ok) return res.status(r.status).json(data);
+
+    if (!r.ok) {
+      logger.warn(`[${endpoint}] CV service returned error for cameraId=${cameraId}`, { status: r.status, response: data });
+      return res.status(r.status).json(data);
+    }
+
+    logger.info(`[${endpoint}] Retrieved status successfully for cameraId=${cameraId}`);
     return res.json(data);
   } catch (e) {
-    console.error('statusTracking error:', e);
+    logger.error(`[${endpoint}] Error fetching status for cameraId=${cameraId}: ${e.stack}`);
     return res.status(500).json({ error: 'server error' });
   }
 };

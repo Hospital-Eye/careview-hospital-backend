@@ -184,7 +184,6 @@ function ffmpegArgs({ rtspUrl, outDir, transport = 'tcp', forceEncode = false })
 
   const videoArgs = forceEncode
     ? ['-r','15','-vf','scale=-2:540','-c:v','h264_videotoolbox','-b:v','2000k','-maxrate','2200k','-bufsize','4400k']
-    // best case: substream H.264 -> copy (no transcode)
     : ['-c:v', 'copy'];
 
   return [
@@ -195,7 +194,6 @@ function ffmpegArgs({ rtspUrl, outDir, transport = 'tcp', forceEncode = false })
     '-i', rtspUrl,
     '-an',
     ...videoArgs,
-    // HLS (slightly larger segments for steady playback)
     '-hls_time','4',
     '-hls_list_size','8',
     '-hls_flags','delete_segments+program_date_time+independent_segments',
@@ -208,18 +206,14 @@ function spawnFfmpeg({ id, rtspUrl, outDir, transport, forceEncode }) {
   const ffmpegPath = require('ffmpeg-static');
   const args = ffmpegArgs({ rtspUrl, outDir, transport, forceEncode });
 
-  console.log('🛠 FFmpeg path:', ffmpegPath);
-  console.log('🎯 RTSP URL:', rtspUrl);
-  console.log('📁 HLS outDir:', outDir);
-  console.log('▶️  FFmpeg args:', args.join(' '));
-
   const ff = spawn(ffmpegPath, args, { stdio: ['ignore', 'pipe', 'pipe'] });
   procs.set(id, ff);
-  ff.on('error', (e) => console.error(`FFmpeg spawn error (${id}):`, e));
-  ff.stdout.on('data', (d) => console.log(`[FF:${id}]`, d.toString()));
-  ff.stderr.on('data', (d) => console.log(`[FFERR:${id}]`, d.toString()));
+
+  ff.on('error', (e) => logger.error(`[FFmpeg:${id}] Spawn error: ${e.stack}`));
+  ff.stdout.on('data', (d) => logger.debug(`[FFmpeg:${id}] stdout: ${d.toString().trim()}`));
+  ff.stderr.on('data', (d) => logger.warn(`[FFmpeg:${id}] stderr: ${d.toString().trim()}`));
   ff.on('close', (code) => {
-    console.log(`⏹️  FFmpeg (${id}) exited with code ${code}`);
+    logger.info(`FFmpeg process for ${id} exited with code ${code}`);
     procs.delete(id);
   });
 }
@@ -237,9 +231,12 @@ exports.startStream = async (req, res) => {
     } = req.body || {};
 
     if (!ip || !user || !pass) {
+      logger.warn(`[startStream] Missing required parameters`);
       return res.status(400).json({ error: 'ip, user, pass are required' });
     }
+
     if (procs.has(id)) {
+      logger.info(`[startStream] Stream already running for id=${id}`);
       return res.json({ ok: true, message: 'already running', hls: `/streams/${id}/index.m3u8` });
     }
 
@@ -247,10 +244,12 @@ exports.startStream = async (req, res) => {
     ensureCleanDir(outDir);
     const rtspUrl = rtspFor({ ip, rtspPort, username: user, password: pass, channel, stream });
 
+    logger.info(`[startStream] Spawning FFmpeg for id=${id}`);
     spawnFfmpeg({ id, rtspUrl, outDir, transport, forceEncode });
-    return res.json({ ok: true, hls: `/streams/${id}/index.m3u8` });
+
+    res.json({ ok: true, hls: `/streams/${id}/index.m3u8` });
   } catch (e) {
-    console.error(e);
+    logger.error(`[startStream] Error: ${e.stack}`);
     return res.status(500).json({ error: 'internal error', detail: String(e?.message || e) });
   }
 };
@@ -258,53 +257,95 @@ exports.startStream = async (req, res) => {
 exports.stopStream = (req, res) => {
   const { id } = req.params;
   const p = procs.get(id);
-  if (!p) return res.json({ ok: true, message: 'not running' });
-  try { p.kill('SIGTERM'); } catch {}
+  if (!p) {
+    logger.info(`[stopStream] Stream not running for id=${id}`);
+    return res.json({ ok: true, message: 'not running' });
+  }
+
+  try {
+    p.kill('SIGTERM');
+    logger.info(`[stopStream] Stream stopped for id=${id}`);
+  } catch (e) {
+    logger.error(`[stopStream] Error stopping stream for id=${id}: ${e.stack}`);
+  }
+
   procs.delete(id);
-  return res.json({ ok: true, message: 'stopped' });
+  res.json({ ok: true, message: 'stopped' });
 };
 
-exports.statusStream = (_req, res) => res.json({ error: 'use /api/cameras/:id/status (DB mode)' });
-
+exports.statusStream = (_req, res) => {
+  logger.info(`[statusStream] Status endpoint called (DB mode)`);
+  res.json({ error: 'use /api/cameras/:id/status (DB mode)' });
+};
 
 exports.createCamera = async (req, res) => {
-  try { res.status(201).json(await Camera.create(req.body)); }
-  catch (e) { res.status(400).json({ error: e.message }); }
+  try {
+    const cam = await Camera.create(req.body);
+    logger.info(`[createCamera] Camera created: id=${cam.id}`);
+    res.status(201).json(cam);
+  } catch (e) {
+    logger.error(`[createCamera] Error: ${e.stack}`);
+    res.status(400).json({ error: e.message });
+  }
 };
 
 exports.listCameras = async (_req, res) => {
   const cams = await Camera.findAll({ order: [['createdAt', 'DESC']] });
+  logger.info(`[listCameras] Retrieved ${cams.length} cameras`);
   res.json(cams);
 };
 
 exports.getCamera = async (req, res) => {
   const cam = await Camera.findByPk(req.params.id);
-  if (!cam) return res.status(404).json({ error: 'not found' });
+  if (!cam) {
+    logger.warn(`[getCamera] Camera not found: id=${req.params.id}`);
+    return res.status(404).json({ error: 'not found' });
+  }
+  logger.info(`[getCamera] Retrieved camera id=${cam.id}`);
   res.json(cam);
 };
 
 exports.updateCamera = async (req, res) => {
   const cam = await Camera.findByPk(req.params.id);
-  if (!cam) return res.status(404).json({ error: 'not found' });
+  if (!cam) {
+    logger.warn(`[updateCamera] Camera not found: id=${req.params.id}`);
+    return res.status(404).json({ error: 'not found' });
+  }
 
   await cam.update(req.body);
+  logger.info(`[updateCamera] Camera updated: id=${cam.id}`);
   res.json(cam);
 };
 
 exports.deleteCamera = async (req, res) => {
   const { id } = req.params;
-  const p = procs.get(id); if (p) { try { p.kill('SIGTERM'); } catch {} procs.delete(id); }
+  const p = procs.get(id);
+  if (p) { 
+    try { p.kill('SIGTERM'); } catch {}
+    procs.delete(id);
+    logger.info(`[deleteCamera] Stopped FFmpeg process for id=${id}`);
+  }
+
   await Camera.destroy({ where: { id } });
+  logger.info(`[deleteCamera] Camera deleted: id=${id}`);
   res.json({ ok: true });
 };
 
 exports.startById = async (req, res) => {
   try {
-    console.log('Camera start request params:', req.params);
     const { id } = req.params;
+    logger.info(`[startById] Start request for camera id=${id}`);
+
     const cam = await Camera.findByPk(id);
-    if (!cam) return res.status(404).json({ error: 'camera not found' });
-    if (procs.has(id)) return res.json({ ok: true, message: 'already running', hls: `/streams/${id}/index.m3u8` });
+    if (!cam) {
+      logger.warn(`[startById] Camera not found: id=${id}`);
+      return res.status(404).json({ error: 'camera not found' });
+    }
+
+    if (procs.has(id)) {
+      logger.info(`[startById] Stream already running for id=${id}`);
+      return res.json({ ok: true, message: 'already running', hls: `/streams/${id}/index.m3u8` });
+    }
 
     const channel    = req.body?.channel    ?? cam.defaultChannel ?? 0;
     const stream     = req.body?.stream     ?? cam.defaultStream  ?? 'sub';
@@ -325,7 +366,7 @@ exports.startById = async (req, res) => {
 
     res.json({ ok: true, hls: `/streams/${id}/index.m3u8` });
   } catch (e) {
-    console.error(e);
+    logger.error(`[startById] Error: ${e.stack}`);
     res.status(500).json({ error: 'internal error', detail: e.message });
   }
 };
@@ -333,13 +374,25 @@ exports.startById = async (req, res) => {
 exports.stopById = (req, res) => {
   const { id } = req.params;
   const p = procs.get(id);
-  if (!p) return res.json({ ok: true, message: 'not running' });
-  try { p.kill('SIGTERM'); } catch {}
+  if (!p) {
+    logger.info(`[stopById] Stream not running for id=${id}`);
+    return res.json({ ok: true, message: 'not running' });
+  }
+
+  try {
+    p.kill('SIGTERM');
+    logger.info(`[stopById] Stream stopped for id=${id}`);
+  } catch (e) {
+    logger.error(`[stopById] Error stopping stream for id=${id}: ${e.stack}`);
+  }
+
   procs.delete(id);
   res.json({ ok: true, message: 'stopped' });
 };
 
 exports.statusById = (req, res) => {
   const { id } = req.params;
-  res.json({ running: procs.has(id) });
+  const running = procs.has(id);
+  logger.info(`[statusById] Stream status for id=${id}: running=${running}`);
+  res.json({ running });
 };
