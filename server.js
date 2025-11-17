@@ -2,7 +2,6 @@ const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('./config/db');
-const path = require("path");
 const db = require('./models');
 const { initCleanupCron } = require('./utils/cleanup-cron');
 const { logger } = require('./utils/logger');
@@ -26,8 +25,6 @@ app.use((req, res, next) => {
 //health check
 app.get('/', (req, res) => res.send('Hospital Eye API Running'));
 
-//App health check
-app.get('/', (_req, res) => res.send('Hospital Eye API Running'));
 
 //API Routes
 app.use('/api/clinics',           require('./routes/clinicRoutes'));
