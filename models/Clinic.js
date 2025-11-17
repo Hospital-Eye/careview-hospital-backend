@@ -1,6 +1,6 @@
 const { DataTypes } = require('sequelize');
 
-module.exports = (sequelize, DataTypes) => {
+module.exports = (sequelize) => {
   const Clinic = sequelize.define('Clinic', {
     id: {
       type: DataTypes.UUID,
@@ -47,7 +47,7 @@ module.exports = (sequelize, DataTypes) => {
     location: {
       type: DataTypes.JSONB,
       allowNull: true,
-      comment: 'GeoJSON location data - commented out as in MongoDB schema'
+      comment: 'GeoJSON location data'
     },
     contactEmail: {
       type: DataTypes.STRING,
@@ -69,11 +69,20 @@ module.exports = (sequelize, DataTypes) => {
     ]
   });
 
+  // --------------------------
+  // 🔹 Associations
+  // --------------------------
   Clinic.associate = (models) => {
     Clinic.belongsTo(models.Organization, {
       foreignKey: 'organizationId',
       targetKey: 'organizationId',
       as: 'organization'
+    });
+
+    Clinic.hasMany(models.User, {
+      foreignKey: 'clinicId',
+      sourceKey: 'clinicId',
+      as: 'managers'
     });
   };
 

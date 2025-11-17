@@ -17,27 +17,27 @@ const { sequelize } = require('../config/db');
 
 // MongoDB models
 const MongoModels = {
-  User: require('../models/User.mongoose.js'),
-  Organization: require('../models/Organization.mongoose.js'),
-  Clinic: require('../models/Clinic.mongoose.js'),
-  Patient: require('../models/Patient.mongoose.js'),
-  Staff: require('../models/Staff.mongoose.js'),
-  Room: require('../models/Room.mongoose.js'),
-  Admission: require('../models/Admission.mongoose.js'),
-  Task: require('../models/Task.mongoose.js'),
-  Vital: require('../models/Vital.mongoose.js'),
-  Scan: require('../models/Scan.mongoose.js'),
-  Notification: require('../models/Notification.mongoose.js'),
-  ComplianceAlert: require('../models/ComplianceAlert.mongoose.js'),
-  Camera: require('../models/Camera.mongoose.js'),
-  CVDetection: require('../models/CVDetection.mongoose.js'),
-  CVEvent: require('../models/CVEvent.mongoose.js'),
-  MP4File: require('../models/MP4File.mongoose.js'),
-  MP4Event: require('../models/MP4Event.mongoose.js'),
-  AnalyticsEvent: require('../models/AnalyticsEvent.mongoose.js'),
-  DeviceLog: require('../models/DeviceLog.mongoose.js'),
-  UserSession: require('../models/UserSession.mongoose.js'),
-  Counter: require('../models/Counter.mongoose.js')
+  User: require('../models_mongo/User.mongoose.js'),
+  Organization: require('../models_mongo/Organization.mongoose.js'),
+  Clinic: require('../models_mongo/Clinic.mongoose.js'),
+  Patient: require('../models_mongo/Patient.mongoose.js'),
+  Staff: require('../models_mongo/Staff.mongoose.js'),
+  Room: require('../models_mongo/Room.mongoose.js'),
+  Admission: require('../models_mongo/Admission.mongoose.js'),
+  Task: require('../models_mongo/Task.mongoose.js'),
+  Vital: require('../models_mongo/Vital.mongoose.js'),
+  Scan: require('../models_mongo/Scan.mongoose.js'),
+  Notification: require('../models_mongo/Notification.mongoose.js'),
+  ComplianceAlert: require('../models_mongo/ComplianceAlert.mongoose.js'),
+  Camera: require('../models_mongo/Camera.mongoose.js'),
+  CVDetection: require('../models_mongo/CVDetection.mongoose.js'),
+  CVEvent: require('../models_mongo/CVEvent.mongoose.js'),
+  MP4File: require('../models_mongo/MP4File.mongoose.js'),
+  MP4Event: require('../models_mongo/MP4Event.mongoose.js'),
+  AnalyticsEvent: require('../models_mongo/AnalyticsEvent.mongoose.js'),
+  DeviceLog: require('../models_mongo/DeviceLog.mongoose.js'),
+  UserSession: require('../models_mongo/UserSession.mongoose.js'),
+  Counter: require('../models_mongo/Counter.mongoose.js')
 };
 
 async function validateMigration() {

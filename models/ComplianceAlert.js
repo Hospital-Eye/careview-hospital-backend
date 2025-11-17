@@ -7,17 +7,18 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true
     },
-    type: {
-      type: DataTypes.STRING,
-      allowNull: false
-    },
-    title: {
-      type: DataTypes.STRING,
+    description: {
+      type: DataTypes.TEXT,
       allowNull: false
     },
     severity: {
-      type: DataTypes.ENUM('Low', 'Moderate', 'High', 'Critical'),
-      allowNull: false
+      type: DataTypes.ENUM('Low', 'Medium', 'High'),
+      allowNull: false,
+      defaultValue: 'Medium'
+    },
+    room: {
+      type: DataTypes.STRING,
+      allowNull: true
     },
     source: {
       type: DataTypes.JSONB,
@@ -44,6 +45,38 @@ module.exports = (sequelize, DataTypes) => {
     resolutionNotes: {
       type: DataTypes.TEXT,
       allowNull: true
+    },
+    eventId: {
+      type: DataTypes.UUID,
+      allowNull: true,
+      references: {
+        model: 'AnalyticsEvent',
+        key: 'id'
+      }
+    },
+    staffId: {
+      type: DataTypes.UUID,
+      allowNull: true,
+      references: {
+        model: 'Staff',
+        key: 'id'
+      }
+    },
+    patientId: {
+      type: DataTypes.UUID,
+      allowNull: true,
+      references: {
+        model: 'Patient',
+        key: 'id'
+      }
+    },
+    roomId: {
+      type: DataTypes.UUID,
+      allowNull: true,
+      references: {
+        model: 'Room',
+        key: 'id'
+      }
     }
   }, {
     tableName: 'ComplianceAlert',
@@ -56,23 +89,23 @@ module.exports = (sequelize, DataTypes) => {
   });
 
   ComplianceAlert.associate = (models) => {
-  ComplianceAlert.belongsTo(models.AnalyticsEvent, {
-    foreignKey: 'eventId',
-    as: 'sourceEvent'
-  });
-  ComplianceAlert.belongsTo(models.Staff, {
-    foreignKey: 'staffId',
-    as: 'recipientStaff'
-  });
-  ComplianceAlert.belongsTo(models.Patient, {
-    foreignKey: 'patientId',
-    as: 'associatedPatient'
-  });
-  ComplianceAlert.belongsTo(models.Room, {
-    foreignKey: 'roomId',
-    as: 'associatedRoom'
-  });
-};
+    ComplianceAlert.belongsTo(models.AnalyticsEvent, {
+      foreignKey: 'eventId',
+      as: 'sourceEvent'
+    });
+    ComplianceAlert.belongsTo(models.Staff, {
+      foreignKey: 'staffId',
+      as: 'recipientStaff'
+    });
+    ComplianceAlert.belongsTo(models.Patient, {
+      foreignKey: 'patientId',
+      as: 'associatedPatient'
+    });
+    ComplianceAlert.belongsTo(models.Room, {
+      foreignKey: 'roomId',
+      as: 'associatedRoom'
+    });
+  };
 
 
   return ComplianceAlert;

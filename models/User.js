@@ -20,12 +20,24 @@ module.exports = (sequelize, DataTypes) => {
         isEmail: true
       }
     },
+    password: {
+      type: DataTypes.STRING,   
+      allowNull: true,          
+    },
+    otp: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    otpExpiresAt: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
     name: {
       type: DataTypes.STRING,
       allowNull: false
     },
     profilePicture: {
-      type: DataTypes.STRING,
+      type: DataTypes.TEXT,
       allowNull: true
     },
     clinicId: {
@@ -64,10 +76,6 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'userId',
       as: 'staff'
     });
-    User.hasMany(models.UserSession, {
-      foreignKey: 'userId',
-      as: 'sessions'
-    });
     User.hasMany(models.DeviceLog, {
       foreignKey: 'userId',
       as: 'deviceLogs'
@@ -76,14 +84,23 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'userId',
       as: 'analyticsEvents'
     });
-    User.hasMany(models.Notification, {
-      foreignKey: 'recipient',
-      as: 'notifications'
-    });
     User.hasMany(models.Scan, {
       foreignKey: 'uploadedBy',
       as: 'uploadedScans'
     });
+
+    User.belongsTo(models.Clinic, {
+    foreignKey: 'clinicId',
+    targetKey: 'clinicId', 
+    as: 'clinic'
+  });
+    User.belongsTo(models.Organization, {
+    foreignKey: 'organizationId',
+    targetKey: 'organizationId',
+    as: 'organization'
+  });
+
+
   };
 
   return User;

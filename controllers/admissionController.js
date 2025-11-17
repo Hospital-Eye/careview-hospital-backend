@@ -2,58 +2,65 @@ const { Admission, Patient, Staff, Room } = require('../models');
 const { Op } = require('sequelize');
 const { sequelize } = require('../config/db');
 const { validate: isUUID } = require('uuid');
+const { logger } = require('../utils/logger');
 
-// Create a new admission
+//Create a new admission
 const createAdmission = async (req, res) => {
-  console.log("🩺 createAdmission endpoint hit");
+  const endpoint = 'createAdmission';
+  const userEmail = req.user?.email || 'unknown';
+  const patientId = req.body?.patientId || 'unknown';
+  const clinicId = req.user?.clinicId || 'unknown';
 
-  console.log(req.body);
+  logger.info(`[${endpoint}] Incoming request to create admission for patientId=${patientId} in clinicId=${clinicId} from user=${userEmail}`);
 
   const t = await sequelize.transaction();
 
   try {
     const {
       patientId,
-      admittedByStaffId,      // employeeId of admitting staff
-      attendingPhysicianName, // physician name
+      admittedByStaffId,      
+      attendingPhysicianName, 
       admissionReason,
       acuityLevel,
       unit,
       roomType
     } = req.body;
 
-    // ------------------- Resolve patient -------------------
+    //Validate Patient
     const patient = await Patient.findByPk(patientId, { transaction: t });
 
     if (!patient) {
-      console.warn(`❌ Patient not found for ID: ${patientId}`);
+      logger.warn(`[${endpoint}] Patient not found for ID: ${patientId}`);
       await t.rollback();
       return res.status(404).json({ error: "Patient not found" });
     }
 
-
-    // ------------------- Resolve admitting staff -------------------
+    //Validate Admitting Staff
     let admittedStaffIdResolved = null;
 
     if (admittedByStaffId) {
-      console.log("🔍 Looking for admitting staff with ID:", admittedByStaffId);
+      logger.info(`[${endpoint}] Looking up admitting staff with ID: ${admittedByStaffId}`);
+
       const staff = await Staff.findByPk(admittedByStaffId, { transaction: t });
-      console.log("🧠 Found staff:", staff);
+
+      logger.debug(`[${endpoint}] Staff lookup result: ${JSON.stringify(staff)}`);
 
       if (!staff) {
-        console.warn(`❌ No staff found for ID ${admittedByStaffId}`);
+        logger.warn(
+          `[${endpoint}] Admitting staff not found for ID: ${admittedByStaffId}`
+        );
         await t.rollback();
         return res.status(400).json({ error: "Admitting staff not found" });
       }
 
       admittedStaffIdResolved = staff.id;
-      console.log("✅ Staff resolved successfully:", admittedStaffIdResolved);
+      logger.info(`[${endpoint}] Admission created by Admitting staff: ${staff.name} (ID: ${staff.id})`);
     }
 
-    // ------------------- Resolve attending physician -------------------
+    //Validate Attending Physician
     let attendingPhysicianIdResolved = null;
+
     if (attendingPhysicianName) {
-      console.log("🔍 Looking for attending physician:", attendingPhysicianName);
       const physician = await Staff.findOne({
         where: {
           name: attendingPhysicianName,
@@ -63,16 +70,25 @@ const createAdmission = async (req, res) => {
         },
         transaction: t
       });
-      console.log("🧠 Found physician:", physician);
+
+      logger.debug(`[${endpoint}] Physician lookup result: ${JSON.stringify(physician)}`);
+
       if (!physician) {
-        console.warn("❌ Attending physician not found");
+        logger.warn(
+          `[${endpoint}] Attending physician not found: ${attendingPhysicianName}`
+        );
         await t.rollback();
         return res.status(400).json({ error: "Attending physician not found" });
       }
+
       attendingPhysicianIdResolved = physician.id;
+
+      logger.info(
+        `[${endpoint}] Physician attending to the admission: ${physician.name} (ID: ${physician.id})`
+      );
     }
 
-    // ------------------- Resolve allocated Room -------------------
+    //Validate Room Allocation
     const allocatedRoom = await Room.findOne({
       where: {
         id: req.body.room,
@@ -83,37 +99,49 @@ const createAdmission = async (req, res) => {
     });
 
     if (!allocatedRoom) {
+      logger.warn(
+        `[${endpoint}] Room not found or unavailable: ${req.body.room}`
+      );
       await t.rollback();
       return res.status(400).json({ error: "Specified room not found or unavailable" });
     }
 
-    // ------------------- Create admission -------------------
-    const admission = await Admission.create({
-      patientId: patient.id,
-      organizationId: patient.organizationId,
-      clinicId: patient.clinicId,
-      room: allocatedRoom.id,
-      admittedByStaffId: admittedStaffIdResolved,
-      attendingPhysicianId: attendingPhysicianIdResolved,
-      admissionReason,
-      acuityLevel,
-      status: "Active"
-    }, { transaction: t });
+    logger.info(`[${endpoint}] Patient admitted in Room: Room ${allocatedRoom.roomNumber} (ID: ${allocatedRoom.id})`);
 
-    // ------------------- Update patient record -------------------
-    await patient.update({
-      currentAdmissionId: admission.id,
-      room: allocatedRoom.id,
-      status: "Active"
-    }, { transaction: t });
+    //create admission
+    const admission = await Admission.create(
+      {
+        patientId: patient.id,
+        organizationId: patient.organizationId,
+        clinicId: patient.clinicId,
+        room: allocatedRoom.id,
+        admittedByStaffId: admittedStaffIdResolved,
+        attendingPhysicianId: attendingPhysicianIdResolved,
+        admissionReason,
+        acuityLevel,
+        status: "Active"
+      },
+      { transaction: t }
+    );
 
+    logger.info(`[${endpoint}] Admission created successfully for patient ${patient.name} (ID: ${patientId})`);
+
+    await patient.update(
+      {
+        currentAdmissionId: admission.id,
+        room: allocatedRoom.id,
+        status: "Active"
+      },
+      { transaction: t }
+    );
+
+    // Commit transaction
     await t.commit();
 
-    console.log("🎉 Admission successfully created:", admission.id);
+    logger.info(`[${endpoint}] Admission workflow completed successfully for patient ${patient.name} (Admission ID: ${admission.id})`);
 
-    // ------------------- Respond with admission + room info -------------------
     res.status(201).json({
-      admission: admission,
+      admission,
       assignedRoom: {
         roomId: allocatedRoom.id,
         roomNumber: allocatedRoom.roomNumber,
@@ -125,17 +153,24 @@ const createAdmission = async (req, res) => {
 
   } catch (err) {
     await t.rollback();
-    console.error("Error creating admission:", err);
+    logger.error(`[${endpoint}] Error creating admission for patient ${patient.name} : ${err.message}`, {
+      stack: err.stack
+    });
     res.status(400).json({ error: err.message });
   }
 };
 
-// get all admissions for the user's clinic & org
-const getAdmissions = async (req, res) => {
-  try {
-    // assuming you attach clinicId & organizationId to req.user in your auth middleware
-    const { clinicId, organizationId } = req.user;
 
+//Get all admissions for the user's clinic and organization
+const getAdmissions = async (req, res) => {
+  const endpoint = 'getAdmissions';
+  const userEmail = req.user?.email || 'unknown';
+  const clinicId = req.user?.clinicId || 'unknown';
+  
+  logger.info(`[${endpoint}] Incoming request to fetch all admissions for clinicId=${clinicId} from user=${userEmail}`);
+
+  try {
+    const { clinicId, organizationId } = req.user;
     const filter = req.scopeFilter || {};
 
     const admissions = await Admission.findAll({
@@ -143,21 +178,21 @@ const getAdmissions = async (req, res) => {
       include: [
         {
           model: Patient,
-          as: 'patient',
-          attributes: ['name', 'mrn']
+          as: "patient",
+          attributes: ["name", "mrn"]
         },
         {
           model: Room,
-          as: 'roomDetails'
+          as: "roomDetails"
         }
       ]
     });
 
-    const result = admissions.map(adm => ({
+    const result = admissions.map((adm) => ({
       id: adm.id,
-      patientName: adm.patient?.name || '—',
-      mrn: adm.patient?.mrn || '—',
-      roomNumber: adm.roomDetails?.roomNumber || '—',
+      patientName: adm.patient?.name || "—",
+      mrn: adm.patient?.mrn || "—",
+      roomNumber: adm.roomDetails?.roomNumber || "—",
       acuityLevel: adm.acuityLevel,
       status: adm.status,
       admissionDate: adm.admissionDate
@@ -165,17 +200,24 @@ const getAdmissions = async (req, res) => {
 
     res.json(result);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Server error' });
+    logger.error(`[${endpoint}] Error in getAdmissions: ${err.message}`, {
+      stack: err.stack
+    });
+    res.status(500).json({ error: "Server error" });
   }
 };
 
-
-
-// get admission by ID
+//Get admission by ID
 const getAdmissionById = async (req, res) => {
+  const endpoint = 'getAdmissionById';
+  const userEmail = req.user?.email || 'unknown';     
+  const admissionId = req.params.id;
+  const clinicId = req.user?.clinicId || 'unknown';
+  
+  logger.info(`[${endpoint}] Incoming request to fetch admissionId=${admissionId} for clinicId=${clinicId} from user=${userEmail}`);
+
   try {
-    const admission = await Admission.findByPk(req.params.id, {
+    const admission = await Admission.findByPk(admissionId, {
       include: [
         { model: Patient, as: 'patient' },
         { model: Room, as: 'roomDetails' },
@@ -183,15 +225,35 @@ const getAdmissionById = async (req, res) => {
         { model: Staff, as: 'attendingPhysician' }
       ]
     });
-    if (!admission) return res.status(404).json({ error: 'Admission not found' });
+
+    if (!admission) {
+      logger.warn(`[${endpoint}] Admission not found for ID: ${admissionId}`);
+      return res.status(404).json({ error: 'Admission not found' });
+    }
+
+    logger.info(
+      `[${endpoint}] Fetching admission record for patient: ${admission.patient?.name || 'Unknown'} (Admission ID: ${admissionId})`);
+
     res.json(admission);
+
   } catch (err) {
+    logger.error(
+      `[${endpoint}] Error in getAdmissionById: ${err.message}`,
+      { stack: err.stack }
+    );
     res.status(400).json({ error: err.message });
   }
 };
 
-// Get active admission for a patient
+
+//Get active admission for a patient
 const getActiveAdmissionByPatient = async (req, res) => {
+  const endpoint = 'getActiveAdmissionByPatient';
+  const userEmail = req.user?.email || 'unknown';     
+  const admissionId = req.params.id;
+  const clinicId = req.user?.clinicId || 'unknown';
+  
+  logger.info(`[${endpoint}] Incoming request to fetch active admission for patientId=${req.params.patientId} for clinicId=${clinicId} from user=${userEmail}`);
   try {
     const admission = await Admission.findOne({
       where: {
@@ -205,40 +267,70 @@ const getActiveAdmissionByPatient = async (req, res) => {
       ]
     });
     if (!admission) return res.status(404).json({ error: 'No active admission found' });
+
+    logger.info(
+      `[${endpoint}] Fetching admission record for patient: ${admission.patient?.name || 'Unknown'} (Admission ID: ${admissionId})`);
+
     res.json(admission);
-  } catch (err) {
+  } catch (err) {logger.error(
+      `[${endpoint}] Error in getAdmissionById: ${err.message}`,
+      { stack: err.stack }
+    );
     res.status(500).json({ error: 'Server error: No active admission by patient found' });
   }
 };
 
-// Get admissions by date range
+//Get admission by ID
 const getAdmissionsByDateRange = async (req, res) => {
+  const endpoint = 'getAdmissionById';
+  const userEmail = req.user?.email || 'unknown';     
+  const clinicId = req.user?.clinicId || 'unknown';
+  
+  logger.info(`[${endpoint}] Incoming request to fetch admissions by date range for clinicId=${clinicId} from user=${userEmail}`);
   try {
-    const { start, end } = req.query;
-    const admissions = await Admission.findAll({
-      where: {
-        admissionDate: {
-          [Op.gte]: new Date(start),
-          [Op.lte]: new Date(end)
-        }
-      },
+    logger.debug(`[Admission] Request params: ${JSON.stringify(req.params)}`);
+
+    const admission = await Admission.findByPk(req.params.id, {
       include: [
         { model: Patient, as: 'patient' },
         { model: Room, as: 'roomDetails' },
+        { model: Staff, as: 'admittedByStaff' },
         { model: Staff, as: 'attendingPhysician' }
       ]
     });
-    res.json(admissions);
+
+    if (!admission) {
+      logger.warn(`[${endpoint}] Admission not found for ID: ${req.params.id}`);
+      return res.status(404).json({ error: 'Admission not found' });
+    }
+
+    logger.info(
+      `[${endpoint}] Retrieved admission for patient: ${admission.patient?.name || 'Unknown'} (Admission ID: ${req.params.id})`);
+
+    res.json(admission);
+
   } catch (err) {
-    res.status(500).json({ error: 'Server error: No admissions by date range found' });
+    logger.error(`[${endpoint}] Error in getAdmissionById: ${err.message}`,{ stack: err.stack });
+    res.status(400).json({ error: err.message });
   }
 };
 
-// update an admission
+
+//Update an admission
 const updateAdmission = async (req, res) => {
+  const endpoint = 'updateAdmission';
+  const userEmail = req.user?.email || 'unknown';     
+  const admissionId = req.params.id;
+  const clinicId = req.user?.clinicId || 'unknown';
+  
+  logger.info(`[${endpoint}] Incoming request to update admissionId=${admissionId} for clinicId=${clinicId} from user=${userEmail}`);
+
   try {
     const admission = await Admission.findByPk(req.params.id);
     if (!admission) return res.status(404).json({ error: 'Admission not found' });
+
+    logger.info(
+      `[${endpoint}] Updating admission record of patient: ${admission.patient?.name || 'Unknown'} (Admission ID: ${admissionId})`);
 
     const updated = await admission.update(req.body);
     res.json(updated);
@@ -247,11 +339,21 @@ const updateAdmission = async (req, res) => {
   }
 };
 
-// Update workflow stage
+//Update workflow stage
 const updateWorkflowStage = async (req, res) => {
+  const endpoint = 'updateWorkflowStage';
+  const userEmail = req.user?.email || 'unknown';     
+  const admissionId = req.params.id;
+  const clinicId = req.user?.clinicId || 'unknown';
+  
+  logger.info(`[${endpoint}] Incoming request to update workflow stage for admissionId=${admissionId} for clinicId=${clinicId} from user=${userEmail}`);  
+  
   try {
     const admission = await Admission.findByPk(req.params.id);
     if (!admission) return res.status(404).json({ error: 'Admission not found' });
+
+    logger.info(
+      `[${endpoint}] Updating workflow stage in admission record for patient: ${admission.patient?.name || 'Unknown'} (Admission ID: ${admissionId})`);
 
     const updated = await admission.update({ currentWorkflowStage: req.body.stage });
     res.json(updated);
@@ -260,8 +362,16 @@ const updateWorkflowStage = async (req, res) => {
   }
 };
 
-// Transfer patient to another room
+//Transfer patient to another room
 const transferRoom = async (req, res) => {
+  const endpoint = 'transferRoom';
+  const userEmail = req.user?.email || 'unknown';     
+  const admissionId = req.params.id;
+  const patientId = req.body?.patientId || 'unknown';
+  const clinicId = req.user?.clinicId || 'unknown';
+  
+  logger.info(`[${endpoint}] Incoming request to transfer patient for admissionId=${admissionId} for clinicId=${clinicId} from user=${userEmail}`);
+
   const t = await sequelize.transaction();
 
   try {
@@ -270,6 +380,9 @@ const transferRoom = async (req, res) => {
       await t.rollback();
       return res.status(404).json({ error: 'Admission not found' });
     }
+
+    logger.info(
+      `[${endpoint}] Transferring patient: ${admission.patient?.name || 'Unknown'} (Admission ID: ${admissionId})`);
 
     await admission.update({ assignedRoomId: req.body.newRoomId }, { transaction: t });
 
@@ -285,8 +398,16 @@ const transferRoom = async (req, res) => {
   }
 };
 
-//cancel an admission
+//Cancel an admission
 const cancelAdmission = async (req, res) => {
+  const endpoint = 'cancelAdmission';
+  const userEmail = req.user?.email || 'unknown';     
+  const admissionId = req.params.id;
+  const clinicId = req.user?.clinicId || 'unknown';
+  const patientId = req.body?.patientId || 'unknown';
+  
+  logger.info(`[${endpoint}] Incoming request to cancel admissionId=${admissionId} of patientId=${patientId} for clinicId=${clinicId} from user=${userEmail}`);
+
   const t = await sequelize.transaction();
 
   try {
@@ -295,6 +416,9 @@ const cancelAdmission = async (req, res) => {
       await t.rollback();
       return res.status(404).json({ error: 'Admission not found' });
     }
+
+    logger.info(
+      `[${endpoint}] Canceling admission for patient: ${admission.patient?.name || 'Unknown'} (Admission ID: ${admissionId})`);
 
     await admission.update({
       status: 'Canceled',
@@ -313,8 +437,16 @@ const cancelAdmission = async (req, res) => {
   }
 };
 
-//delete an admission
+//Delete an admission
 const deleteAdmission = async (req, res) => {
+  const endpoint = 'deleteAdmission';
+  const userEmail = req.user?.email || 'unknown';     
+  const admissionId = req.params.id;
+  const clinicId = req.user?.clinicId || 'unknown';
+  const patientId = req.body?.patientId || 'unknown';
+  
+  logger.info(`[${endpoint}] Incoming request to delete admissionId=${admissionId} of patientId=${patientId} for clinicId=${clinicId} from user=${userEmail}`);
+
   const t = await sequelize.transaction();
 
   try {
@@ -323,6 +455,9 @@ const deleteAdmission = async (req, res) => {
       await t.rollback();
       return res.status(404).json({ error: 'Admission not found' });
     }
+
+    logger.info(
+      `[${endpoint}] Deleting admission record for patient: ${admission.patient?.name || 'Unknown'} (Admission ID: ${admissionId})`);
 
     const patientId = admission.patientId;
 
@@ -341,6 +476,7 @@ const deleteAdmission = async (req, res) => {
     res.json({ message: 'Admission deleted successfully' });
   } catch (err) {
     await t.rollback();
+    logger.error(`[${endpoint}] Error deleting admission ID=${admissionId}: ${err.message}`, { stack: err.stack });
     res.status(500).json({ error: 'Server error: Unable to delete admission' });
   }
 };
