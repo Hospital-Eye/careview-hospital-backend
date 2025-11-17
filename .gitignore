@@ -21,3 +21,13 @@ uploads/
 **/*.mp4
 **/*.mkv
 **/*.mov
+
+# Migration logs
+scripts/migration-logs/
+
+# Log files
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

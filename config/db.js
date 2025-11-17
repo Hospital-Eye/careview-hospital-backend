@@ -1,10 +1,11 @@
 const { Sequelize } = require('sequelize');
 require('dotenv').config();
+const { logger } = require('../utils/logger');
 
 const env = process.env.NODE_ENV || 'development';
 const config = require('./sequelize.js')[env];
 
-// Initialize Sequelize
+//Initialize Sequelize
 const sequelize = new Sequelize(
   config.database,
   config.username,
@@ -23,18 +24,18 @@ const sequelize = new Sequelize(
 const connectDB = async () => {
   try {
     await sequelize.authenticate();
-    console.log('✅ PostgreSQL connected successfully');
+    logger.info('PostgreSQL connected successfully');
 
-    // Sync models in development (optional - migrations are preferred)
     if (env === 'development' && process.env.AUTO_SYNC === 'true') {
       await sequelize.sync({ alter: false });
-      console.log('📊 Database models synchronized');
+      logger.info('Database models synchronized');
     }
   } catch (error) {
-    console.error('❌ PostgreSQL connection failed:', error.message);
+    logger.error(`PostgreSQL connection failed: ${error.message}`);
     process.exit(1);
   }
 };
+
 
 module.exports = connectDB;
 module.exports.sequelize = sequelize;

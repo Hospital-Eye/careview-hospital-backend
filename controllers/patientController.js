@@ -1,9 +1,9 @@
 const multer = require("multer");
-//onst { Storage } = require("@google-cloud/storage");
 const { Patient, Vital, Admission, User, Organization, Clinic, Counter } = require('../models');
 const { Op } = require('sequelize');
 const { sequelize } = require('../config/db');
 const { validate: isUUID } = require('uuid');
+const { logger } = require('../utils/logger');
 
 //create patient with automatic room assignment based on availability and patient needs, and document upload to GCS
 
@@ -14,20 +14,28 @@ const { validate: isUUID } = require('uuid');
 //const storage = new Storage();
 //const bucket = storage.bucket(process.env.GCS_BUCKET_NAME);
 
-// --- create new patient ---
+//Create new patient
 const createPatient = async (req, res) => {
+  const endpoint = 'createPatient';
+  const userEmail = req.user?.email || 'unknown';
+  const startTime = Date.now();
+
+  logger.info(`[Patient] Incoming request to create patient received from user: ${userEmail}`);
+
   try {
     const { emailId, clinicId: bodyClinicId, name, dob, gender } = req.body;
     let userId;
 
-    // Ensure email exists
+    //ensure email exists
     if (!emailId) {
+      logger.warn(`[Patient] Missing emailId in request to create patient`, { user: userEmail });
       return res.status(400).json({ error: "Email is required to create a patient." });
     }
 
-    // Find or create User
+    //find or create user
     let user = await User.findOne({ where: { email: emailId } });
     if (user) {
+      logger.debug(`[Patient] Existing user found`, { email: emailId, userId: user.id });
       userId = user.id;
       req.body.emailId = user.email;
     } else {
@@ -39,70 +47,75 @@ const createPatient = async (req, res) => {
         clinicId: req.user.clinicId,
       });
       userId = user.id;
+      logger.info(`[Patient] Created new user for patient`, { email: emailId, userId });
     }
 
     const { role, organizationId: userOrgId, clinicId: userClinicId } = req.user;
     if (!userOrgId) {
+      logger.warn(`[Patient] Missing organizationId in user context`, { user: userEmail });
       return res.status(403).json({ error: "Missing organizationId in user context" });
     }
 
-    // ----------------- Resolve Clinic -----------------
+    //validate clinic
     let clinic;
     let clinicId;
 
-    // 🧩 Admin can specify clinicId manually
     if (role === "admin") {
       if (!bodyClinicId) {
+        logger.warn(`[Patient] Admin missing clinicId in request to create patient`, { user: userEmail });
         return res.status(400).json({ error: "Admin must provide clinicId" });
       }
 
-      let query;
-      if (isUUID(bodyClinicId)) {
-        query = { id: bodyClinicId, organizationId: userOrgId };
-      } else {
-        query = { clinicId: bodyClinicId, organizationId: userOrgId };
-      }
+      const query = isUUID(bodyClinicId)
+        ? { id: bodyClinicId, organizationId: userOrgId }
+        : { clinicId: bodyClinicId, organizationId: userOrgId };
 
       clinic = await Clinic.findOne({ where: query });
 
       if (!clinic) {
+        logger.warn(`[Patient] Clinic not found for admin in request for creating patient`, { query });
         return res.status(404).json({ error: "Clinic not found" });
       }
 
       clinicId = clinic.clinicId;
+      logger.debug(`[Patient] Admin resolved clinic`, { clinicId });
     }
 
-    // 🧩 Manager's clinic is fixed (comes from req.user.clinicId)
     else if (role === "manager") {
       if (!userClinicId) {
+        logger.warn(`[Patient] Manager has no assigned clinicId in request to create patient`, { user: userEmail });
         return res.status(400).json({ error: "Manager has no assigned clinicId" });
       }
 
-      let query;
-      if (isUUID(userClinicId)) {
-        query = { id: userClinicId };
-      } else {
-        query = { clinicId: userClinicId };
-      }
+      const query = isUUID(userClinicId)
+        ? { id: userClinicId }
+        : { clinicId: userClinicId };
 
       clinic = await Clinic.findOne({ where: query });
       if (!clinic) {
+        logger.warn(`[Patient] Assigned clinic not found for manager`, { query });
         return res.status(404).json({ error: "Assigned clinic not found" });
       }
 
       clinicId = clinic.clinicId;
+      logger.debug(`[${endpoint}] Manager resolved clinic`, { clinicId });
     }
 
-    // ❌ No access for other roles
     else {
+      logger.warn(`[${endpoint}] Unauthorized role attempted to create patient`, { role });
       return res.status(403).json({ error: "Unauthorized role" });
     }
 
-    // Prevent duplicate patient linked to the same user
+    //prevent duplicate patient
     const existingPatient = await Patient.findOne({ where: { userId } });
-    if (existingPatient) return res.status(200).json(existingPatient);
+    if (existingPatient) {
+      logger.info(`[${endpoint}] Existing patient found, returning existing record`, {
+        patientId: existingPatient.id,
+      });
+      return res.status(200).json(existingPatient);
+    }
 
-    // ----------------- MRN Generation -----------------
+    //MRN Generation
     function clinicPrefix(clinicId) {
       const parts = clinicId.split("-");
       const name = parts[0].substring(0, 3).toUpperCase();
@@ -115,7 +128,7 @@ const createPatient = async (req, res) => {
     const lastPatient = await Patient.findOne({
       where: { clinicId: clinic.clinicId },
       order: [['mrn', 'DESC']],
-      limit: 1
+      limit: 1,
     });
 
     let lastSeq = 1000;
@@ -128,7 +141,9 @@ const createPatient = async (req, res) => {
     const nextNumber = lastSeq + 1;
     const mrn = `${prefix}-${nextNumber}`;
 
-    // ----------------- Create Patient -----------------
+    logger.debug(`[${endpoint}] Generated MRN`, { mrn, prefix, lastSeq, nextNumber });
+
+    //create patient
     const patient = await Patient.create({
       ...req.body,
       userId,
@@ -137,29 +152,54 @@ const createPatient = async (req, res) => {
       mrn,
     });
 
+    const duration = Date.now() - startTime;
+    logger.info(`[${endpoint}] Patient created successfully`, {
+      patientId: patient.id,
+      mrn,
+      clinicId,
+      duration: `${duration}ms`,
+      user: userEmail,
+    });
+
     res.status(201).json(patient);
   } catch (err) {
-    console.error("Error creating patient:", err);
+    logger.error(`[${endpoint}] Error creating patient`, {
+      error: err.message,
+      stack: err.stack,
+      user: userEmail,
+    });
     res.status(400).json({ error: err.message });
   }
 };
 
-// Get all patients, optionally filtered by status
+//Get all patients, optionally filtered by status
 const getPatients = async (req, res) => {
+  const endpoint = 'getPatients';
+  const userEmail = req.user?.email || 'unknown';
+  const startTime = Date.now();
+
+  logger.info(`[${endpoint}] Request received from ${userEmail}`, {
+    method: req.method,
+    url: req.originalUrl,
+    query: req.query,
+  });
+
   try {
-    const { status } = req.query; // e.g., ?status=Active or ?status=Discharged
+    const { status } = req.query; 
 
-    // Apply scope (org/clinic)
+    //Apply org/clinic scope
     const patientFilter = { ...req.scopeFilter };
-    if (status) patientFilter.status = status; // ✅ Filter by patient.status
+    if (status) patientFilter.status = status;
 
-    // Optional: admission filter if you want to limit nested admissions too
     const admissionFilter = {};
-    if (status) {
-      admissionFilter.status = status;
-    }
+    if (status) admissionFilter.status = status;
 
-    // Fetch patients with associations
+    logger.debug(`[${endpoint}] Applying filters`, {
+      patientFilter,
+      admissionFilter,
+    });
+
+    //Fetch patients with associations
     const patients = await Patient.findAll({
       where: patientFilter,
       include: [
@@ -172,24 +212,27 @@ const getPatients = async (req, res) => {
             {
               model: require('../models').Room,
               as: 'roomDetails',
-              attributes: ['roomNumber', 'unit', 'roomType']
+              attributes: ['roomNumber', 'unit', 'roomType'],
             },
             {
               model: require('../models').Staff,
               as: 'attendingPhysician',
-              attributes: ['name']
-            }
-          ]
-        }
-      ]
+              attributes: ['name'],
+            },
+          ],
+        },
+      ],
     });
 
-    // Flatten structure
-    const reshapedPatients = patients.map(p => {
+    logger.debug(`[${endpoint}] Found ${patients.length} patient records`);
+
+    //Flatten data
+    const reshapedPatients = patients.map((p) => {
       const plainPatient = p.get({ plain: true });
-      const latestAdmission = plainPatient.admissions?.length
-        ? plainPatient.admissions[plainPatient.admissions.length - 1]
-        : null;
+      const latestAdmission =
+        plainPatient.admissions?.length
+          ? plainPatient.admissions[plainPatient.admissions.length - 1]
+          : null;
 
       return {
         ...plainPatient,
@@ -202,20 +245,47 @@ const getPatients = async (req, res) => {
       };
     });
 
+    const duration = Date.now() - startTime;
+    logger.info(`[${endpoint}] Successfully fetched ${reshapedPatients.length} patients in ${duration}ms`, {
+      user: userEmail,
+      filters: req.query,
+    });
+
     res.json(reshapedPatients);
   } catch (err) {
-    console.error("Error fetching patients with admissions:", err);
+    logger.error(`[${endpoint}] Error fetching patients`, {
+      error: err.message,
+      stack: err.stack,
+      user: userEmail,
+    });
     res.status(500).json({ error: err.message });
   }
 };
 
-// Get a patient by MRN (including admission history + vitals)
+//Get a patient by MRN (including admission history + vitals)
 const getPatientByMRN = async (req, res) => {
-  try {
-    const patient = await Patient.findOne({ where: { mrn: req.params.mrn } });
-    if (!patient) return res.status(404).json({ error: "Patient not found" });
+  const endpoint = 'getPatientByMRN';
+  const userEmail = req.user?.email || 'unknown';
+  const mrn = String(req.params.mrn).trim();
+  const startTime = Date.now();
 
-    // ✅ Fetch ALL admissions for this patient, newest first
+  logger.info(`📋 [${endpoint}] Request received from ${userEmail}`, {
+    method: req.method,
+    url: req.originalUrl,
+    params: req.params,
+    query: req.query,
+  });
+
+  try {
+    logger.debug(`[${endpoint}] Looking up patient with MRN: ${mrn}`);
+    const patient = await Patient.findOne({ where: { mrn } });
+
+    if (!patient) {
+      logger.warn(`[${endpoint}] No patient found with MRN: ${mrn}`);
+      return res.status(404).json({ error: 'Patient not found' });
+    }
+
+    logger.debug(`[${endpoint}] Fetching admission history for MRN: ${mrn}`);
     const admissions = await Admission.findAll({
       where: { patientId: patient.id },
       order: [['checkInTime', 'DESC']],
@@ -223,99 +293,110 @@ const getPatientByMRN = async (req, res) => {
         {
           model: require('../models').Room,
           as: 'roomDetails',
-          attributes: ['roomNumber', 'unit', 'roomType']
+          attributes: ['roomNumber', 'unit', 'roomType'],
         },
         {
           model: require('../models').Staff,
           as: 'attendingPhysician',
-          attributes: ['name']
-        }
-      ]
+          attributes: ['name'],
+        },
+      ],
     });
 
-    // ✅ Latest admission is just the first one
     const latestAdmission = admissions[0] || null;
 
-    // ✅ Fetch vitals history
+    logger.debug(`[${endpoint}] Fetching vitals history for MRN: ${mrn}`);
     const vitalsHistory = await Vital.findAll({
-      where: { mrn: patient.mrn },
+      where: { mrn },
       order: [['timestamp', 'DESC']],
       include: [
         {
           model: require('../models').Staff,
           as: 'recorder',
-          attributes: ['name']
-        }
-      ]
+          attributes: ['name'],
+        },
+      ],
     });
 
-    // Base patient object
+    //Prepare base patient data
     const patientDetails = patient.get({ plain: true });
 
-    // Attach admission history as a list (like vitalsHistory)
+    //Add admission history
     patientDetails.admissionHistory = admissions.map(a => a.get({ plain: true }));
 
-    // Convenience: flatten latest admission fields for quick access
+    //Flatten latest admission details for convenience
     if (latestAdmission) {
       const plainAdmission = latestAdmission.get({ plain: true });
-      patientDetails.admissionReason = plainAdmission.admissionReason;
-      patientDetails.admissionDate = plainAdmission.admissionDate || plainAdmission.checkInTime;
-      patientDetails.assignedRoom = plainAdmission.roomDetails || null;
-      patientDetails.attendingPhysician = plainAdmission.attendingPhysician || null;
-      patientDetails.currentWorkflowStage = plainAdmission.currentWorkflowStage;
-      patientDetails.documentation = plainAdmission.documentation || null;
-      patientDetails.carePlan = plainAdmission.carePlan || null;
-      patientDetails.admissionStatus = plainAdmission.status;
+      Object.assign(patientDetails, {
+        admissionReason: plainAdmission.admissionReason,
+        admissionDate: plainAdmission.admissionDate || plainAdmission.checkInTime,
+        assignedRoom: plainAdmission.roomDetails || null,
+        attendingPhysician: plainAdmission.attendingPhysician || null,
+        currentWorkflowStage: plainAdmission.currentWorkflowStage,
+        documentation: plainAdmission.documentation || null,
+        carePlan: plainAdmission.carePlan || null,
+        admissionStatus: plainAdmission.status,
+      });
     } else {
-      patientDetails.admissionReason = null;
-      patientDetails.admissionDate = null;
-      patientDetails.assignedRoom = null;
-      patientDetails.attendingPhysician = null;
-      patientDetails.currentWorkflowStage = "Not Admitted";
-      patientDetails.documentation = null;
-      patientDetails.carePlan = null;
-      patientDetails.admissionStatus = "None";
+      Object.assign(patientDetails, {
+        admissionReason: null,
+        admissionDate: null,
+        assignedRoom: null,
+        attendingPhysician: null,
+        currentWorkflowStage: 'Not Admitted',
+        documentation: null,
+        carePlan: null,
+        admissionStatus: 'None',
+      });
     }
 
-    // Attach vitals history list
+    //Add vitals history
     patientDetails.vitalsHistory = vitalsHistory.map(v => v.get({ plain: true }));
+
+    const duration = Date.now() - startTime;
+    logger.info(`[${endpoint}] Successfully fetched patient MRN: ${mrn} in ${duration}ms by ${userEmail}`);
 
     res.json(patientDetails);
   } catch (err) {
-    console.error("Error fetching patient by MRN:", err);
-    res
-      .status(500)
-      .json({ error: "Server error: Error fetching patient by MRN" });
+    logger.error(`[${endpoint}] Error fetching patient MRN: ${req.params.mrn} — ${err.message}`, {
+      stack: err.stack,
+    });
+    res.status(500).json({ error: 'Server error: Error fetching patient by MRN' });
   }
 };
 
 
-// Update a patient by MRN (+ discharge patient)
+//Update a patient by MRN (+ discharge patient)
 const updatePatientByMRN = async (req, res) => {
+  const endpoint = 'updatePatientByMRN';
+  const userEmail = req.user?.email || 'unknown';
+  const mrn = String(req.params.mrn).trim();
+
+  logger.info(`[${endpoint}] Request received from ${userEmail}`, {
+    method: req.method,
+    url: req.originalUrl,
+    params: req.params,
+    query: req.query,
+    body: req.body
+  });
+
   try {
-    const { mrn } = req.params;
-    const updateData = { ...req.body };
+    logger.debug(`[${endpoint}] Searching for patient with MRN: ${mrn}`);
+    const patient = await Patient.findOne({ where: { mrn } });
 
-    console.log("MRN param:", req.params.mrn);
-    console.log("Full URL:", req.originalUrl);
-    console.log("HTTP Method:", req.method);
-    console.log("Params:", req.params);
-    console.log("Query:", req.query);
-    console.log("Body:", req.body);
-    console.log("Looking for patient with MRN:", mrn.trim());
-
-    // Find the patient first
-    const patient = await Patient.findOne({ where: { mrn: mrn.trim() } });
     if (!patient) {
-      return res.status(404).json({ message: "Patient not found" });
+      logger.warn(`[${endpoint}] No patient found with MRN: ${mrn}`);
+      return res.status(404).json({ message: 'Patient not found' });
     }
 
-    // If status is being changed to Discharged
-    if (updateData.status && updateData.status.toLowerCase() === "discharged") {
-      updateData.status = "Discharged";
-      updateData.dischargeDate = new Date();
+    const updateData = { ...req.body };
 
-      // Update latest active admission for this patient
+    //Handle discharge
+    if (updateData.status && updateData.status.toLowerCase() === 'discharged') {
+      updateData.status = 'Discharged';
+      updateData.dischargeDate = new Date();
+      logger.info(`[${endpoint}] Discharging patient MRN: ${mrn}`);
+
       const latestAdmission = await Admission.findOne({
         where: {
           patientId: patient.id,
@@ -325,32 +406,53 @@ const updatePatientByMRN = async (req, res) => {
       });
 
       if (latestAdmission) {
+        logger.debug(`[${endpoint}] Updating latest active admission for patient MRN: ${mrn}`);
         await latestAdmission.update({
           status: 'Completed',
           dischargeDate: new Date()
         });
+      } else {
+        logger.warn(`[${endpoint}] No active admission found for MRN: ${mrn}`);
       }
     }
 
-    // Update patient data
+    //Update patient data
     await patient.update(updateData);
     const updatedPatient = await Patient.findOne({ where: { mrn } });
 
+    logger.info(`[${endpoint}] Patient MRN: ${mrn} updated successfully by ${userEmail}`);
     res.json(updatedPatient);
+
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error: Unable to update patient" });
+    logger.error(`[${endpoint}] Error updating patient MRN: ${mrn} — ${err.message}`, {
+      stack: err.stack
+    });
+    res.status(500).json({ message: 'Server error: Unable to update patient' });
   }
 };
 
 
-// Delete a patient by MRN
+//Delete a patient by MRN
 const deletePatientByMRN = async (req, res) => {
+  const endpoint = 'deletePatientByMRN';
+  const userEmail = req.user?.email || 'unknown';
+  const mrn = String(req.params.mrn);
+
+  logger.info(`[${endpoint}] Request received from ${userEmail} to delete patient with MRN: ${mrn}`);
+
   try {
-    const deleted = await Patient.destroy({ where: { mrn: String(req.params.mrn) } });
-    if (!deleted) return res.status(404).json({ error: 'Patient not found' });
+    const deleted = await Patient.destroy({ where: { mrn } });
+
+    if (!deleted) {
+      logger.warn(`[${endpoint}] No patient found with MRN: ${mrn}`);
+      return res.status(404).json({ error: 'Patient not found' });
+    }
+
+    logger.info(`[${endpoint}] Patient with MRN: ${mrn} deleted successfully by ${userEmail}`);
     res.json({ message: 'Patient deleted successfully' });
+
   } catch (err) {
+    logger.error(`[${endpoint}] Error deleting patient with MRN: ${mrn} — ${err.message}`, { stack: err.stack });
     res.status(500).json({ error: err.message });
   }
 };
