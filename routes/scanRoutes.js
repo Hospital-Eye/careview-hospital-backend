@@ -12,65 +12,36 @@ const path = require("path");
 
 const router = express.Router();
 
-/* ----------------------------------------------------
-   MULTER CONFIG (Corrected to public/uploads/scans)
----------------------------------------------------- */
+//Configure Multer for scan uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, "../public/uploads/scans"));
+    cb(null, path.join(__dirname, "../uploads/scans"));
   },
   filename: (req, file, cb) => {
     cb(null, Date.now() + "-" + file.originalname);
   }
 });
 
+
 const upload = multer({ storage });
 
-/* ----------------------------------------------------
-   STATIC SERVE (correct path)
-   User will access scans at:   /uploads/scans/<filename>
----------------------------------------------------- */
+
 router.use(
   "/uploads",
   express.static(path.join(__dirname, "../public/uploads"))
 );
 
-/* ----------------------------------------------------
-   ROUTES
----------------------------------------------------- */
 
-// GET all scans
-router.get("/", 
-  protect, 
-  authorize("admin", "manager", "doctor"), 
-  scope("Scan"), 
-  getScans
-);
+//GET all scans
+router.get("/", protect, authorize("admin", "manager", "doctor"), scope("Scan"), getScans);
 
-// Upload scan — field name must match frontend’s FormData key
-router.post(
-  "/upload",
-  protect,
-  authorize("admin", "manager", "doctor"),
-  scope("Scan"),
-  upload.single("scan"), // IMPORTANT: this must match frontend key
-  uploadScan
-);
+//Upload scan
+router.post("/upload", protect, authorize("admin", "manager", "doctor"), scope("Scan"), upload.single("scan"), uploadScan);
 
-// get scan info by MRN
-router.get("/:mrn",
-  protect,
-  authorize("admin", "manager", "doctor"),
-  scope("Scan"),
-  getScanByMrn
-);
+//Get scan info by MRN
+router.get("/:mrn", protect, authorize("admin", "manager", "doctor"), scope("Scan"), getScanByMrn);
 
-// add doctor review notes
-router.put("/:mrn",
-  protect,
-  authorize("doctor"),
-  scope("Scan"),
-  addDoctorReviewByMrn
-);
+//Add doctor review notes
+router.put("/:mrn", protect, authorize("doctor"), scope("Scan"), addDoctorReviewByMrn);
 
 module.exports = router;

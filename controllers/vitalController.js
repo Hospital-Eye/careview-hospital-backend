@@ -8,6 +8,8 @@ const createVital = async (req, res) => {
   const endpoint = 'createVital';
   const userEmail = req.user?.email || 'unknown';
 
+  console.log("Vital Create Request Body:", req.body);
+
   logger.info(`[${endpoint}] Incoming request to create vital record from user: ${userEmail}`);
   
   try {
