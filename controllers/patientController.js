@@ -7,8 +7,8 @@ const { logger } = require('../utils/logger');
 
 //create patient with automatic room assignment based on availability and patient needs, and document upload to GCS
 
-// Configure Multer for file uploads
-//const upload = multer({ storage: multer.memoryStorage() });
+//Configure Multer for file uploads
+const upload = multer({ storage: multer.memoryStorage() });
 
 // Init GCS client
 //const storage = new Storage();
@@ -269,7 +269,7 @@ const getPatientByMRN = async (req, res) => {
   const mrn = String(req.params.mrn).trim();
   const startTime = Date.now();
 
-  logger.info(`📋 [${endpoint}] Request received from ${userEmail}`, {
+  logger.info(`[${endpoint}] Request received from ${userEmail}`, {
     method: req.method,
     url: req.originalUrl,
     params: req.params,
