@@ -172,28 +172,33 @@ const getRoomById = async (req, res) => {
 const getAvailableRooms = async (req, res) => {
   const endpoint = 'getAvailableRooms';
   const userEmail = req.user?.email || 'unknown';
-  logger.info(`[${endpoint}] Incoming request to view all available rooms received from user: ${userEmail}`);
+  logger.info(`[${endpoint}] Incoming request to view all available rooms from ${userEmail}`);
 
   try {
-    const { unit, roomType } = req.query; 
+    const { unit, roomType } = req.query;
     const scopeFilter = req.scopeFilter || {};
     const roomFilter = { ...scopeFilter };
 
     if (unit) roomFilter.unit = unit;
     if (roomType) roomFilter.roomType = roomType;
 
-
-    //Fetch rooms
-    const rooms = await Room.findAll({ where: roomFilter });
+    //Fetch rooms BUT exclude fully occupied rooms
+    const rooms = await Room.findAll({
+      where: {
+        ...roomFilter,
+        occupiedBeds: {
+          [Op.lt]: sequelize.col("capacity")
+        }
+      }
+    });
 
     if (rooms.length === 0) {
-      logger.warn('[${endpoint}] No rooms found for given filter');
+      logger.warn(`[${endpoint}] No rooms found under filter`);
       return res.json([]);
     }
 
-    //Get active admissions for those rooms
+    //Get active admissions
     const roomIds = rooms.map(r => r.id);
-    logger.debug(`[${endpoint}] Room IDs to check admissions: [${roomIds.join(', ')}]`);
 
     const activeAdmissions = await Admission.findAll({
       where: {
@@ -201,50 +206,47 @@ const getAvailableRooms = async (req, res) => {
         status: "Active"
       },
       attributes: [
-        'room',
-        [sequelize.fn('COUNT', sequelize.col('id')), 'count']
+        "room",
+        [sequelize.fn("COUNT", sequelize.col("id")), "count"]
       ],
-      group: ['room'],
+      group: ["room"],
       raw: true
     });
 
-    logger.info(`[${endpoint}] Fetched active admissions for ${activeAdmissions.length} rooms`);
-
-    //build occupancy map
+    //Build occupancy map
     const occupancyMap = {};
     activeAdmissions.forEach(a => {
       occupancyMap[a.room] = parseInt(a.count) || 0;
     });
 
-    //add availability info
+    //Enrich rooms with occupancy
     const enrichedRooms = rooms.map(room => {
-      const roomData = room.get({ plain: true });
-      const occupied = occupancyMap[roomData.id] || 0;
-      const availableBeds = roomData.capacity - occupied;
+      const r = room.get({ plain: true });
+      const occupied = occupancyMap[r.id] || 0;
+      const availableBeds = r.capacity - occupied;
 
       return {
-        ...roomData,
+        ...r,
         occupied,
         availableBeds,
         isAvailable: availableBeds > 0
       };
     });
 
-    logger.info(`[${endpoint}] Successfully enriched ${enrichedRooms.length} rooms with availability data`);
-    res.json(enrichedRooms);
+    //Return only available rooms
+    const availableRooms = enrichedRooms.filter(r => r.availableBeds > 0);
 
-  }  catch (err) {
-  logger.error(`[${endpoint}] Error in getting available rooms: ${err.message}`);
-  if (err.original) {
-    logger.error(`SQL Error Detail: ${err.original.detail || 'No detail'}`);
-    logger.error(`SQL Error Hint: ${err.original.hint || 'No hint'}`);
-    logger.error(`SQL Error SQL: ${err.original.sql || 'No SQL logged'}`);
-  }
-  logger.error(err.stack);
-  res.status(500).json({ error: "Server error while fetching available rooms" });
-  }
+    logger.info(`[${endpoint}] Returning ${availableRooms.length} available rooms`);
+    return res.json(availableRooms);
 
+  } catch (err) {
+    logger.error(`[${endpoint}] Error: ${err.message}`);
+    logger.error(err.stack);
+    return res.status(500).json({ error: "Server error while fetching available rooms" });
+  }
 };
+
+
 
 
 //Update room
