@@ -178,11 +178,7 @@ const getPatients = async (req, res) => {
   const userEmail = req.user?.email || 'unknown';
   const startTime = Date.now();
 
-  logger.info(`[${endpoint}] Request received from ${userEmail}`, {
-    method: req.method,
-    url: req.originalUrl,
-    query: req.query,
-  });
+  logger.info(`[${endpoint}] Incoming request to view all patients from user: ${userEmail}`);
 
   try {
     const { status } = req.query; 
@@ -414,6 +410,8 @@ const updatePatientByMRN = async (req, res) => {
       } else {
         logger.warn(`[${endpoint}] No active admission found for MRN: ${mrn}`);
       }
+
+      logger.info(`Patient with MRN: ${mrn} discharged successfully by user: ${userEmail}`);
     }
 
     //Update patient data
