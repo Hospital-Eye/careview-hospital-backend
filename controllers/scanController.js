@@ -71,7 +71,7 @@ const uploadScan = async (req, res) => {
     uploadedBy: req.user.id,
     scanType,
     urgencyLevel,
-    fileUrl: `/public/uploads/scans/${req.file.filename}`,
+    fileUrl: `/uploads/scans/${req.file.filename}`,
     notes,
 });
 

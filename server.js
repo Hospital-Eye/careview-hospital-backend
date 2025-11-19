@@ -50,7 +50,7 @@ app.use('/api/mp4-uploads',       require('./routes/mp4Uploads'));
 app.use('/api/mp4-events',        require('./routes/mp4Events'));
 
 const path = require("path");
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/api/uploads', express.static(path.join(__dirname, 'uploads')));
 
 const camerasRoute = require('./routes/cameras');
 app.use('/api/cameras', camerasRoute);

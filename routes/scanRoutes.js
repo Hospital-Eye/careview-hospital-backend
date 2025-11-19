@@ -17,15 +17,11 @@ const storage = multer.diskStorage({
   }
 });
 
-
 const upload = multer({ storage });
-
-
-router.use("/uploads", express.static(path.join(__dirname, "../public/uploads")));
-
 
 //GET all scans
 router.get("/", protect, authorize("admin", "manager", "doctor"), scope("Scan"), getScans);
+
 
 //Upload scan
 router.post("/upload", protect, authorize("admin", "manager", "doctor"), scope("Scan"), upload.single("scan"), uploadScan);
