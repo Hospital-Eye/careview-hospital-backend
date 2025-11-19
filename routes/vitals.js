@@ -10,7 +10,7 @@ const {
   getVitalsHistoryByPatientId
 } = require('../controllers/vitalController');
 
-router.post('/', protect, authorize('admin', 'doctor', 'manager'), scope('Vital'), createVital);
+router.post('/', protect, authorize('admin', 'doctor', 'manager', 'nurse'), scope('Vital'), createVital);
 router.get('/', protect, authorize('admin', 'doctor', 'manager', 'nurse'), scope('Vital'), getVitals);
 router.get('/:id', protect, authorize('admin', 'doctor', 'manager', 'nurse'), scope('Vital'), getVitalById);
 router.put('/:id', protect, authorize('admin', 'doctor', 'manager', 'nurse'), scope('Vital'), updateVital);

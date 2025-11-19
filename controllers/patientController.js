@@ -7,8 +7,8 @@ const { logger } = require('../utils/logger');
 
 //create patient with automatic room assignment based on availability and patient needs, and document upload to GCS
 
-// Configure Multer for file uploads
-//const upload = multer({ storage: multer.memoryStorage() });
+//Configure Multer for file uploads
+const upload = multer({ storage: multer.memoryStorage() });
 
 // Init GCS client
 //const storage = new Storage();
@@ -178,11 +178,7 @@ const getPatients = async (req, res) => {
   const userEmail = req.user?.email || 'unknown';
   const startTime = Date.now();
 
-  logger.info(`[${endpoint}] Request received from ${userEmail}`, {
-    method: req.method,
-    url: req.originalUrl,
-    query: req.query,
-  });
+  logger.info(`[${endpoint}] Incoming request to view all patients from user: ${userEmail}`);
 
   try {
     const { status } = req.query; 
@@ -269,7 +265,7 @@ const getPatientByMRN = async (req, res) => {
   const mrn = String(req.params.mrn).trim();
   const startTime = Date.now();
 
-  logger.info(`📋 [${endpoint}] Request received from ${userEmail}`, {
+  logger.info(`[${endpoint}] Request received from ${userEmail}`, {
     method: req.method,
     url: req.originalUrl,
     params: req.params,
@@ -414,6 +410,8 @@ const updatePatientByMRN = async (req, res) => {
       } else {
         logger.warn(`[${endpoint}] No active admission found for MRN: ${mrn}`);
       }
+
+      logger.info(`Patient with MRN: ${mrn} discharged successfully by user: ${userEmail}`);
     }
 
     //Update patient data
