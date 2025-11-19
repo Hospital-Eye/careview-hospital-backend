@@ -1,11 +1,6 @@
 const express = require("express");
 const multer = require("multer");
-const { 
-  getScans, 
-  uploadScan, 
-  getScanByMrn, 
-  addDoctorReviewByMrn 
-} = require("../controllers/scanController");
+const { getScans, uploadScan, getScanByMrn, addDoctorReviewByMrn } = require("../controllers/scanController");
 
 const { protect, authorize, scope } = require('../middleware/authMiddleware');
 const path = require("path");
@@ -26,10 +21,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 
-router.use(
-  "/uploads",
-  express.static(path.join(__dirname, "../public/uploads"))
-);
+router.use("/uploads", express.static(path.join(__dirname, "../public/uploads")));
 
 
 //GET all scans
