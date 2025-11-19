@@ -1,26 +1,53 @@
-const { Vital, Patient } = require('../models');
+const { Vital, Patient, Staff } = require('../models');
 const { Op } = require('sequelize');
 const { sequelize } = require('../config/db');
 const { logger } = require('../utils/logger');
 
-//Create a new vital record 
+//Create a new vital record
 const createVital = async (req, res) => {
   const endpoint = 'createVital';
   const userEmail = req.user?.email || 'unknown';
 
-  console.log("Vital Create Request Body:", req.body);
-
   logger.info(`[${endpoint}] Incoming request to create vital record from user: ${userEmail}`);
   
   try {
+    const { patientId, recordedBy } = req.body;
+
+    //Validate patient exists
+    const patient = await Patient.findByPk(patientId);
+    if (!patient) {
+      logger.warn(`[${endpoint}] Patient not found (ID=${patientId})`);
+      return res.status(404).json({ error: "Patient not found" });
+    }
+
+    //Validate staff exists
+    const recorder = await Staff.findByPk(recordedBy);
+    if (!recorder) {
+      logger.warn(`[${endpoint}] Staff member not found (ID=${recordedBy})`);
+      return res.status(404).json({ error: "Recorder (staff) not found" });
+    }
+
+    //Create record
     const vital = await Vital.create(req.body);
+
     logger.info(`[${endpoint}] Vital record created successfully (ID=${vital.id})`);
-    res.status(201).json(vital);
+
+    //Return with associations loaded
+    const responseVital = await Vital.findByPk(vital.id, {
+      include: [
+        { model: Patient, as: 'patient' },
+        { model: Staff, as: 'recorder' }
+      ]
+    });
+
+    return res.status(201).json(responseVital);
+
   } catch (err) {
     logger.error(`[${endpoint}] Error creating vital: ${err.stack}`);
-    res.status(400).json({ error: err.message });
+    return res.status(500).json({ error: "Error creating vital" });
   }
 };
+
 
 //Get all vitals
 const getVitals = async (req, res) => {
@@ -31,11 +58,11 @@ const getVitals = async (req, res) => {
 
   try {
     const vitals = await Vital.findAll({
-      include: [
-        { model: Patient, as: 'patientId' },
-        { model: Patient, as: 'recordedBy' },
-      ],
-    });
+    include: [
+      { model: Patient, as: 'patient' },
+      { model: Staff, as: 'recorder' },
+    ],
+  });
 
     res.json(vitals);
   } catch (err) {
@@ -55,10 +82,11 @@ const getVitalById = async (req, res) => {
   try {
     const vital = await Vital.findByPk(req.params.id, {
       include: [
-        { model: Patient, as: 'patientId' },
-        { model: Patient, as: 'recordedBy' },
+        { model: Patient, as: 'patient' },
+        { model: Staff, as: 'recorder' },
       ],
     });
+
 
     if (!vital) {
       logger.warn(`[${endpoint}] Vital record not found (ID=${id})`);
@@ -148,10 +176,13 @@ const getVitalsHistoryByPatientId = async (req, res) => {
     }
 
     const vitals = await Vital.findAll({
-      where: query,
-      order: [['timestamp', 'ASC']],
-      include: [{ model: Patient, as: 'recordedBy' }]
-    });
+    where: query,
+    order: [['timestamp', 'ASC']],
+    include: [
+      { model: Patient, as: 'patient' },
+      { model: Staff, as: 'recorder' }
+    ],
+  });
 
     logger.info(`[${endpoint}] Retrieved ${vitals.length} vitals for patientId=${patientId}`);
     res.status(200).json(vitals);
