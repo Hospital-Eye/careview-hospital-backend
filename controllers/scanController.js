@@ -64,16 +64,17 @@ const uploadScan = async (req, res) => {
 
     //create new scan record
     const scan = await Scan.create({
-      organizationId: patient.organizationId,
-      clinicId: patient.clinicId,
-      patientId: patient.id,
-      mrn: patient.mrn,
-      uploadedBy: req.user.id,
-      scanType,
-      urgencyLevel,
-      fileUrl: `/uploads/scans/${req.file.filename}`, 
-      notes,
-    });
+    organizationId: patient.organizationId,
+    clinicId: patient.clinicId,
+    patientId: patient.id,
+    mrn: patient.mrn,
+    uploadedBy: req.user.id,
+    scanType,
+    urgencyLevel,
+    fileUrl: `/uploads/scans/${req.file.filename}`,
+    notes,
+});
+
 
     logger.info(`[${endpoint}] New scan uploaded successfully by ${req.user?.email || 'unknown'} for patient MRN=${mrn}`);
 

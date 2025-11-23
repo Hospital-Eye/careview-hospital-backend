@@ -17,16 +17,16 @@ const protect = (req, res, next) => {
 
       req.user = decoded;
 
-      logger.info(`[AUTH] Token validated for user: ${decoded.email || 'unknown'}`);
+      logger.info(`[AUTH: protect] Token validated for user: ${decoded.email || 'unknown'}`);
 
       return next(); 
     } catch (err) {
-      logger.warn(`[AUTH] Token verification failed: ${err.message}`);
+      logger.warn(`[AUTH: protect] Token verification failed: ${err.message}`);
       return res.status(401).json({ message: 'Not authorized, token failed' });
     }
   }
 
-  logger.warn('[AUTH] No token provided in request');
+  logger.warn('[AUTH: protect] No token provided in request');
   return res.status(401).json({ message: 'Not authorized, no token' });
 };
 
@@ -38,10 +38,10 @@ const authorize = (...roles) => {
       const userRole = req.user?.role || 'unknown';
         //Check if user object exists from 'protect' middleware and if user's role is in allowed roles
         if (!req.user || !req.user.role || !roles.map(r => r.toLowerCase()).includes(req.user.role.toLowerCase())) {
-          logger.warn(`[Auth] Authorization failed: User ${userEmail} with role ${userRole} tried to access restricted resource. Required roles: ${roles.join(', ')}`);
+          logger.warn(`[AUTH: authorize] Authorization failed: User ${userEmail} with role ${userRole} tried to access restricted resource. Required roles: ${roles.join(', ')}`);
           return res.status(403).json({ message: 'Forbidden. You do not have the required role.' });
         }
-        logger.info(`[Auth] Authorization successful for user ${userEmail} with role ${userRole}`);
+        logger.info(`[AUTH: authorize] Authorization successful for user ${userEmail} with role ${userRole}`);
         next(); 
     };
 };
@@ -87,10 +87,10 @@ const scope = (modelName) => {
       }
 
       req.scopeFilter = filter;
-      logger.debug(`[Scope] Applied scope filter for user ${req.user?.email || 'unknown'}: ${JSON.stringify(req.scopeFilter)}`);
+      logger.debug(`[AUTH: Scope] Applied scope filter for user ${req.user?.email || 'unknown'}: ${JSON.stringify(req.scopeFilter)}`);
       next();
     } catch (err) {
-      logger.error(`[Scope] Error applying scope filter: ${err.message}`, { stack: err.stack });
+      logger.error(`[AUTH: Scope] Error applying scope filter: ${err.message}`, { stack: err.stack });
       res.status(500).json({ message: "Internal server error" });
     }
   };

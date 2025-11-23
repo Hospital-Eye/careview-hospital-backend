@@ -10,12 +10,31 @@ const {
   getVitalsHistoryByPatientId
 } = require('../controllers/vitalController');
 
-router.post('/', protect, authorize('admin', 'doctor', 'manager'), scope('Vital'), createVital);
+router.post('/', protect, authorize('admin', 'doctor', 'manager', 'nurse'), scope('Vital'), createVital);
 router.get('/', protect, authorize('admin', 'doctor', 'manager', 'nurse'), scope('Vital'), getVitals);
 router.get('/:id', protect, authorize('admin', 'doctor', 'manager', 'nurse'), scope('Vital'), getVitalById);
 router.put('/:id', protect, authorize('admin', 'doctor', 'manager', 'nurse'), scope('Vital'), updateVital);
 router.delete('/:id', protect, authorize('admin', 'doctor', 'manager'), scope('Vital'), deleteVital);
 //to display line chart
-router.get('/history/:patientId', protect, authorize('admin', 'doctor', 'manager', 'nurse'), getVitalsHistoryByPatientId);
+
+router.get('/history/:patientId', protect, async (req, res, next) => {
+
+const allowedRoles = ['admin', 'doctor', 'manager', 'nurse'];
+
+// If user is a patient
+if (req.user.role === 'patient') {
+const { Patient } = require('../models');
+
+}
+
+// If user is medical staff, ensure they have proper permission
+if (!allowedRoles.includes(req.user.role)) {
+return res.status(403).json({ error: 'Unauthorized' });
+}
+
+// Pass to controller
+return getVitalsHistoryByPatientId(req, res);
+});
+
 
 module.exports = router;
