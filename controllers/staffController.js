@@ -8,7 +8,7 @@ const { logger } = require('../utils/logger');
 
 //Create staff
 
-//geenrate unique employee ID
+//generate unique employee ID
 const existingEmployeeIds = new Set();
 
 async function generateUniqueEmployeeId() {
@@ -29,25 +29,27 @@ async function generateUniqueEmployeeId() {
       existingEmployeeIds.add(id);
     }
   }
-
   return id;
 }
 
 const createStaff = async (req, res) => {
-  const endpoint = 'createStaff';
-  const userEmail = req.user?.email || 'unknown';
-  const userRole = req.user?.role || 'unknown';
+  const endpoint = "createStaff";
+  const userEmail = req.user?.email || "unknown";
+  const userRole = req.user?.role || "unknown";
   const t = await sequelize.transaction();
 
   logger.info(`[${endpoint}] Request received from ${userEmail} (role: ${userRole})`);
 
   try {
-    const { name, role: staffRole, status, contact } = req.body;
-    const email = contact?.email;
-    const phone = contact?.phone;
+    // Extract fields
+    const { name, role: staffRole, status, contact, email, phone, clinicId: bodyClinicId } = req.body;
 
-    //validate staff role
-    if (!email || !staffRole) {
+    // Unified contact resolution
+    const finalEmail = email || contact?.email;
+    const finalPhone = phone || contact?.phone;
+
+    // Validation
+    if (!finalEmail || !staffRole) {
       logger.warn(`[${endpoint}] Missing required fields: email or role`);
       await t.rollback();
       return res.status(400).json({ error: "Email and role are required." });
@@ -61,10 +63,11 @@ const createStaff = async (req, res) => {
       return res.status(403).json({ error: "Missing organizationId in user context" });
     }
 
-    //determine clinic
+    // Determine clinic
     let clinicId;
+
     if (requesterRole === "admin") {
-      clinicId = req.body.clinicId;
+      clinicId = bodyClinicId;
       if (!clinicId) {
         logger.warn(`[${endpoint}] Admin did not provide clinicId in request`);
         await t.rollback();
@@ -83,65 +86,69 @@ const createStaff = async (req, res) => {
       return res.status(403).json({ error: "Only admins and managers can create staff" });
     }
 
+    // Generate unique employee ID
     const employeeId = await generateUniqueEmployeeId();
     logger.info(`[${endpoint}] Generated unique employeeId: ${employeeId}`);
 
-    let user = await User.findOne({ where: { email }, transaction: t });
+    // Find or create user
+    let user = await User.findOne({ where: { email: finalEmail }, transaction: t });
 
     if (user) {
-      logger.info(`[${endpoint}] Existing user found: ${email}, updating user record`);
+      logger.info(`[${endpoint}] Existing user found: ${finalEmail}, updating`);
       await user.update(
         {
+          name,
           role: staffRole,
           employeeId: user.employeeId || employeeId,
           organizationId: user.organizationId || userOrgId,
           clinicId: user.clinicId || clinicId,
-          contact: { email, phone },
+          contact: { email: finalEmail, phone: finalPhone },
         },
         { transaction: t }
       );
     } else {
-      logger.info(`[${endpoint}] Creating new user: ${email}`);
+      logger.info(`[${endpoint}] Creating new user: ${finalEmail}`);
       user = await User.create(
         {
           name,
-          email,
+          email: finalEmail,
           role: staffRole,
           organizationId: userOrgId,
           clinicId,
-          contact: { email, phone },
           employeeId,
+          contact: { email: finalEmail, phone: finalPhone },
         },
         { transaction: t }
       );
     }
 
+    // Find or create staff record
     let staff = await Staff.findOne({ where: { userId: user.id }, transaction: t });
 
     if (staff) {
-      logger.info(`[${endpoint}] Existing staff record found, updating staff for userId: ${user.id}`);
+      logger.info(`[${endpoint}] Updating existing staff record for userId: ${user.id}`);
       await staff.update(
         {
           name,
           role: staffRole,
           organizationId: userOrgId,
           clinicId,
-          contact: { email, phone },
+          contact: { email: finalEmail, phone: finalPhone },
           status: status || staff.status,
         },
         { transaction: t }
       );
     } else {
-      logger.info(`🆕 [${endpoint}] Creating new staff record for userId: ${user.id}`);
+      logger.info(`[${endpoint}] Creating new staff record for userId: ${user.id}`);
       staff = await Staff.create(
         {
-          employeeId,
-          organizationId: userOrgId,
-          clinicId,
           userId: user.id,
+          employeeId,
           name,
           role: staffRole,
-          contact: { email, phone },
+          organizationId: userOrgId,
+          clinicId,
+          contact: { email: finalEmail, phone: finalPhone },
           status: status || "On-Duty",
         },
         { transaction: t }
@@ -150,6 +157,7 @@ const createStaff = async (req, res) => {
 
     await t.commit();
     logger.info(`[${endpoint}] Staff created successfully (userId: ${user.id}, employeeId: ${employeeId})`);
+
     res.status(201).json({ user, staff });
 
   } catch (err) {
@@ -158,6 +166,8 @@ const createStaff = async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 };
+
+
 
 
 //GET all staff
