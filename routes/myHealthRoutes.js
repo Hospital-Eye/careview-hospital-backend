@@ -50,6 +50,7 @@ router.get('/', protect, authorize('patient'), async (req, res) => {
   }
 });
 
+//update patient info
 router.put('/update', protect, authorize('patient'), async (req, res) => {
 const endpoint = 'UpdateMyProfile';
 const { allergies, precautions, emergencyContact } = req.body;
@@ -68,23 +69,44 @@ if (!patient) {
 
 const updates = {};
 
-// Direct allowed simple fields
-if (allergies !== undefined) updates.allergies = allergies;
-if (precautions !== undefined) updates.precautions = precautions;
+// ----- ALLERGIES -----
+if (allergies !== undefined) {
+  const existing = Array.isArray(patient.allergies)
+    ? patient.allergies
+    : patient.allergies
+    ? [patient.allergies]
+    : [];
 
-// Handle emergencyContact partial update
+  const incoming = Array.isArray(allergies)
+    ? allergies
+    : allergies
+    ? [allergies]
+    : [];
+
+  // Append + remove duplicates
+  updates.allergies = [...new Set([...existing, ...incoming])];
+}
+
+// ----- PRECAUTIONS (simple replace) -----
+if (precautions !== undefined) {
+  updates.precautions = precautions;
+}
+
+// ----- EMERGENCY CONTACT (deep merge) -----
 if (emergencyContact !== undefined) {
   const existingContact = patient.emergencyContact || {};
   updates.emergencyContact = {
     ...existingContact,
-    ...emergencyContact  // merge incoming values
+    ...emergencyContact
   };
 }
 
 // Apply changes
 await patient.update(updates);
 
-logger.info(`[${endpoint}] Patient ${req.user.email} profile updated successfully`);
+logger.info(
+  `[${endpoint}] Patient ${req.user.email} profile updated successfully`
+);
 
 res.json({
   message: 'Profile updated successfully',
@@ -92,7 +114,9 @@ res.json({
 });
 
 } catch (err) {
-logger.error(`[${endpoint}] Error updating patient profile: ${err.stack}`);
+logger.error(
+`[${endpoint}] Error updating patient profile: ${err.stack}`
+);
 res.status(500).json({ message: 'Server error', error: err.message });
 }
 });
