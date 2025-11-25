@@ -50,6 +50,53 @@ router.get('/', protect, authorize('patient'), async (req, res) => {
   }
 });
 
+router.put('/update', protect, authorize('patient'), async (req, res) => {
+const endpoint = 'UpdateMyProfile';
+const { allergies, precautions, emergencyContact } = req.body;
+
+try {
+logger.info(`[${endpoint}] Patient ${req.user.email} attempting to update profile`);
+
+const patient = await Patient.findOne({
+  where: { userId: req.user.id }
+});
+
+if (!patient) {
+  logger.warn(`[${endpoint}] No patient record found for ${req.user.email}`);
+  return res.status(404).json({ message: 'Patient record not found' });
+}
+
+const updates = {};
+
+// Direct allowed simple fields
+if (allergies !== undefined) updates.allergies = allergies;
+if (precautions !== undefined) updates.precautions = precautions;
+
+// Handle emergencyContact partial update
+if (emergencyContact !== undefined) {
+  const existingContact = patient.emergencyContact || {};
+  updates.emergencyContact = {
+    ...existingContact,
+    ...emergencyContact  // merge incoming values
+  };
+}
+
+// Apply changes
+await patient.update(updates);
+
+logger.info(`[${endpoint}] Patient ${req.user.email} profile updated successfully`);
+
+res.json({
+  message: 'Profile updated successfully',
+  updatedFields: updates
+});
+
+} catch (err) {
+logger.error(`[${endpoint}] Error updating patient profile: ${err.stack}`);
+res.status(500).json({ message: 'Server error', error: err.message });
+}
+});
+
 
 module.exports = router;
 
