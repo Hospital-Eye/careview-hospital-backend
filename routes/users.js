@@ -9,8 +9,8 @@ const {
 } = require('../controllers/userController');
 
 router.post('/', protect, createUser);
-router.get('/', protect, authorize('admin'), getUsers);
-router.patch('/:id', protect, authorize('admin'), updateUser);
-router.delete('/:id', protect, authorize('admin'), deleteUser);
+router.get('/', protect, authorize('admin', 'manager'), getUsers);
+router.patch('/:id', protect, authorize('admin', 'manager'), updateUser);
+router.delete('/:id', protect, authorize('admin', 'manager'), deleteUser);
 
 module.exports = router;

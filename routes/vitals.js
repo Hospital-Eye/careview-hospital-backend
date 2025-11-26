@@ -14,7 +14,7 @@ router.post('/', protect, authorize('admin', 'doctor', 'manager', 'nurse'), scop
 router.get('/', protect, authorize('admin', 'doctor', 'manager', 'nurse'), scope('Vital'), getVitals);
 router.get('/:id', protect, authorize('admin', 'doctor', 'manager', 'nurse'), scope('Vital'), getVitalById);
 router.put('/:id', protect, authorize('admin', 'doctor', 'manager', 'nurse'), scope('Vital'), updateVital);
-router.delete('/:id', protect, authorize('admin', 'doctor', 'manager'), scope('Vital'), deleteVital);
+router.delete('/:id', protect, authorize('admin', 'doctor', 'manager', 'nurse'), scope('Vital'), deleteVital);
 
 
 //to display line chart + vitals history
@@ -22,6 +22,10 @@ router.get('/history/:patientId', protect, async (req, res, next) => {
 
   const allowedRoles = ['admin', 'doctor', 'manager', 'nurse'];
   const requestedPatientId = req.params.patientId;
+
+  console.log("Requesting user role: ", req.user.role);
+  console.log("Sent value: ", req.params.patientId);
+  console.log("MRN if any: ", req.params.mrn);
 
   // If logged-in user is a patient
   if (req.user.role === 'patient') {
