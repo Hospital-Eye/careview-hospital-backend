@@ -86,55 +86,69 @@ const uploadScan = async (req, res) => {
   }
 };
 
-//GET scans by MRN (metadata + image file content)
+// GET scans by MRN (metadata + image file content)
 const getScanByMrn = async (req, res) => {
-  const endpoint = 'getScanByMrn';
-  const userEmail = req.user?.email || 'unknown';
+  const endpoint = "getScanByMrn";
+  const userEmail = req.user?.email || "unknown";
   const mrn = req.params.mrn;
 
-  logger.info(`[${endpoint}] Request to view scan of patient having MRN: ${mrn} received from user: ${userEmail}`);
+  logger.info(
+    `[${endpoint}] Request to view scan of patient having MRN: ${mrn} received from user: ${userEmail}`
+  );
 
   try {
-    const { mrn } = req.params;
-
-    //find patient by MRN
+    // Find patient by MRN
     const patient = await Patient.findOne({ where: { mrn } });
+
     if (!patient) {
       logger.warn(`[${endpoint}] Patient not found for MRN="${mrn}"`);
       return res.status(404).json({ error: "Patient not found" });
     }
 
-    //find the most recent scan for this patient
+    // Fetch the latest scan for this patient
     const scan = await Scan.findOne({
       where: { patientId: patient.id },
-      include: [{ model: Patient, as: "uploadedBy", attributes: ["name", "role"] }],
+      include: [
+        { model: Patient, as: "patient" },   // correct alias
+        { model: User, as: "uploader" }      // correct alias
+      ],
       order: [["createdAt", "DESC"]],
     });
 
     if (!scan) {
-      logger.warn(`[${endpoint}] No scans found for patient ID=${patient.id}, MRN="${mrn}"`);
+      logger.warn(
+        `[${endpoint}] No scans found for patientId=${patient.id}, MRN="${mrn}"`
+      );
       return res.status(404).json({ error: "No scans found for this MRN" });
     }
 
-    logger.info(`[${endpoint}] Latest scan found: ScanID=${scan.id}, UploadedBy=${scan.uploadedBy}`);
+    logger.info(
+      `[${endpoint}] Latest scan found: ScanID=${scan.id}, UploadedBy=${scan.uploadedBy}`
+    );
 
-    //check if file exists
+    // Build absolute file path
     const filePath = path.join(__dirname, "..", scan.fileUrl);
 
+    // Ensure file exists
     if (!fs.existsSync(filePath)) {
-      logger.error(`[${endpoint}] Scan file missing on disk for ScanID=${scan.id}, path="${filePath}"`);
+      logger.error(
+        `[${endpoint}] Scan file missing on disk for ScanID=${scan.id}, path="${filePath}"`
+      );
       return res.status(404).json({ error: "Scan file not found" });
     }
 
-    //read file content
+    // Read image as base64
     const fileData = fs.readFileSync(filePath, { encoding: "base64" });
-    logger.info(`[${endpoint}] Successfully read scan file for MRN=${mrn}`);
 
-    //respond with metadata + base64 file
-    res.status(200).json({
+    logger.info(
+      `[${endpoint}] Successfully read scan file for MRN=${mrn}`
+    );
+
+    // Send metadata + file
+    return res.status(200).json({
       id: scan.id,
       patientId: scan.patientId,
-      mrn: scan.mrn,
+      mrn: patient.mrn,                 // use patient.mrn, scan has no mrn column
       uploadedBy: scan.uploadedBy,
       scanType: scan.scanType,
       urgencyLevel: scan.urgencyLevel,
@@ -146,11 +160,15 @@ const getScanByMrn = async (req, res) => {
         data: fileData,
       },
     });
+
   } catch (err) {
     logger.error(`[${endpoint}] Error in getScanByMrn: ${err.stack}`);
-    res.status(500).json({ error: "Server error while fetching scan" });
+    return res.status(500).json({
+      error: "Server error while fetching scan",
+    });
   }
 };
+
 
 //Add Doctor Review by MRN ---
 const addDoctorReviewByMrn = async (req, res) => {

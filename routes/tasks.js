@@ -9,10 +9,10 @@ const {
   deleteTask
 } = require('../controllers/taskController');
 
-router.post('/', protect, authorize('admin', 'doctor', 'manager'), createTask);
+router.post('/', protect, authorize('admin', 'doctor', 'manager', 'nurse'), createTask);
 router.get('/', protect, authorize('admin', 'doctor', 'manager', 'nurse'), scope('Task'), getTasks);
 router.get('/:id', protect, authorize('admin', 'doctor', 'manager', 'nurse'), scope('Task'), getTaskById);
 router.put('/:id', protect, authorize('admin', 'doctor', 'manager', 'nurse'), scope('Task'), updateTask);
-router.delete('/:id', protect, authorize('admin', 'doctor', 'manager'), scope('Task'), deleteTask);
+router.delete('/:id', protect, authorize('admin', 'doctor', 'manager', 'nurse'), scope('Task'), deleteTask);
 
 module.exports = router;

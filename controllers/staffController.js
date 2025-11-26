@@ -179,7 +179,7 @@ const getAllStaff = async (req, res) => {
   logger.info(`[${endpoint}] Request received from ${userEmail} (role: ${role})`);
 
   try {
-    if (!["admin", "manager", "doctor"].includes(role.toLowerCase())) {
+    if (!["admin", "manager", "doctor", 'nurse'].includes(role.toLowerCase())) {
       logger.warn(`[${endpoint}] Forbidden access by role: ${role}`);
       return res.status(403).json({
         error: "Forbidden. Only admins, managers, or doctors can view staff.",

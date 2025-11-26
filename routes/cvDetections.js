@@ -10,8 +10,8 @@ const {
 } = require('../controllers/cvDetectionController');
 
 router.post('/', protect, authorize('admin', 'manager'), scope('CVDetection'), createDetection);
-router.get('/', protect, authorize('admin', 'manager', 'doctor'), scope('CVDetection'), getDetections);
-router.get('/:id', protect, authorize('admin', 'manager', 'doctor'), scope('CVDetection'), getDetectionById);
+router.get('/', protect, authorize('admin', 'manager', 'doctor', 'nurse'), scope('CVDetection'), getDetections);
+router.get('/:id', protect, authorize('admin', 'manager', 'doctor', 'nurse'), scope('CVDetection'), getDetectionById);
 router.put('/:id', protect, authorize('admin', 'manager', 'doctor'), scope('CVDetection'), updateDetection);
 router.delete('/:id', protect, authorize('admin', 'manager'), scope('CVDetection'), deleteDetection);
 

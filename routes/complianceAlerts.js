@@ -9,7 +9,7 @@ const {
   deleteAlert
 } = require('../controllers/complianceAlertController');
 
-router.post('/', protect, authorize('admin', 'manager'), createAlert);
+router.post('/', protect, authorize('admin', 'manager', 'nurse', 'doctor'), createAlert);
 router.get('/', protect, authorize('admin', 'manager', 'doctor', 'nurse'), scope('ComplianceAlert'), getAlerts);
 router.get('/:id', protect, authorize('admin', 'manager', 'doctor', 'nurse'), scope('ComplianceAlert'), getAlertById);
 router.put('/:id', protect, authorize('admin', 'manager', 'doctor', 'nurse'), scope('ComplianceAlert'), updateAlert);
