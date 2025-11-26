@@ -9,8 +9,8 @@ const {
 } = require('../controllers/deviceLogController');
 
 router.post('/', protect, authorize('admin', 'manager'), createDeviceLog);
-router.get('/', protect, authorize('admin', 'manager'), scope('DeviceLog'), getDeviceLogs);
-router.get('/:id', protect, authorize('admin', 'manager'), scope('DeviceLog'), getDeviceLogById);
+router.get('/', protect, authorize('admin', 'manager', 'nurse', 'doctor'), scope('DeviceLog'), getDeviceLogs);
+router.get('/:id', protect, authorize('admin', 'manager', 'nurse', 'doctor'), scope('DeviceLog'), getDeviceLogById);
 router.delete('/:id', protect, authorize('admin', 'manager'), scope('DeviceLog'), deleteDeviceLog);
 
 module.exports = router;

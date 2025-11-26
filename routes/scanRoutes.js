@@ -21,7 +21,7 @@ const upload = multer({ storage });
 
 //GET all scans
 router.get("/", protect, async (req, res, next) => {
-const allowedRoles = ["admin", "manager", "doctor"];
+const allowedRoles = ["admin", "manager", "doctor", 'nurse'];
 
 // If user is a patient → restrict to their own scans
 if (req.user.role === "patient") {
@@ -51,11 +51,11 @@ return authorize(...allowedRoles)(req, res, next);
 
 
 //Upload scan
-router.post("/upload", protect, authorize("admin", "manager", "doctor"), scope("Scan"), upload.single("scan"), uploadScan);
+router.post("/upload", protect, authorize("admin", "manager", "doctor", 'nurse'), scope("Scan"), upload.single("scan"), uploadScan);
 
 //Get scan info by MRN
 router.get("/:mrn", protect, async (req, res, next) => {
-    const allowedRoles = ["admin", "manager", "doctor"];
+    const allowedRoles = ["admin", "manager", "doctor", 'nurse'];
 
     //If user is a patient: allow only if MRN belongs to them
     if (req.user.role === "patient") {
