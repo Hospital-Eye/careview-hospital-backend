@@ -23,10 +23,6 @@ router.get('/history/:patientId', protect, async (req, res, next) => {
   const allowedRoles = ['admin', 'doctor', 'manager', 'nurse'];
   const requestedPatientId = req.params.patientId;
 
-  console.log("Requesting user role: ", req.user.role);
-  console.log("Sent value: ", req.params.patientId);
-  console.log("MRN if any: ", req.params.mrn);
-
   // If logged-in user is a patient
   if (req.user.role === 'patient') {
     const { Patient } = require('../models');
@@ -43,7 +39,7 @@ router.get('/history/:patientId', protect, async (req, res, next) => {
     }
 
     // Check if patient is trying to access someone else’s records
-    if (patient.id.toString() !== requestedPatientId) {
+    if (patient.userId.toString() !== requestedPatientId) {
       return res.status(403).json({
         error: 'Patients can only view their own vitals history.'
       });
