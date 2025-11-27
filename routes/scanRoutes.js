@@ -2,7 +2,7 @@ const express = require("express");
 const multer = require("multer");
 const { getScans, uploadScan, getScanByMrn, addDoctorReviewByMrn } = require("../controllers/scanController");
 
-const { protect, authorize, scope } = require('../middleware/authMiddleware');
+const { protect, authorize, scope, patientCheck } = require('../middleware/authMiddleware');
 const path = require("path");
 
 const router = express.Router();
@@ -53,42 +53,7 @@ return authorize(...allowedRoles)(req, res, next);
 //Upload scan
 router.post("/upload", protect, authorize("admin", "manager", "doctor", 'nurse'), scope("Scan"), upload.single("scan"), uploadScan);
 
-//Get scan info by MRN
-router.get("/:mrn", protect, async (req, res, next) => {
-    const allowedRoles = ["admin", "manager", "doctor", 'nurse'];
-
-    //If user is a patient: allow only if MRN belongs to them
-    if (req.user.role === "patient") {
-      const { Patient } = require("../models");
-
-      //Find patient's own record
-      const patient = await Patient.findOne({
-        where: { userId: req.user.id }
-      });
-
-      if (!patient) {
-        return res.status(404).json({
-          error: "Patient record not found for this user."
-        });
-      }
-
-      //Check if the MRN in URL matches their own MRN
-      if (patient.mrn !== req.params.mrn) {
-        return res.status(403).json({
-          error: "Patients can only access their own scan records."
-        });
-      }
-
-      //If allowed: call the controller directly
-      return getScanByMrn(req, res);
-    }
-
-    // For staff: enforce role-based authorization
-    return authorize(...allowedRoles)(req, res, next);
-  },
-  scope("Scan"), getScanByMrn
-);
-
+router.get("/:mrn", protect, patientCheck, authorize("admin", "manager", "doctor", "nurse"), scope("Scan"), getScanByMrn);
 
 //Add doctor review notes
 router.put("/:mrn", protect, authorize("doctor"), scope("Scan"), addDoctorReviewByMrn);

@@ -96,4 +96,61 @@ const scope = (modelName) => {
   };
 };
 
-module.exports = { protect, authorize, scope };
+
+//patient can view only their own records
+const patientCheck = async (req, res, next) => {
+  try {
+    //Only apply to patient role
+    if (req.user.role !== "patient") {
+      return next();
+    }
+
+    const { Patient } = require("../models");
+
+    //Get the logged-in user's patient record
+    const patientRecord = await Patient.findOne({
+      where: { userId: req.user.id }
+    });
+
+    if (!patientRecord) {
+      return res.status(404).json({
+        error: "No patient record found for this user."
+      });
+    }
+
+    //Extract ANY identifier from params
+    const requestedId =
+      req.params.patientId ||
+      req.params.id ||
+      req.params.mrn;
+
+    if (!requestedId) {
+      return res.status(403).json({
+        error: "Invalid patient request. Missing patient identifier.",
+      });
+    }
+
+    // Allowed identifiers
+    const allowedIdentifiers = [
+      patientRecord.id,
+      patientRecord.uuid,
+      patientRecord.mrn
+    ].map(String);
+
+    // Compare param - actual patient identifiers
+    if (!allowedIdentifiers.includes(String(requestedId))) {
+      return res.status(403).json({
+        error: "Patients can only access their own records."
+      });
+    }
+
+    //All good - continue
+    next();
+  } catch (err) {
+    console.error("patientCheck error:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+
+module.exports = { protect, authorize, scope, patientCheck };
