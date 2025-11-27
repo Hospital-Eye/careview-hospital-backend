@@ -31,18 +31,24 @@ const createTask = async (req, res) => {
     }
 
     let clinicId;
+
+    // --- Updated Role Logic ---
     if (role === "admin") {
+      // Admin must provide clinicId explicitly
       if (!bodyClinicId) {
         logger.warn(`[${endpoint}] Admin did not provide clinicId`);
         return res.status(400).json({ error: "Admin must provide clinicId" });
       }
       clinicId = bodyClinicId;
-    } else if (role === "manager") {
+
+    } else if (["manager", "doctor", "nurse"].includes(role)) {
+      // These roles must use their assigned clinicId
       if (!userClinicId) {
-        logger.error(`[${endpoint}] Manager has no assigned clinic`);
-        return res.status(403).json({ error: "Manager has no clinic assignment" });
+        logger.error(`[${endpoint}] ${role} has no assigned clinic`);
+        return res.status(403).json({ error: `${role} has no clinic assignment` });
       }
       clinicId = userClinicId;
+
     } else {
       logger.error(`[${endpoint}] Unauthorized role=${role}`);
       return res.status(403).json({ error: "Unauthorized role" });
@@ -63,8 +69,12 @@ const createTask = async (req, res) => {
       ...otherFields,
     });
 
-    logger.info(`[${endpoint}] Task created successfully: id=${task.id}, clinicId=${clinicId}, createdBy=${req.user?.email}`);
+    logger.info(
+      `[${endpoint}] Task created successfully: id=${task.id}, clinicId=${clinicId}, createdBy=${req.user?.email}`
+    );
+
     res.status(201).json(task);
+
   } catch (err) {
     logger.error(`[${endpoint}] Error creating task: ${err.message}`, { stack: err.stack });
     res.status(400).json({ error: err.message });
