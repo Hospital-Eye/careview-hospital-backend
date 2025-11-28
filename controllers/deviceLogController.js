@@ -29,7 +29,7 @@ const getDeviceLogs = async (req, res) => {
 
   try {
     const logs = await DeviceLog.findAll({
-      include: [{ model: User, as: 'userId' }]
+      include: [{ model: User, as: 'user' }]
     });
 
     logger.info(`[${endpoint}] Retrieved ${logs.length} device logs`);
@@ -50,7 +50,7 @@ const getDeviceLogById = async (req, res) => {
 
   try {
     const log = await DeviceLog.findByPk(logId, {
-      include: [{ model: User, as: 'userId' }]
+      include: [{ model: User, as: 'user' }]
     });
 
     if (!log) {
