@@ -51,7 +51,7 @@ return authorize(...allowedRoles)(req, res, next);
 
 
 //Upload scan
-router.post("/upload", protect, authorize("admin", "manager", "doctor", 'nurse'), scope("Scan"), upload.single("scan"), uploadScan);
+router.post("/upload", protect, patientCheck, authorize("admin", "manager", "doctor", 'nurse'), scope("Scan"), upload.single("scan"), uploadScan);
 
 router.get("/:mrn", protect, patientCheck, authorize("admin", "manager", "doctor", "nurse"), scope("Scan"), getScanByMrn);
 
