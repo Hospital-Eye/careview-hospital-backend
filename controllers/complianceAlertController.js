@@ -5,23 +5,59 @@ const { logger } = require('../utils/logger');
 
 //Create a new alert
 const createAlert = async (req, res) => {
-  const endpoint = 'createAlert';
-  const userEmail = req.user?.email || 'unknown';
-
-  logger.info(`[${endpoint}] Incoming request to create compliance alert from user: ${userEmail}`);
+  const endpoint = "createComplianceAlert";
 
   try {
-    const alert = await ComplianceAlert.create(req.body);
-    logger.info(`[${endpoint}] Alert created successfully`, { alertId: alert.id });
-    res.status(201).json(alert);
-  } catch (err) {
-    logger.error(`[${endpoint}] Error creating alert: ${err.message}`, {
-      stack: err.stack,
-      user: userEmail,
+    const user = req.user;
+    const role = user.role.toLowerCase();
+
+    let organizationId = user.organizationId;
+    let clinicId;
+
+    //Admin: org and clinic from req.user
+    if (role === "admin") {
+      clinicId = user.clinicId;
+
+      if (!clinicId) {
+        return res.status(400).json({
+          error: "Admin user does not have an assigned clinicId"
+        });
+      }
+
+    } else if (["manager", "doctor", "nurse"].includes(role)) {
+      //Other roles: org from req.user, clinic from req.body
+      clinicId = req.body.clinicId;
+
+      if (!clinicId) {
+        return res.status(400).json({
+          error: "clinicId is required for this user role"
+        });
+      }
+      
+    } else {
+      return res.status(403).json({
+        error: `Role '${role}' not allowed to create compliance alerts`
+      });
+    }
+
+    // Create the compliance alert
+    const alert = await ComplianceAlert.create({
+      title: req.body.title,
+      message: req.body.message,
+      type: req.body.type,
+      organizationId: organizationId,
+      clinicId: clinicId,
+      createdBy: user.id
     });
-    res.status(400).json({ error: err.message });
+
+    return res.status(201).json(alert);
+
+  } catch (err) {
+    logger.error(`[${endpoint}] Error: ${err.stack}`);
+    return res.status(500).json({ error: "Server error creating compliance alert" });
   }
 };
+
 
 //Get all alerts
 const getAlerts = async (req, res) => {
