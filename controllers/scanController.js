@@ -86,7 +86,7 @@ const uploadScan = async (req, res) => {
   }
 };
 
-// GET latest scan by patientId
+// GET all scans by patientId
 const getScansByPatientId = async (req, res) => {
   const endpoint = "getScansByPatientId";
   const userEmail = req.user?.email || "unknown";
@@ -105,68 +105,73 @@ const getScansByPatientId = async (req, res) => {
       return res.status(404).json({ error: "Patient not found" });
     }
 
-    // Fetch latest scan for this patient
-    const scan = await Scan.findOne({
-      where: { patientId: patient.id },
+    // Fetch ALL scans for this patient
+    const scans = await Scan.findAll({
+      where: { patientId },
       include: [
         { model: Patient, as: "patient" },
-        { model: User, as: "uploader" }
+        { 
+          model: User, 
+          as: "uploader",
+          attributes: ["id", "name", "email"]
+        }
       ],
       order: [["createdAt", "DESC"]],
     });
 
-    if (!scan) {
-      logger.warn(
-        `[${endpoint}] No scans found for patientId=${patient.id}`
-      );
+    if (!scans.length) {
+      logger.warn(`[${endpoint}] No scans found for patientId=${patient.id}`);
       return res.status(404).json({ error: "No scans found for this patient" });
     }
 
     logger.info(
-      `[${endpoint}] Latest scan found: ScanID=${scan.id}, UploadedBy=${scan.uploadedBy}`
+      `[${endpoint}] Found ${scans.length} scans for patientId=${patientId}`
     );
 
-    // Build absolute file path
-    const filePath = path.join(__dirname, "..", scan.fileUrl);
+    // Build response objects for each scan
+    const scanResponses = scans.map((scan) => {
+      const filePath = path.join(__dirname, "..", scan.fileUrl);
 
-    // Ensure file exists
-    if (!fs.existsSync(filePath)) {
-      logger.error(
-        `[${endpoint}] Scan file missing on disk for ScanID=${scan.id}, path="${filePath}"`
-      );
-      return res.status(404).json({ error: "Scan file not found" });
-    }
+      // Safe check for missing file
+      let fileData = null;
+      if (fs.existsSync(filePath)) {
+        fileData = fs.readFileSync(filePath, { encoding: "base64" });
+      } else {
+        logger.error(
+          `[${endpoint}] Missing scan file on disk for ScanID=${scan.id}, path="${filePath}"`
+        );
+      }
 
-    // Read image as base64
-    const fileData = fs.readFileSync(filePath, { encoding: "base64" });
-
-    logger.info(
-      `[${endpoint}] Successfully read scan file for patientId=${patientId}`
-    );
-
-    return res.status(200).json({
-      id: scan.id,
-      patientId: scan.patientId,
-      mrn: patient.mrn,
-      uploadedBy: scan.uploadedBy,
-      scanType: scan.scanType,
-      urgencyLevel: scan.urgencyLevel,
-      status: scan.status,
-      notes: scan.notes,
-      createdAt: scan.createdAt,
-      file: {
-        mimetype: scan.fileType || "image/jpeg",
-        data: fileData,
-      },
+      return {
+        id: scan.id,
+        patientId: scan.patientId,
+        mrn: patient.mrn,
+        uploadedBy: scan.uploader ? scan.uploader.name : null,
+        uploader: scan.uploader || null,
+        scanType: scan.scanType,
+        urgencyLevel: scan.urgencyLevel,
+        status: scan.status,
+        notes: scan.notes,
+        createdAt: scan.createdAt,
+        file: fileData
+          ? {
+              mimetype: scan.fileType || "image/jpeg",
+              data: fileData,
+            }
+          : null,
+      };
     });
+
+    return res.status(200).json(scanResponses);
 
   } catch (err) {
     logger.error(`[${endpoint}] Error: ${err.stack}`);
     return res.status(500).json({
-      error: "Server error while fetching scan",
+      error: "Server error while fetching scans",
     });
   }
 };
+
 
 
 
