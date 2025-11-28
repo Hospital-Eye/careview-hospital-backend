@@ -26,13 +26,13 @@ const createPatient = async (req, res) => {
     const { emailId, clinicId: bodyClinicId, name, dob, gender } = req.body;
     let userId;
 
-    //ensure email exists
+    // Ensure email exists
     if (!emailId) {
       logger.warn(`[Patient] Missing emailId in request to create patient`, { user: userEmail });
       return res.status(400).json({ error: "Email is required to create a patient." });
     }
 
-    //find or create user
+    // Find or create user
     let user = await User.findOne({ where: { email: emailId } });
     if (user) {
       logger.debug(`[Patient] Existing user found`, { email: emailId, userId: user.id });
@@ -56,7 +56,7 @@ const createPatient = async (req, res) => {
       return res.status(403).json({ error: "Missing organizationId in user context" });
     }
 
-    //validate clinic
+    // Validate clinic
     let clinic;
     let clinicId;
 
@@ -79,34 +79,32 @@ const createPatient = async (req, res) => {
 
       clinicId = clinic.clinicId;
       logger.debug(`[Patient] Admin resolved clinic`, { clinicId });
-    }
-
-    else if (role === "manager") {
+    } 
+    else if (role === "manager" || role === "doctor") {
       if (!userClinicId) {
-        logger.warn(`[Patient] Manager has no assigned clinicId in request to create patient`, { user: userEmail });
-        return res.status(400).json({ error: "Manager has no assigned clinicId" });
+        logger.warn(`[Patient] ${role} has no assigned clinicId in request to create patient`, { user: userEmail });
+        return res.status(400).json({ error: `${role} has no assigned clinicId` });
       }
 
       const query = isUUID(userClinicId)
-        ? { id: userClinicId }
-        : { clinicId: userClinicId };
+        ? { id: userClinicId, organizationId: userOrgId }
+        : { clinicId: userClinicId, organizationId: userOrgId };
 
       clinic = await Clinic.findOne({ where: query });
       if (!clinic) {
-        logger.warn(`[Patient] Assigned clinic not found for manager`, { query });
+        logger.warn(`[Patient] Assigned clinic not found for ${role}`, { query });
         return res.status(404).json({ error: "Assigned clinic not found" });
       }
 
       clinicId = clinic.clinicId;
-      logger.debug(`[${endpoint}] Manager resolved clinic`, { clinicId });
-    }
-
+      logger.debug(`[${endpoint}] ${role} resolved clinic`, { clinicId });
+    } 
     else {
       logger.warn(`[${endpoint}] Unauthorized role attempted to create patient`, { role });
       return res.status(403).json({ error: "Unauthorized role" });
     }
 
-    //prevent duplicate patient
+    // Prevent duplicate patient
     const existingPatient = await Patient.findOne({ where: { userId } });
     if (existingPatient) {
       logger.info(`[${endpoint}] Existing patient found, returning existing record`, {
@@ -115,7 +113,7 @@ const createPatient = async (req, res) => {
       return res.status(200).json(existingPatient);
     }
 
-    //MRN Generation
+    // MRN Generation
     function clinicPrefix(clinicId) {
       const parts = clinicId.split("-");
       const name = parts[0].substring(0, 3).toUpperCase();
@@ -143,7 +141,7 @@ const createPatient = async (req, res) => {
 
     logger.debug(`[${endpoint}] Generated MRN`, { mrn, prefix, lastSeq, nextNumber });
 
-    //create patient
+    // Create patient
     const patient = await Patient.create({
       ...req.body,
       userId,
@@ -171,6 +169,7 @@ const createPatient = async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 };
+
 
 //Get all patients, optionally filtered by status
 const getPatients = async (req, res) => {
