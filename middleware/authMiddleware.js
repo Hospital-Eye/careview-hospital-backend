@@ -34,6 +34,9 @@ const protect = (req, res, next) => {
 const authorize = (...roles) => {
     return (req, res, next) => {
 
+      if (req._skipAuthorize) {
+      return next();
+    }
       const userEmail = req.user?.email || 'unknown';
       const userRole = req.user?.role || 'unknown';
         //Check if user object exists from 'protect' middleware and if user's role is in allowed roles
@@ -73,14 +76,9 @@ const scope = (modelName) => {
             filter.clinicId = clinicId;
           }
           break;
-
+        
         case "patient":
-          if (modelName === "Patient") {
-            filter._id = id; //Patient sees only themselves
-          } else {
-            return res.status(403).json({ message: "Patients cannot access this resource" });
-          }
-          break;
+          return next();
 
         default:
           return res.status(403).json({ message: "Unknown role, access denied" });
@@ -97,17 +95,17 @@ const scope = (modelName) => {
 };
 
 
-//patient can view only their own records
+// patient can view only their own records
 const patientCheck = async (req, res, next) => {
   try {
-    //Only apply to patient role
+    // Only apply to patients
     if (req.user.role !== "patient") {
       return next();
     }
 
     const { Patient } = require("../models");
 
-    //Get the logged-in user's patient record
+    // Get the logged-in user's patient record
     const patientRecord = await Patient.findOne({
       where: { userId: req.user.id }
     });
@@ -118,7 +116,7 @@ const patientCheck = async (req, res, next) => {
       });
     }
 
-    //Extract ANY identifier from params
+    // Extract identifier from params
     const requestedId =
       req.params.patientId ||
       req.params.id ||
@@ -126,31 +124,35 @@ const patientCheck = async (req, res, next) => {
 
     if (!requestedId) {
       return res.status(403).json({
-        error: "Invalid patient request. Missing patient identifier.",
+        error: "Invalid patient request. Missing patient identifier."
       });
     }
 
-    // Allowed identifiers
+    // Allowed identifiers for this patient
     const allowedIdentifiers = [
       patientRecord.id,
       patientRecord.uuid,
-      patientRecord.mrn
+      patientRecord.mrn,
+      patientRecord.userId
     ].map(String);
 
-    // Compare param - actual patient identifiers
+    // Check if user is requesting their own record
     if (!allowedIdentifiers.includes(String(requestedId))) {
       return res.status(403).json({
         error: "Patients can only access their own records."
       });
     }
 
-    //All good - continue
-    next();
+    // Mark this request as patient-approved → skip authorize()
+    req._skipAuthorize = true;
+
+    next(); // ← Normal next() (NO arguments!)
   } catch (err) {
     console.error("patientCheck error:", err);
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
 
 
 module.exports = { protect, authorize, scope, patientCheck };

@@ -1,6 +1,6 @@
 const express = require("express");
 const multer = require("multer");
-const { getScans, uploadScan, getScanByMrn, addDoctorReviewByMrn } = require("../controllers/scanController");
+const { getScans, uploadScan, getScansByPatientId, addDoctorReviewByMrn } = require("../controllers/scanController");
 
 const { protect, authorize, scope, patientCheck } = require('../middleware/authMiddleware');
 const path = require("path");
@@ -53,7 +53,8 @@ return authorize(...allowedRoles)(req, res, next);
 //Upload scan
 router.post("/upload", protect, patientCheck, authorize("admin", "manager", "doctor", 'nurse'), scope("Scan"), upload.single("scan"), uploadScan);
 
-router.get("/:mrn", protect, patientCheck, authorize("admin", "manager", "doctor", "nurse"), scope("Scan"), getScanByMrn);
+//View scans of a particular patient
+router.get("/:patientId", protect, patientCheck, authorize("admin", "manager", "doctor", "nurse"), scope("Scan"), getScansByPatientId);
 
 //Add doctor review notes
 router.put("/:mrn", protect, authorize("doctor"), scope("Scan"), addDoctorReviewByMrn);
