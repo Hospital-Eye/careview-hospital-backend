@@ -86,40 +86,40 @@ const uploadScan = async (req, res) => {
   }
 };
 
-// GET scans by MRN (metadata + image file content)
-const getScanByMrn = async (req, res) => {
-  const endpoint = "getScanByMrn";
+// GET latest scan by patientId
+const getScansByPatientId = async (req, res) => {
+  const endpoint = "getScansByPatientId";
   const userEmail = req.user?.email || "unknown";
-  const mrn = req.params.mrn;
+  const patientId = req.params.patientId;
 
   logger.info(
-    `[${endpoint}] Request to view scan of patient having MRN: ${mrn} received from user: ${userEmail}`
+    `[${endpoint}] Request to view scans of patientId=${patientId} received from user: ${userEmail}`
   );
 
   try {
-    // Find patient by MRN
-    const patient = await Patient.findOne({ where: { mrn } });
+    // Find the patient by ID
+    const patient = await Patient.findOne({ where: { id: patientId } });
 
     if (!patient) {
-      logger.warn(`[${endpoint}] Patient not found for MRN="${mrn}"`);
+      logger.warn(`[${endpoint}] Patient not found for patientId="${patientId}"`);
       return res.status(404).json({ error: "Patient not found" });
     }
 
-    // Fetch the latest scan for this patient
+    // Fetch latest scan for this patient
     const scan = await Scan.findOne({
       where: { patientId: patient.id },
       include: [
-        { model: Patient, as: "patient" },   // correct alias
-        { model: User, as: "uploader" }      // correct alias
+        { model: Patient, as: "patient" },
+        { model: User, as: "uploader" }
       ],
       order: [["createdAt", "DESC"]],
     });
 
     if (!scan) {
       logger.warn(
-        `[${endpoint}] No scans found for patientId=${patient.id}, MRN="${mrn}"`
+        `[${endpoint}] No scans found for patientId=${patient.id}`
       );
-      return res.status(404).json({ error: "No scans found for this MRN" });
+      return res.status(404).json({ error: "No scans found for this patient" });
     }
 
     logger.info(
@@ -141,14 +141,13 @@ const getScanByMrn = async (req, res) => {
     const fileData = fs.readFileSync(filePath, { encoding: "base64" });
 
     logger.info(
-      `[${endpoint}] Successfully read scan file for MRN=${mrn}`
+      `[${endpoint}] Successfully read scan file for patientId=${patientId}`
     );
 
-    // Send metadata + file
     return res.status(200).json({
       id: scan.id,
       patientId: scan.patientId,
-      mrn: patient.mrn,                 // use patient.mrn, scan has no mrn column
+      mrn: patient.mrn,
       uploadedBy: scan.uploadedBy,
       scanType: scan.scanType,
       urgencyLevel: scan.urgencyLevel,
@@ -162,12 +161,13 @@ const getScanByMrn = async (req, res) => {
     });
 
   } catch (err) {
-    logger.error(`[${endpoint}] Error in getScanByMrn: ${err.stack}`);
+    logger.error(`[${endpoint}] Error: ${err.stack}`);
     return res.status(500).json({
       error: "Server error while fetching scan",
     });
   }
 };
+
 
 
 //Add Doctor Review by MRN ---
@@ -229,4 +229,4 @@ const addDoctorReviewByMrn = async (req, res) => {
 };
 
 
-module.exports = { getScans, uploadScan, getScanByMrn, addDoctorReviewByMrn };
+module.exports = { getScans, uploadScan, getScansByPatientId, addDoctorReviewByMrn };
