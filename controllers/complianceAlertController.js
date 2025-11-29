@@ -10,7 +10,7 @@ const createAlert = async (req, res) => {
   try {
     const user = req.user;
     const role = user.role.toLowerCase();
-
+    
     let organizationId = user.organizationId;
     let clinicId;
 
