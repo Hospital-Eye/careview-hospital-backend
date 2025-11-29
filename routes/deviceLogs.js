@@ -8,9 +8,9 @@ const {
   deleteDeviceLog
 } = require('../controllers/deviceLogController');
 
-router.post('/', protect, authorize('admin', 'manager'), createDeviceLog);
+router.post('/', protect, authorize('admin', 'manager', 'doctor'), createDeviceLog);
 router.get('/', protect, authorize('admin', 'manager', 'nurse', 'doctor'), scope('DeviceLog'), getDeviceLogs);
 router.get('/:id', protect, authorize('admin', 'manager', 'nurse', 'doctor'), scope('DeviceLog'), getDeviceLogById);
-router.delete('/:id', protect, authorize('admin', 'manager'), scope('DeviceLog'), deleteDeviceLog);
+router.delete('/:id', protect, authorize('admin', 'manager', 'doctor'), scope('DeviceLog'), deleteDeviceLog);
 
 module.exports = router;
