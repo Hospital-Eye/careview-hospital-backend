@@ -2,62 +2,72 @@ const { ComplianceAlert, AnalyticsEvent, Staff, Patient, Room } = require('../mo
 const { Op } = require('sequelize');
 const { sequelize } = require('../config/db');
 const { logger } = require('../utils/logger');
+const { isUUID } = require('validator');
 
-//Create a new alert
+//create alert
 const createAlert = async (req, res) => {
   const endpoint = "createComplianceAlert";
 
   try {
     const user = req.user;
     const role = user.role.toLowerCase();
-    
+
     let organizationId = user.organizationId;
     let clinicId;
 
-    //Admin: org and clinic from req.user
     if (role === "admin") {
       clinicId = user.clinicId;
-
       if (!clinicId) {
-        return res.status(400).json({
-          error: "Admin user does not have an assigned clinicId"
-        });
+        return res.status(400).json({ error: "Admin user does not have an assigned clinicId" });
       }
-
     } else if (["manager", "doctor", "nurse"].includes(role)) {
-      //Other roles: org from req.user, clinic from req.body
       clinicId = req.body.clinicId;
-
       if (!clinicId) {
-        return res.status(400).json({
-          error: "clinicId is required for this user role"
-        });
+        return res.status(400).json({ error: "clinicId is required for this user role" });
       }
-      
     } else {
-      return res.status(403).json({
-        error: `Role '${role}' not allowed to create compliance alerts`
-      });
+      return res.status(403).json({ error: `Role '${role}' not allowed to create compliance alerts` });
     }
 
-    // Create the compliance alert
-    const alert = await ComplianceAlert.create({
-      title: req.body.title,
-      message: req.body.message,
-      type: req.body.type,
-      organizationId: organizationId,
-      clinicId: clinicId,
-      createdBy: user.id
-    });
+    // Determine if this is a clinic-wide alert
+    const isClinicWide =
+      (!req.body.patientId && !req.body.roomId) &&
+      (req.body.room === "clinic-wide" || req.body.room === "all" || req.body.room === null);
+
+    // Validate UUID fields
+    const uuidFields = ["eventId", "staffId", "patientId", "roomId"];
+    const validatedUUIDs = {};
+
+    for (const field of uuidFields) {
+      const value = field === "staffId" ? req.body[field] || user.id : req.body[field];
+      if (value && !isUUID(value)) {
+        return res.status(400).json({ error: `${field} must be a valid UUID` });
+      }
+      validatedUUIDs[field] = value || null;
+    }
+
+    // Build payload (only model fields)
+    const payload = {
+      description: req.body.description || null,
+      severity: req.body.severity || "Medium",
+      source: req.body.source || "system",
+      status: req.body.status || "Pending",
+      resolutionNotes: req.body.resolutionNotes || null,
+      eventId: validatedUUIDs.eventId,
+      staffId: validatedUUIDs.staffId,
+      patientId: isClinicWide ? null : validatedUUIDs.patientId,
+      roomId: isClinicWide ? null : validatedUUIDs.roomId
+    };
+
+    const alert = await ComplianceAlert.create(payload);
 
     return res.status(201).json(alert);
 
   } catch (err) {
-    logger.error(`[${endpoint}] Error: ${err.stack}`);
+    logger.error(`[${endpoint}] Full error:`, err);
     return res.status(500).json({ error: "Server error creating compliance alert" });
   }
 };
-
 
 //Get all alerts
 const getAlerts = async (req, res) => {

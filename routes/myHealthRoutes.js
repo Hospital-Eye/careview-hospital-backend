@@ -52,75 +52,74 @@ router.get('/', protect, authorize('patient'), async (req, res) => {
 
 //update patient info
 router.put('/update', protect, authorize('patient'), async (req, res) => {
-const endpoint = 'UpdateMyProfile';
-const { allergies, precautions, emergencyContact } = req.body;
+  const endpoint = 'UpdateMyProfile';
+  const { allergies, precautions, emergencyContact } = req.body;
 
-try {
-logger.info(`[${endpoint}] Patient ${req.user.email} attempting to update profile`);
+  try {
+    logger.info(`[${endpoint}] Patient ${req.user.email} attempting to update profile`);
 
-const patient = await Patient.findOne({
-  where: { userId: req.user.id }
+    const patient = await Patient.findOne({
+      where: { userId: req.user.id }
+    });
+
+    if (!patient) {
+      logger.warn(`[${endpoint}] No patient record found for ${req.user.email}`);
+      return res.status(404).json({ message: 'Patient record not found' });
+    }
+
+    const updates = {};
+
+    if (allergies !== undefined) {
+
+  const incomingArray = Array.isArray(allergies) ? allergies : [allergies];
+
+  const normalizedIncoming = incomingArray
+    .map(item => {
+      if (typeof item === "string") return item.trim().toLowerCase();
+      if (item && typeof item === "object" && item.substance)
+        return item.substance.trim().toLowerCase();
+      return null;
+    })
+    .filter(Boolean);
+
+  //Detect duplicates
+  const hasDuplicateInsideIncoming =
+    new Set(normalizedIncoming).size !== normalizedIncoming.length;
+
+  if (hasDuplicateInsideIncoming) {
+    return res.status(400).json({
+      message: "Duplicate allergies in request"
+    });
+  }
+  updates.allergies = normalizedIncoming;
+}
+
+    if (precautions !== undefined) {
+      updates.precautions = precautions;
+    }
+
+    if (emergencyContact !== undefined) {
+      const existingContact = patient.emergencyContact || {};
+      updates.emergencyContact = {
+        ...existingContact,
+        ...emergencyContact
+      };
+    }
+    
+    await patient.update(updates);
+
+    logger.info(`[${endpoint}] Patient ${req.user.email} profile updated successfully`);
+
+    res.json({
+      message: 'Profile updated successfully',
+      updatedFields: updates
+    });
+
+  } catch (err) {
+    logger.error(`[${endpoint}] Error updating patient profile: ${err.stack}`);
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
 });
-
-if (!patient) {
-  logger.warn(`[${endpoint}] No patient record found for ${req.user.email}`);
-  return res.status(404).json({ message: 'Patient record not found' });
-}
-
-const updates = {};
-
-// ----- ALLERGIES -----
-if (allergies !== undefined) {
-  const existing = Array.isArray(patient.allergies)
-    ? patient.allergies
-    : patient.allergies
-    ? [patient.allergies]
-    : [];
-
-  const incoming = Array.isArray(allergies)
-    ? allergies
-    : allergies
-    ? [allergies]
-    : [];
-
-  // Append + remove duplicates
-  updates.allergies = [...new Set([...existing, ...incoming])];
-}
-
-// ----- PRECAUTIONS (simple replace) -----
-if (precautions !== undefined) {
-  updates.precautions = precautions;
-}
-
-// ----- EMERGENCY CONTACT (deep merge) -----
-if (emergencyContact !== undefined) {
-  const existingContact = patient.emergencyContact || {};
-  updates.emergencyContact = {
-    ...existingContact,
-    ...emergencyContact
-  };
-}
-
-// Apply changes
-await patient.update(updates);
-
-logger.info(
-  `[${endpoint}] Patient ${req.user.email} profile updated successfully`
-);
-
-res.json({
-  message: 'Profile updated successfully',
-  updatedFields: updates
-});
-
-} catch (err) {
-logger.error(
-`[${endpoint}] Error updating patient profile: ${err.stack}`
-);
-res.status(500).json({ message: 'Server error', error: err.message });
-}
-});
-
 
 module.exports = router;
 
