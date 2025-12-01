@@ -4,6 +4,7 @@ const { sequelize } = require('../config/db');
 const path = require("path");
 const fs = require("fs");
 const { logger } = require('../utils/logger');
+const PDFDocument = require("pdfkit");
 
 //GET all scans
 const getScans = async (req, res) => {
@@ -254,6 +255,83 @@ const addDoctorReviewByPatientId = async (req, res) => {
   }
 };
 
+//generate report pdf (currently contains doctor's notes + images if any)
+const generateReport = async (req, res) => {
+  const endpoint = "generateReport";
+  const userEmail = req.user?.email || "unknown";
+  const { scanId } = req.params;
+
+  logger.info(`[${endpoint}] Incoming request by user: ${userEmail} to generate report for scanId=${scanId}`);
+
+  try {
+    // Fetch scan
+    const scan = await Scan.findOne({ where: { id: scanId } });
+    if (!scan) {
+      logger.warn(`[${endpoint}] Scan not found for scanId=${scanId}`);
+      return res.status(404).json({ error: "Scan not found" });
+    }
+    logger.info(`[${endpoint}] Found scan: ID=${scan.id}, patientId=${scan.patientId}`);
+
+    // Fetch patient
+    const patient = await Patient.findOne({ where: { id: scan.patientId } });
+    if (!patient) {
+      logger.warn(`[${endpoint}] Patient not found for patientId=${scan.patientId}`);
+      return res.status(404).json({ error: "Patient not found" });
+    }
+    logger.info(`[${endpoint}] Patient found: ID=${patient.id}, Name=${patient.name}`);
+
+    //Create PDF document
+    const doc = new PDFDocument();
+    logger.debug(`[${endpoint}] PDF document created`);
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=DoctorReview_${scan.id}.pdf`
+    );
+    logger.debug(`[${endpoint}] Response headers set for PDF download`);
+
+    doc.pipe(res);
+    logger.debug(`[${endpoint}] PDF piped to response`);
+
+    //Add PDF content
+    doc.fontSize(20).text("Doctor Review Report", { align: "center" });
+    doc.moveDown();
+
+    doc.fontSize(14).text(`Patient: ${patient.name}`);
+    doc.text(`Patient ID: ${patient.id}`);
+    doc.text(`Scan ID: ${scan.id}`);
+    doc.text(`Status: ${scan.status}`);
+    doc.moveDown();
+
+    doc.fontSize(16).text("Doctor Notes:");
+    doc.fontSize(14).text(scan.notes || "No notes provided");
+    doc.moveDown();
+
+    //Include image if uploaded
+    if (scan.doctorReviewUrl) {
+      const imagePath = path.join(__dirname, "..", scan.doctorReviewUrl);
+      if (fs.existsSync(imagePath)) {
+        doc.fontSize(16).text("Doctor Review Image:");
+        doc.image(imagePath, { fit: [400, 400], align: "center" });
+        logger.info(`[${endpoint}] Doctor review image embedded in PDF from ${imagePath}`);
+      } else {
+        doc.fontSize(14).text(`Image available at: ${scan.doctorReviewUrl}`);
+        logger.warn(`[${endpoint}] Image file not found at ${imagePath}, added URL instead`);
+      }
+    } else {
+      logger.info(`[${endpoint}] No doctor review image found for scanId=${scan.id}`);
+    }
+
+    //Finalize PDF
+    doc.end();
+    logger.info(`[${endpoint}] PDF generation completed for scanId=${scan.id}`);
+  } catch (err) {
+    logger.error(`[${endpoint}] Error generating PDF for scanId=${scanId}: ${err.stack}`);
+    return res.status(500).json({ error: "Server error while generating report" });
+  }
+};
+
 
 //View Doctor's notes for a particular patientId
 const getDoctorReviewByPatientId = async (req, res) => {
@@ -297,4 +375,4 @@ const getDoctorReviewByPatientId = async (req, res) => {
 
 
 
-module.exports = { getScans, uploadScan, getScansByPatientId, addDoctorReviewByPatientId, getDoctorReviewByPatientId };
+module.exports = { getScans, uploadScan, getScansByPatientId, addDoctorReviewByPatientId, generateReport, getDoctorReviewByPatientId };

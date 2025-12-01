@@ -1,6 +1,6 @@
 const express = require("express");
 const multer = require("multer");
-const { getScans, uploadScan, getScansByPatientId, addDoctorReviewByPatientId, getDoctorReviewByPatientId } = require("../controllers/scanController");
+const { getScans, uploadScan, getScansByPatientId, addDoctorReviewByPatientId, generateReport, getDoctorReviewByPatientId } = require("../controllers/scanController");
 
 const { protect, authorize, scope, patientCheck } = require('../middleware/authMiddleware');
 const path = require("path");
@@ -72,6 +72,9 @@ const uploadReviewImage = multer({ storage: reviewStorage });
 
 //Add doctor review notes (+images if any)
 router.put("/:patientId", protect, authorize("doctor"), scope("Scan"), uploadReviewImage.single("doctorImage"),addDoctorReviewByPatientId);
+
+//generate report pdf
+router.get("/:scanId/report", protect, patientCheck, authorize("doctor", "nurse"), generateReport);
 
 //View doctor's notes for scans of a patientId
 router.get("/:patientId", protect, patientCheck, authorize("doctor"), scope("Scan"), getDoctorReviewByPatientId);
