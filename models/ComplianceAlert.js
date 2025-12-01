@@ -9,7 +9,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     description: {
       type: DataTypes.TEXT,
-      allowNull: false
+      allowNull: true
     },
     severity: {
       type: DataTypes.ENUM('Low', 'Medium', 'High'),
@@ -21,7 +21,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true
     },
     source: {
-      type: DataTypes.JSONB,
+      type: DataTypes.TEXT,
       allowNull: true
     },
     recipients: {
