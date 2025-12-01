@@ -53,7 +53,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true
     },
     allergies: {
-      type: DataTypes.JSONB,
+      type: DataTypes.ARRAY(DataTypes.STRING),
       allowNull: true,
       defaultValue: []
     },
