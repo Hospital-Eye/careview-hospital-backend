@@ -61,7 +61,7 @@ module.exports = (
       const userEmail = profile.email.toLowerCase();
       const domain = userEmail.split("@")[1];
 
-      let role = ALLOWED_DOMAINS.includes(domain) ? "nurse" : "patient";
+      let role = ALLOWED_DOMAINS.includes(domain) ? "nurse" : "user";
 
       let user = await User.findOne({ where: { email: userEmail } });
 
@@ -71,7 +71,7 @@ module.exports = (
           email: userEmail,
           name: profile.name,
           profilePicture: profile.picture,
-          role,
+          role: "user",
           organizationId: "sigma-healthsense",
           clinicId: "newhope-1",
           isActive: true
@@ -138,7 +138,7 @@ module.exports = (
             otp,
             otpExpiresAt: expiresAt,
             isActive: false,       //activate only after OTP verify
-            role: "patient",       //default if email signup
+            role: "user",       //default if email signup
             organizationId: "sigma-healthsense",
             clinicId: "newhope-1"
         });

@@ -169,14 +169,13 @@ const editClinic = async (req, res) => {
     const allowedFields = [
       "name",
       "address",
-      "contactNumber",
-      "email",
-      "city",
-      "state",
-      "zipcode",
-      "managerId",
-      "clinicType",
-      "organizationId"
+      "location",
+      "contactPhone",
+      "contactEmail",
+      "registrationNumber",
+      "type",
+      "dateOfEstablishment",
+      "clinicId"
     ];
 
     const updates = {};
