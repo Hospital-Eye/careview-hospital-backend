@@ -7,6 +7,7 @@ const bcrypt = require("bcrypt");
 const nodemailer = require("nodemailer");
 require('dotenv').config();
 
+
 module.exports = (
   GOOGLE_CLIENT_ID,
   GOOGLE_CLIENT_SECRET,
@@ -282,12 +283,70 @@ module.exports = (
     res.redirect(`${FRONTEND_BASE_URL}/login`);
   });
 
-  return router;
-};
+  // Signup by Voice Agent
+  router.post("/retell/webhook", async (req, res) => {
+    const endpoint = "retellWebhook";
+    try {
+      const call = req.body.call;
+      const dynamic = call.retell_llm_dynamic_variables;
 
+      const name = dynamic.customer_name;
+      const email = dynamic.email;
+      const dob = dynamic.dob;           
+      const phone = dynamic.phone_number;
 
+      logger.info(`[${endpoint}] Incoming call from ${phone} to create user ${email}`);
 
+      // Generate a temporary password
+      const defaultPassword = crypto.randomUUID().slice(0, 8);
+      const hashed = await bcrypt.hash(defaultPassword, 10);
 
+      // Create user
+      const user = await User.create({
+        name,
+        email,
+        phone,
+        password: hashed,
+        signupByCall: true,
+        isActive: true,                
+        otp: null,
+        otpExpiresAt: null,
+        role: "patient",
+        organizationId,
+        clinicId         
+      });
+
+      logger.info(`[${endpoint}] User created with ID ${user.id}`);
+
+      // Send credentials email
+      await transporter.sendMail({
+        from: process.env.SMTP_USER,
+        to: email,
+        subject: "Your HospitalEye Account Credentials",
+        html: `
+          <p>Hello ${name},</p>
+          <p>Your account has been created via our voice assistant.</p>
+          <p><b>Email:</b> ${email}</p>
+          <p><b>Temporary Password:</b> ${defaultPassword}</p>
+          <p>Please log in and change your password.</p>
+        `
+      });
+
+      logger.info(`[${endpoint}] Credentials email sent to ${email}`);
+
+      return res.json({ 
+        message: "User created via Retell AI",
+        userId: user.id
+      });
+
+    } catch (err) {
+      logger.error(`[${endpoint}] Webhook error:`, err);
+      return res.status(500).json({ error: "Webhook failed" });
+    }
+  });
+
+    return router;
+  };
 
 
 
