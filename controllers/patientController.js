@@ -1,5 +1,5 @@
 const multer = require("multer");
-const { Patient, Vital, Admission, User, Organization, Clinic, Counter } = require('../models');
+const { Patient, Vital, Admission, User, Organization, Clinic, Counter, PatientRegistrationRequest } = require('../models');
 const { Op } = require('sequelize');
 const { sequelize } = require('../config/db');
 const { validate: isUUID } = require('uuid');
@@ -454,65 +454,57 @@ const deletePatientByMRN = async (req, res) => {
   }
 };
 
-/*
+// new user welcome
 const welcomeNewUser = async (req, res) => {
-  const endpoint = "welcome";
+  const endpoint = "welcomeNewUser";
   const userEmail = req.user?.email || "unknown";
 
-  logger.info(`[${endpoint}] Request received from ${userEmail}`);
+  logger.info(`[${endpoint}] Welcome check for ${userEmail}`);
 
   try {
-    const user = req.user;
+    const { Patient, PatientRegistrationRequest } = require("../models");
+    const userId = req.user.id;
 
-    // Only for patients  
-    if (user.role.toLowerCase() !== "patient") {
-      logger.warn(`[${endpoint}] Access denied for ${userEmail} — role: ${user.role}`);
-      return res.status(403).json({
-        message: "Access denied. Only patients can access the welcome page."
-      });
-    }
-
-    const { Patient } = require("../models");
-
-    // Check if patient record already exists
-    const patientRecord = await Patient.findOne({
-      where: { userId: user.id }
-    });
-
-    if (patientRecord) {
-      logger.info(
-        `[${endpoint}] Patient profile already exists for ${userEmail} (userId: ${user.id}). Redirecting to dashboard.`
-      );
-
+    //Check if patient exists (fully registered)
+    const patient = await Patient.findOne({ where: { userId } });
+    if (patient) {
+      logger.info(`[${endpoint}] Patient found for ${userEmail}. Redirecting to /my-health.`);
       return res.status(200).json({
         registered: true,
-        message: "Patient already registered. Proceed to dashboard."
+        redirect: "/my-health",
+        message: "Patient profile found."
       });
     }
 
-    // Patient not registered yet
-    logger.info(
-      `[${endpoint}] No patient profile found for ${userEmail} (userId: ${user.id}). Showing welcome registration page.`
-    );
+    //Check if a registration request is pending (user has already raised a request)
+    const pendingRequest = await PatientRegistrationRequest.findOne({
+      where: { userId, status: "pending" }
+    });
 
+    if (pendingRequest) {
+      logger.info(`[${endpoint}] Registration request pending for ${userEmail}.`);
+      return res.status(200).json({
+        registered: true,
+        message: "Your request is being processed by your clinic."
+      });
+    }
+
+    //No patient record or pending request (user needs to register)
+    logger.info(`[${endpoint}] No patient record for ${userEmail}. Needs registration.`);
     return res.status(200).json({
       registered: false,
-      message: "Welcome! Please complete registration."
+      message: "Please register first."
     });
 
   } catch (error) {
-    logger.error(
-      `[${endpoint}] Error processing welcome request for ${userEmail} — ${error.message}`,
-      { stack: error.stack }
-    );
-
+    logger.error(`[${endpoint}] Error: ${error.message}`, { stack: error.stack });
     return res.status(500).json({ message: "Internal Server Error" });
   }
-};*/
+};
 
-// POST /api/patient-registration
-const registerPatient = async (req, res) => {
-  const endpoint = "patientRegistration";
+// Register new user as patient (send registration request to clinic)
+const registerUserAsPatient = async (req, res) => {
+  const endpoint = "registerUserAsPatient";
   const userEmail = req.user?.email || "unknown";
 
   logger.info(`[${endpoint}] Registration request received from ${userEmail}`);
@@ -520,78 +512,92 @@ const registerPatient = async (req, res) => {
   try {
     const user = req.user;
 
-    // Only patients can register
-    if (user.role.toLowerCase() !== "patient") {
-      logger.warn(`[${endpoint}] Access denied for ${userEmail} — role: ${user.role}`);
-      return res.status(403).json({ error: "Only patients can register." });
+    //Only newly signed-up users can register
+    if (user.role.toLowerCase() !== "user") {
+      logger.warn(
+        `[${endpoint}] Access denied for ${userEmail} — role: ${user.role}`
+      );
+      return res.status(403).json({
+        error: "Only unregistered users can complete patient onboarding."
+      });
     }
 
-    // Extract fields from body
     const {
-      fullName,
-      dateOfBirth,
+      name,
+      dob,
       gender,
       phone,
-      email,
-      organizationId = 'sigma-healthsense',
+      emailId,
+      organizationId = "sigma-healthsense",
       clinicId,
-      requiresIsolationPrecautions,
+      requiresIsolationPrecautions = false,
       allergies,
-      diagnoses
+      diagnoses,
+      emergencyContact
     } = req.body;
 
-    // Validate required fields
-    if (!fullName || !dateOfBirth || !gender || !phone || !email || !clinicId) {
+    //Validate required fields
+    if (!name || !dob || !gender || !phone || !emailId || !clinicId) {
       logger.warn(`[${endpoint}] Missing required fields from ${userEmail}`);
       return res.status(400).json({ error: "Missing required fields." });
     }
 
-    // Check if patient already registered
-    const existing = await Patient.findOne({ where: { userId: user.id } });
-    if (existing) {
-      logger.warn(`[${endpoint}] Duplicate registration attempt by ${userEmail}`);
-      return res.status(409).json({ error: "Patient already registered." });
-    }
+    //Parse arrays safely
+    const parsedAllergies = allergies
+      ? (Array.isArray(allergies) ? allergies : allergies.split(",").map(a => a.trim()).filter(Boolean))
+      : [];
 
-    // Parse allergies & diagnoses (comma-separated → array)
-    const parsedAllergies =
-      allergies ? allergies.split(",").map(a => a.trim()).filter(Boolean) : [];
-    const parsedDiagnoses =
-      diagnoses ? diagnoses.split(",").map(d => d.trim()).filter(Boolean) : [];
+    const parsedDiagnoses = diagnoses
+      ? (Array.isArray(diagnoses) ? diagnoses : diagnoses.split(",").map(d => d.trim()).filter(Boolean))
+      : [];
 
-    // Create patient record
-    const newPatient = await Patient.create({
+    //Ensure emergencyContact is either JSON or null
+    const parsedEmergencyContact = emergencyContact || null;
+
+    //Create a registration request instead of patient
+    const registrationRequest = await PatientRegistrationRequest.create({
       userId: user.id,
-      fullName,
-      dateOfBirth,
+      name,
+      dob,
       gender,
       phone,
-      email,
-      organizationId: 'sigma-healthsense',
+      emailId,
+      organizationId,
       clinicId,
-      requiresIsolationPrecautions: requiresIsolationPrecautions || false,
+      requiresIsolationPrecautions: Boolean(requiresIsolationPrecautions),
       allergies: parsedAllergies,
-      diagnoses: parsedDiagnoses
+      diagnoses: parsedDiagnoses,
+      emergencyContact: parsedEmergencyContact,
+      status: "pending"
     });
 
     logger.info(
-      `[${endpoint}] Patient registration successful for ${userEmail} (patientId: ${newPatient.id})`
+      `[${endpoint}] Patient registration request created for ${userEmail} (requestId: ${registrationRequest.id})`
     );
 
+    //Mark user as registered (request in progress)
+    await User.update(
+      { registered: true },
+      { where: { id: user.id } }
+    );
+    logger.info(`[${endpoint}] User marked as registered: ${userEmail}`);
+
     return res.status(201).json({
-      message: "Patient registered successfully.",
-      patient: newPatient
+      message: "Patient registration request sent successfully.",
+      registrationRequest
     });
 
   } catch (error) {
     logger.error(
-      `[${endpoint}] Error during registration for ${userEmail}: ${error.message}`,
+      `[${endpoint}] Error during registration request for ${userEmail}: ${error.message}`,
       { stack: error.stack }
     );
+
+    console.error(error);
+
     return res.status(500).json({ error: "Internal server error." });
   }
 };
-
 
 module.exports = {
   createPatient,
@@ -599,5 +605,6 @@ module.exports = {
   getPatientByMRN,
   updatePatientByMRN,
   deletePatientByMRN,
-  registerPatient
+  welcomeNewUser,
+  registerUserAsPatient
 };

@@ -79,6 +79,9 @@ const scope = (modelName) => {
         
         case "patient":
           return next();
+        
+        case "user":
+          return next();
 
         default:
           return res.status(403).json({ message: "Unknown role, access denied" });
