@@ -311,7 +311,7 @@ module.exports = (
         isActive: true,                
         otp: null,
         otpExpiresAt: null,
-        role: "patient",
+        role: "role",
         organizationId,
         clinicId         
       });
