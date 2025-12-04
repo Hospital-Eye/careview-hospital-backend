@@ -167,7 +167,7 @@ module.exports = (
         console.error("Signup error:", err);
         res.status(500).json({ error: "Signup failed" });
     }
-    });
+    });3
 
 
   //send OTP
@@ -293,7 +293,7 @@ module.exports = (
       const name = dynamic.customer_name;
       const email = dynamic.email;
       const dob = dynamic.dob;           
-      const phone = dynamic.phone_number;
+      const phone = call.from_number;
 
       logger.info(`[${endpoint}] Incoming call from ${phone} to create user ${email}`);
 
@@ -312,8 +312,8 @@ module.exports = (
         otp: null,
         otpExpiresAt: null,
         role: "user",
-        organizationId,
-        clinicId         
+        organizationId: "sigma-healthsense",
+        clinicId: "newhope-1"         
       });
 
       logger.info(`[${endpoint}] User created with ID ${user.id}`);
