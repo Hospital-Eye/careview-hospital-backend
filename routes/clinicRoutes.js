@@ -7,7 +7,9 @@ const {
     getClinics,
     getClinicById,
     editClinic,
-    deleteClinic
+    deleteClinic,
+    getRegistrationRequestsForClinic,
+    updateRegistrationRequestStatus
 } = require('../controllers/clinicController');
 
 
@@ -16,5 +18,10 @@ router.get('/', protect, authorize('admin', 'manager', 'doctor', 'nurse', 'patie
 router.get('/:id', protect, authorize('admin', 'manager', 'doctor'), scope('Clinic'), getClinicById);
 router.put('/:id', protect, authorize('admin', 'manager'), scope('Clinic'), editClinic);
 router.delete('/:id', protect, authorize('admin', 'manager'), scope('Clinic'), deleteClinic);
+router.get('/:id/requests', protect, authorize('admin', 'manager', 'doctor', 'nurse'), 
+            scope("PatientRegistrationRequest"), getRegistrationRequestsForClinic);
+router.patch("/:id/requests/:requestId", protect, authorize("admin", "manager", "doctor", "nurse"), 
+            scope("PatientRegistrationRequest"), updateRegistrationRequestStatus);
+
 
 module.exports = router;
