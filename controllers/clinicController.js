@@ -1,4 +1,4 @@
-const { Clinic, Organization, User } = require('../models');
+const { Clinic, Organization, User, PatientRegistrationRequest } = require('../models');
 const { Op } = require('sequelize');
 const { sequelize } = require('../config/db');
 const { logger } = require('../utils/logger');
@@ -231,11 +231,146 @@ const deleteClinic = async (req, res) => {
   }
 };
 
+// Get all registration requests for a clinic
+const getRegistrationRequestsForClinic = async (req, res) => {
+  const endpoint = "getRegistrationRequestsForClinic";
+
+  logger.info(`[${endpoint}] Fetching registration requests with scope: ${JSON.stringify(req.scopeFilter)}`);
+
+  try {
+    const { PatientRegistrationRequest, User } = require("../models");
+
+    //Pull all PENDING requests that match the injected scope filter
+    const requests = await PatientRegistrationRequest.findAll({
+      where: {
+        ...req.scopeFilter
+      },
+      include: [
+        {
+          model: User,
+          attributes: ["id", "email", "name"]
+        }
+      ],
+      order: [["createdAt", "DESC"]]
+    });
+
+    return res.status(200).json({
+      count: requests.length,
+      filterApplied: req.scopeFilter,
+      requests
+    });
+
+  } catch (error) {
+    logger.error(
+      `[${endpoint}] Error fetching registration requests: ${error.message}`,
+      { stack: error.stack }
+    );
+    return res
+      .status(500)
+      .json({ error: "Failed to fetch registration requests." });
+  }
+};
+
+//Approve or reject a patient registration request
+const updateRegistrationRequestStatus = async (req, res) => {
+  const endpoint = "updateRegistrationRequestStatus";
+  const { requestId } = req.params;
+  const { action } = req.body; // "approve" or "reject"
+
+  logger.info(`[${endpoint}] Incoming update for request ${requestId} - action: ${action}`);
+
+  try {
+    const { PatientRegistrationRequest, User } = require("../models");
+
+    //Validate action
+    if (!["approve", "reject"].includes(action)) {
+      return res.status(400).json({ error: "Invalid action. Must be 'approve' or 'reject'." });
+    }
+
+    const registrationRequest = await PatientRegistrationRequest.findOne({
+      where: {
+        id: requestId,
+        ...req.scopeFilter
+      }
+    });
+
+    if (!registrationRequest) {
+      logger.warn(`[${endpoint}] Request ${requestId} not found or out of scope`);
+      return res.status(404).json({ error: "Request not found" });
+    }
+
+    if (registrationRequest.status !== "pending") {
+      return res.status(400).json({ error: "Only pending requests can be updated." });
+    }
+
+    //approve
+    if (action === "approve") {
+      logger.info(`[${endpoint}] Approving request ${requestId}`);
+
+      //Get user based on email in the registration request
+      const user = await User.findOne({
+        where: { email: registrationRequest.emailId.toLowerCase() }
+      });
+
+      if (!user) {
+        return res.status(404).json({ error: "Associated user not found." });
+      }
+
+      //Update user role + clinic + org
+      await user.update({
+        role: "patient",
+        clinicId: registrationRequest.clinicId,
+        organizationId: registrationRequest.organizationId,
+        registered: true 
+      });
+
+      //Update request status
+      await registrationRequest.update({
+        status: "approved",
+        reviewedAt: new Date(),
+        reviewedBy: req.user.id
+      });
+
+      logger.info(`[${endpoint}] Request ${requestId} approved by ${req.user.email}`);
+
+      return res.status(200).json({
+        message: "Registration request approved.",
+        request: registrationRequest
+      });
+    }
+
+    //reject
+    if (action === "reject") {
+      logger.info(`[${endpoint}] Rejecting request ${requestId}`);
+
+      await registrationRequest.update({
+        status: "rejected",
+        reviewedAt: new Date(),
+        reviewedBy: req.user.id
+      });
+
+      return res.status(200).json({
+        message: "Registration request rejected.",
+        request: registrationRequest
+      });
+    }
+
+  } catch (error) {
+    logger.error(
+      `[${endpoint}] Error updating registration request: ${error.message}`,
+      { stack: error.stack }
+    );
+    return res.status(500).json({ error: "Failed to update registration request." });
+  }
+};
+
 
 module.exports = {
   createClinic,
   getClinics,
   getClinicById,
   editClinic,
-  deleteClinic
+  deleteClinic,
+  getRegistrationRequestsForClinic,
+  updateRegistrationRequestStatus
 };
