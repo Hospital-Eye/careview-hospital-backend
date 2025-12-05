@@ -173,74 +173,54 @@ const getScansByPatientId = async (req, res) => {
   }
 };
 
-//Add Doctor Review by Patient ID (supports notes + image upload)
-const addDoctorReviewByPatientId = async (req, res) => {
-  const endpoint = "addDoctorReviewByPatientId";
+//Add Doctor Review by Scan ID (preferred)
+const addDoctorReviewByScanId = async (req, res) => {
+  const endpoint = "addDoctorReviewByScanId";
   const userEmail = req.user?.email || "unknown";
 
-  logger.info(`[${endpoint}] Incoming request to add doctor review from user: ${userEmail}`);
+  logger.info(`[${endpoint}] Incoming request from: ${userEmail}`);
 
   try {
-    const { patientId } = req.params;
-    const { notes, scanId } = req.body;
+    const { scanId } = req.params;
+    const { notes } = req.body;
 
-    logger.debug(
-      `[${endpoint}] Incoming review for patientId=${patientId}, scanId=${scanId || "latest"}`
-    );
+    logger.debug(`[${endpoint}] scanId received: ${scanId}`);
 
-    //Fetch patient
-    const patient = await Patient.findOne({ where: { id: patientId } });
+    const scan = await Scan.findOne({ where: { id: scanId } });
+
+    if (!scan) {
+      logger.warn(`[${endpoint}] Scan not found for scanId="${scanId}"`);
+      return res.status(404).json({ error: "Scan not found" });
+    }
+
+    logger.info(`[${endpoint}] Scan found. scanId=${scan.id}, patientId=${scan.patientId}`);
+
+    //load the patient from scan.patientId
+    const patient = await Patient.findOne({ where: { id: scan.patientId } });
 
     if (!patient) {
-      logger.warn(`[${endpoint}] Patient not found for patientId="${patientId}"`);
-      return res.status(404).json({ error: "Patient not found" });
+      logger.warn(`[${endpoint}] Invalid scan — patient not found for patientId=${scan.patientId}`);
+      return res.status(404).json({ error: "Patient not found for this scan" });
     }
 
     logger.info(`[${endpoint}] Patient found: ID=${patient.id}`);
 
-    //Fetch scan (latest or by ID)
-    let scan;
-
-    if (scanId) {
-      logger.debug(`[${endpoint}] Fetching scanId=${scanId}`);
-      scan = await Scan.findOne({ where: { id: scanId, patientId: patient.id } });
-    } else {
-      logger.debug(`[${endpoint}] Fetching latest scan`);
-      scan = await Scan.findOne({
-        where: { patientId: patient.id },
-        order: [["createdAt", "DESC"]],
-      });
-    }
-
-    if (!scan) {
-      logger.warn(
-        `[${endpoint}] No scan found for patientId=${patientId}, scanId=${scanId || "latest"}`
-      );
-      return res.status(404).json({ error: "Scan not found" });
-    }
-
-    logger.info(`[${endpoint}] Scan to review: ID=${scan.id}`);
-
-    //Prepare update fields
+    //update status
     const updateFields = {
       notes: notes || scan.notes,
       status: "Reviewed",
     };
 
-    //If doctor uploaded an image, save its URL
     if (req.file) {
       const imageUrl = `/uploads/reviews/${req.file.filename}`;
       updateFields.doctorReviewUrl = imageUrl;
 
-      logger.info(`[${endpoint}] Doctor review image saved at: ${imageUrl}`);
+      logger.info(`[${endpoint}] Doctor review image saved: ${imageUrl}`);
     }
 
-    //Update the scan record
     await scan.update(updateFields);
 
-    logger.info(
-      `[${endpoint}] Review updated for scanID=${scan.id}, patientId=${patientId}`
-    );
+    logger.info(`[${endpoint}] Doctor review saved for scanId=${scan.id}`);
 
     return res.status(200).json({
       message: "Doctor review saved",
@@ -248,10 +228,8 @@ const addDoctorReviewByPatientId = async (req, res) => {
     });
 
   } catch (err) {
-    logger.error(
-      `[${endpoint}] Error adding doctor review for patientId=${req.params?.patientId}: ${err.stack}`
-    );
-    return res.status(500).json({ error: "Server error while saving review" });
+    logger.error(`[${endpoint}] Error: ${err.stack}`);
+    return res.status(500).json({ error: "Server error while saving doctor review" });
   }
 };
 
@@ -264,7 +242,6 @@ const generateReport = async (req, res) => {
   logger.info(`[${endpoint}] Incoming request by user: ${userEmail} to generate report for scanId=${scanId}`);
 
   try {
-    // Fetch scan
     const scan = await Scan.findOne({ where: { id: scanId } });
     if (!scan) {
       logger.warn(`[${endpoint}] Scan not found for scanId=${scanId}`);
@@ -272,7 +249,6 @@ const generateReport = async (req, res) => {
     }
     logger.info(`[${endpoint}] Found scan: ID=${scan.id}, patientId=${scan.patientId}`);
 
-    // Fetch patient
     const patient = await Patient.findOne({ where: { id: scan.patientId } });
     if (!patient) {
       logger.warn(`[${endpoint}] Patient not found for patientId=${scan.patientId}`);
@@ -375,4 +351,4 @@ const getDoctorReviewByPatientId = async (req, res) => {
 
 
 
-module.exports = { getScans, uploadScan, getScansByPatientId, addDoctorReviewByPatientId, generateReport, getDoctorReviewByPatientId };
+module.exports = { getScans, uploadScan, getScansByPatientId, addDoctorReviewByScanId, generateReport, getDoctorReviewByPatientId };

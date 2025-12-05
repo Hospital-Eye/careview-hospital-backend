@@ -248,6 +248,7 @@ const getRegistrationRequestsForClinic = async (req, res) => {
       include: [
         {
           model: User,
+          as: "user",
           attributes: ["id", "email", "name"]
         }
       ],
@@ -283,7 +284,7 @@ const updateRegistrationRequestStatus = async (req, res) => {
     const { PatientRegistrationRequest, User } = require("../models");
 
     //Validate action
-    if (!["approve", "reject"].includes(action)) {
+    if (!["approve", "reject", "approved", "rejected"].includes(action)) {
       return res.status(400).json({ error: "Invalid action. Must be 'approve' or 'reject'." });
     }
 
