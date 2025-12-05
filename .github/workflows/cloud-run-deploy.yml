@@ -11,8 +11,9 @@ permissions:
 
 jobs:
   deploy:
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
-    environment: development
+    environment: production
 
     steps:
       - name: Checkout repository
@@ -44,8 +45,8 @@ jobs:
         run: |
           echo "PROJECT_ID=${{ secrets.PROJECT_ID }}"
           echo "REGION=${{ secrets.REGION }}"
-          echo "SERVICE_NAME=${{ secrets.SERVICE_NAME }}"
-          echo "SERVICE_ACCOUNT_EMAIL=${{ secrets.SERVICE_ACCOUNT_EMAIL }}"
+          echo "SERVICE_NAME=${{ secrets.BACKEND_SERVICE_NAME }}"
+          echo "SERVICE_ACCOUNT_EMAIL=${{ secrets.BACKEND_SERVICE_ACCOUNT_EMAIL }}"
       
       - name: Verify gcloud project config
         run: |
@@ -54,7 +55,7 @@ jobs:
 
       - name: Deploy to Cloud Run
         run: |
-          gcloud run deploy ${{ secrets.SERVICE_NAME }} \
+          gcloud run deploy ${{ secrets.BACKEND_SERVICE_NAME }} \
             --image $IMAGE \
             --region ${{ secrets.REGION }} \
             --platform managed \
