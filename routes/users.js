@@ -7,11 +7,13 @@ const {
   updateUser,
   deleteUser,
   welcomeNewUser,
-  registerUserAsPatient
+  registerUserAsPatient,
+  getUserbyEmail
 } = require('../controllers/userController');
 
 router.post('/', protect, createUser);
 router.get('/', protect, authorize('admin', 'manager'), getUsers);
+router.get('/email', protect, authorize('admin', 'manager'), getUserbyEmail);
 router.get('/welcome', protect, authorize('user'), welcomeNewUser );
 router.post('/register', protect, authorize('user'), registerUserAsPatient);
 router.patch('/:id', protect, authorize('admin', 'manager'), updateUser);

@@ -37,6 +37,22 @@ const getUsers = async (req, res) => {
   }
 };
 
+const getUserbyEmail = async (req, res) => {
+  const endpoint = 'getUserbyEmail';
+  const userEmail = req.query.email || 'unknown';
+
+  logger.info(`[${endpoint}] Request to view user by email received from user: ${userEmail}`);
+
+  try {
+    const user = await User.findOne({ where: { email: userEmail } });
+    logger.info(`[${endpoint}] Fetched user by email: ${userEmail}`);
+    return res.status(200).json(user);
+  } catch (err) {
+    logger.error(`[${endpoint}] Error fetching user by email: ${err.stack}`);
+    return res.status(500).json({ error: 'Server error' });
+  }
+};
+
 //Update a user session by ID
 const updateUser = async (req, res) => {
   const endpoint = 'updateUser';
@@ -235,5 +251,6 @@ module.exports = {
   updateUser,
   deleteUser,
   welcomeNewUser,
-  registerUserAsPatient
+  registerUserAsPatient,
+  getUserbyEmail
 };
