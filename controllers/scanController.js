@@ -4,7 +4,7 @@ const { sequelize } = require('../config/db');
 const path = require("path");
 const fs = require("fs");
 const { logger } = require('../utils/logger');
-const PDFDocument = require("pdfkit");
+const PdfPrinter = require("pdfmake");
 
 //GET all scans
 const getScans = async (req, res) => {
@@ -44,6 +44,7 @@ const getScans = async (req, res) => {
 };
 
 //Upload a Scan
+//Upload a Scan
 const uploadScan = async (req, res) => {
   const endpoint = 'uploadScan';
   const userEmail = req.user?.email || 'unknown';
@@ -56,6 +57,9 @@ const uploadScan = async (req, res) => {
     logger.debug(`[${endpoint}] Upload request body: ${JSON.stringify({ patientName, mrn, scanType, urgencyLevel })}`);
     logger.debug(`[${endpoint}] Uploader info: ${JSON.stringify({ id: req.user?.id, email: req.user?.email, role: req.user?.role })}`);
 
+    // Debug log for file
+    logger.debug(`[${endpoint}] req.file: ${JSON.stringify(req.file)}`);
+
     //find patient by name + MRN
     const patient = await Patient.findOne({ where: { name: patientName, mrn } });
     if (!patient) {
@@ -65,25 +69,30 @@ const uploadScan = async (req, res) => {
 
     //create new scan record
     const scan = await Scan.create({
-    organizationId: patient.organizationId,
-    clinicId: patient.clinicId,
-    patientId: patient.id,
-    mrn: patient.mrn,
-    uploadedBy: req.user.id,
-    scanType,
-    urgencyLevel,
-    fileUrl: `/uploads/scans/${req.file.filename}`,
-    notes,
-});
-
+      organizationId: patient.organizationId,
+      clinicId: patient.clinicId,
+      patientId: patient.id,
+      mrn: patient.mrn,
+      uploadedBy: req.user.id,
+      scanType,
+      urgencyLevel,
+      fileUrl: `/uploads/scans/${req.file?.filename}`,
+      notes,
+    });
 
     logger.info(`[${endpoint}] New scan uploaded successfully by ${req.user?.email || 'unknown'} for patient MRN=${mrn}`);
 
-    res.status(201).json(scan);
+    return res.status(201).json(scan);
 
   } catch (err) {
-    logger.error(`[${endpoint}] Error in uploadScan: ${err.stack}`);
-    res.status(500).json({ error: "Server error while uploading scan" });
+    logger.error(`[${endpoint}] Error in uploadScan: ${err?.message}`);
+    logger.error(`[${endpoint}] Full Error: ${JSON.stringify(err, null, 2)}`);
+    logger.error(err); // prints stack if available
+
+    return res.status(500).json({
+      error: "Server error while uploading scan",
+      details: err?.message,
+    });
   }
 };
 
@@ -233,78 +242,117 @@ const addDoctorReviewByScanId = async (req, res) => {
   }
 };
 
-//generate report pdf (currently contains doctor's notes + images if any)
-const generateReport = async (req, res) => {
-  const endpoint = "generateReport";
-  const userEmail = req.user?.email || "unknown";
-  const { scanId } = req.params;
 
-  logger.info(`[${endpoint}] Incoming request by user: ${userEmail} to generate report for scanId=${scanId}`);
+function addImageWithAutoPage(doc, imagePath) {
+  try {
+    const { width, height } = doc._imageSize(imagePath);
+    const maxWidth = 400;
+    const ratio = maxWidth / width;
+    const scaledHeight = height * ratio;
+
+    // If image will overflow page → add new page
+    if (doc.y + scaledHeight > doc.page.height - doc.page.margins.bottom) {
+      doc.addPage();
+    }
+
+    doc.image(imagePath, {
+      fit: [maxWidth, scaledHeight],
+      align: "center"
+    });
+
+    doc.moveDown(2);
+  } catch (err) {
+    console.error("Error embedding image:", err);
+    doc.fontSize(12).text("(Unable to load image)");
+  }
+}
+
+
+//generate report
+const generateReport = async (req, res) => {
+  const { scanId } = req.params;
+  const endpoint = "generateReport";
 
   try {
     const scan = await Scan.findOne({ where: { id: scanId } });
-    if (!scan) {
-      logger.warn(`[${endpoint}] Scan not found for scanId=${scanId}`);
-      return res.status(404).json({ error: "Scan not found" });
-    }
-    logger.info(`[${endpoint}] Found scan: ID=${scan.id}, patientId=${scan.patientId}`);
+    if (!scan) return res.status(404).json({ error: "Scan not found" });
 
     const patient = await Patient.findOne({ where: { id: scan.patientId } });
-    if (!patient) {
-      logger.warn(`[${endpoint}] Patient not found for patientId=${scan.patientId}`);
-      return res.status(404).json({ error: "Patient not found" });
-    }
-    logger.info(`[${endpoint}] Patient found: ID=${patient.id}, Name=${patient.name}`);
+    if (!patient) return res.status(404).json({ error: "Patient not found" });
 
-    //Create PDF document
-    const doc = new PDFDocument();
-    logger.debug(`[${endpoint}] PDF document created`);
+    let fonts = {
+      Roboto: {
+        normal: "node_modules/pdfmake/fonts/Roboto-Regular.ttf",
+        bold: "node_modules/pdfmake/fonts/Roboto-Medium.ttf",
+      }
+    };
+
+    const printer = new PdfPrinter(fonts);
+
+    const doctorNotes = scan.doctorReviewText || scan.notes || "No notes provided";
+
+    let docDefinition = {
+      pageMargins: [40, 60, 40, 60],
+
+      content: [
+        { text: "CT Scan Report", style: "header" },
+
+        { text: `Patient: ${patient.name}`, style: "subheader" },
+        { text: `MRN: ${patient.mrn || "N/A"}` },
+        { text: `Scan Type: ${scan.scanType}` },
+        { text: `Date: ${scan.createdAt.toISOString().slice(0,10)}` },
+        { text: "\n" },
+
+        { text: "Doctor's Notes:", style: "sectionTitle" },
+        { text: doctorNotes, style: "paragraph" },
+
+        { text: "\nOriginal CT Scan:", style: "sectionTitle" },
+      ],
+
+      styles: {
+        header: { fontSize: 22, bold: true, alignment: "center", margin: [0, 0, 0, 10] },
+        subheader: { fontSize: 14, bold: true, margin: [0, 5, 0, 5] },
+        sectionTitle: { fontSize: 16, bold: true, margin: [0, 15, 0, 10] },
+        paragraph: { fontSize: 12, margin: [0, 5, 0, 10] }
+      }
+    };
+
+    // Include original scan image if exists
+    if (scan.fileUrl) {
+      const imgPath = path.join(__dirname, "..", scan.fileUrl);
+      if (fs.existsSync(imgPath)) {
+        docDefinition.content.push({
+          image: imgPath,
+          width: 400,
+          margin: [0, 10, 0, 20]
+        });
+      }
+    }
+
+    // Add review images
+    docDefinition.content.push({ text: "Review Images:", style: "sectionTitle" });
+
+    if (scan.doctorReviewUrl) {
+      const img2 = path.join(__dirname, "..", scan.doctorReviewUrl);
+      if (fs.existsSync(img2)) {
+        docDefinition.content.push({
+          image: img2,
+          width: 400,
+          margin: [0, 10, 0, 20]
+        });
+      }
+    }
+
+    const pdfDoc = printer.createPdfKitDocument(docDefinition);
 
     res.setHeader("Content-Type", "application/pdf");
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename=DoctorReview_${scan.id}.pdf`
-    );
-    logger.debug(`[${endpoint}] Response headers set for PDF download`);
+    res.setHeader("Content-Disposition", `attachment; filename=CT_Scan_Report_${patient.name}.pdf`);
 
-    doc.pipe(res);
-    logger.debug(`[${endpoint}] PDF piped to response`);
-
-    //Add PDF content
-    doc.fontSize(20).text("Doctor Review Report", { align: "center" });
-    doc.moveDown();
-
-    doc.fontSize(14).text(`Patient: ${patient.name}`);
-    doc.text(`Patient ID: ${patient.id}`);
-    doc.text(`Scan ID: ${scan.id}`);
-    doc.text(`Status: ${scan.status}`);
-    doc.moveDown();
-
-    doc.fontSize(16).text("Doctor Notes:");
-    doc.fontSize(14).text(scan.notes || "No notes provided");
-    doc.moveDown();
-
-    //Include image if uploaded
-    if (scan.doctorReviewUrl) {
-      const imagePath = path.join(__dirname, "..", scan.doctorReviewUrl);
-      if (fs.existsSync(imagePath)) {
-        doc.fontSize(16).text("Doctor Review Image:");
-        doc.image(imagePath, { fit: [400, 400], align: "center" });
-        logger.info(`[${endpoint}] Doctor review image embedded in PDF from ${imagePath}`);
-      } else {
-        doc.fontSize(14).text(`Image available at: ${scan.doctorReviewUrl}`);
-        logger.warn(`[${endpoint}] Image file not found at ${imagePath}, added URL instead`);
-      }
-    } else {
-      logger.info(`[${endpoint}] No doctor review image found for scanId=${scan.id}`);
-    }
-
-    //Finalize PDF
-    doc.end();
-    logger.info(`[${endpoint}] PDF generation completed for scanId=${scan.id}`);
+    pdfDoc.pipe(res);
+    pdfDoc.end();
   } catch (err) {
-    logger.error(`[${endpoint}] Error generating PDF for scanId=${scanId}: ${err.stack}`);
-    return res.status(500).json({ error: "Server error while generating report" });
+    logger.error(`[${endpoint}] Error generating PDF: ${err.stack}`);
+    return res.status(500).json({ error: "PDF generation failed" });
   }
 };
 
