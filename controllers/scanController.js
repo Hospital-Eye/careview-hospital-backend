@@ -308,47 +308,54 @@ const generateReport = async (req, res) => {
   }
 };
 
-
-//View Doctor's notes for a particular patientId
-const getDoctorReviewByPatientId = async (req, res) => {
-  const endpoint = "getDoctorReviewByPatientId";
+//view doctor's notes per scan
+const getDoctorReviewByScanId = async (req, res) => {
+  const endpoint = "getDoctorReviewByScanId";
 
   try {
-    const patientId = req.params.patientId;
+    const { scanId } = req.params;
 
-    logger.info(`[${endpoint}] Fetching doctor reviews for patientId: ${patientId}`);
+    logger.info(`[${endpoint}] Fetching doctor review for scanId: ${scanId}`);
 
-    const reviews = await Scan.findAll({
-      where: {
-        patientId,
-        notes: { $ne: null }  //Only scans where doctor added notes
-      },
+    const scan = await Scan.findOne({
+      where: { id: scanId },
       include: [
         {
           model: User,
           as: "uploader",
           attributes: ["id", "fullName", "email"]
         }
-      ],
-      order: [["createdAt", "DESC"]]
+      ]
     });
 
-    logger.info(`[${endpoint}] Total doctor reviews found: ${reviews.length}`);
+    if (!scan) {
+      logger.warn(`[${endpoint}] No scan found for scanId: ${scanId}`);
+      return res.status(404).json({
+        success: false,
+        error: "Scan not found"
+      });
+    }
 
     return res.status(200).json({
       success: true,
-      reviews
+      review: {
+        scanId: scan.id,
+        status: scan.status,
+        notes: scan.notes,
+        doctorReviewUrl: scan.doctorReviewUrl,
+        createdAt: scan.createdAt,
+      }
     });
 
   } catch (error) {
     logger.error(`[${endpoint}] Error: ${error.message}`);
     return res.status(500).json({
       success: false,
-      error: "Failed to fetch doctor notes for this patient"
+      error: "Failed to fetch doctor review for this scan"
     });
   }
 };
 
 
 
-module.exports = { getScans, uploadScan, getScansByPatientId, addDoctorReviewByScanId, generateReport, getDoctorReviewByPatientId };
+module.exports = { getScans, uploadScan, getScansByPatientId, addDoctorReviewByScanId, generateReport, getDoctorReviewByScanId };
