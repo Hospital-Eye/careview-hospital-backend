@@ -336,7 +336,7 @@ const getDoctorReviewByScanId = async (req, res) => {
         {
           model: User,
           as: "uploader",
-          attributes: ["id", "fullName", "email"]
+          attributes: ["id", "name", "email"]
         }
       ]
     });
