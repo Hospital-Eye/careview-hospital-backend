@@ -272,99 +272,120 @@ const getRegistrationRequestsForClinic = async (req, res) => {
   }
 };
 
-//Approve or reject a patient registration request
+// Approve or reject a patient registration request
 const updateRegistrationRequestStatus = async (req, res) => {
   const endpoint = "updateRegistrationRequestStatus";
   const { requestId } = req.params;
-  const { action } = req.body; // "approve" or "reject"
+  const { action } = req.body; // "approve" | "reject"
 
-  logger.info(`[${endpoint}] Incoming update for request ${requestId} - action: ${action}`);
+  logger.info(
+    `[${endpoint}] Incoming update for request ${requestId} - action: ${action}`
+  );
 
   try {
-    const { PatientRegistrationRequest, User } = require("../models");
+    const {
+      sequelize,
+      PatientRegistrationRequest,
+      User,
+      Patient
+    } = require("../models");
 
-    //Validate action
-    if (!["approve", "reject", "approved", "rejected"].includes(action)) {
-      return res.status(400).json({ error: "Invalid action. Must be 'approve' or 'reject'." });
+    if (!["approve", "reject"].includes(action)) {
+      return res
+        .status(400)
+        .json({ error: "Invalid action. Must be 'approve' or 'reject'." });
     }
 
-    const registrationRequest = await PatientRegistrationRequest.findOne({
-      where: {
-        id: requestId,
-        ...req.scopeFilter
+    // Wrap everything in a transaction
+    await sequelize.transaction(async (t) => {
+      const registrationRequest = await PatientRegistrationRequest.findOne({
+        where: {
+          id: requestId,
+          ...req.scopeFilter
+        },
+        transaction: t
+      });
+
+      if (!registrationRequest) {
+        throw new Error("REQUEST_NOT_FOUND");
+      }
+
+      if (registrationRequest.status !== "pending") {
+        throw new Error("REQUEST_NOT_PENDING");
+      }
+
+      if (action === "approve") {
+        logger.info(`[${endpoint}] Approving request ${requestId}`);
+
+        const user = await User.findOne({
+          where: { email: registrationRequest.emailId.toLowerCase() },
+          transaction: t
+        });
+
+        if (!user) {
+          throw new Error("USER_NOT_FOUND");
+        }
+
+        // Update request
+        await registrationRequest.update(
+          {
+            status: "approved",
+            reviewedAt: new Date(),
+            reviewedBy: req.user.id
+          },
+          { transaction: t }
+        );
+
+        logger.info(
+          `[${endpoint}] Request ${requestId} approved and patient created`
+        );
+      }
+
+      if (action === "reject") {
+        logger.info(`[${endpoint}] Rejecting request ${requestId}`);
+
+        await registrationRequest.update(
+          {
+            status: "rejected",
+            reviewedAt: new Date(),
+            reviewedBy: req.user.id
+          },
+          { transaction: t }
+        );
       }
     });
 
-    if (!registrationRequest) {
-      logger.warn(`[${endpoint}] Request ${requestId} not found or out of scope`);
+    return res.status(200).json({
+      message:
+        action === "approve"
+          ? "Registration request approved and patient created."
+          : "Registration request rejected."
+    });
+  } catch (error) {
+    if (error.message === "REQUEST_NOT_FOUND") {
       return res.status(404).json({ error: "Request not found" });
     }
 
-    if (registrationRequest.status !== "pending") {
-      return res.status(400).json({ error: "Only pending requests can be updated." });
+    if (error.message === "REQUEST_NOT_PENDING") {
+      return res
+        .status(400)
+        .json({ error: "Only pending requests can be updated." });
     }
 
-    //approve
-    if (action === "approve") {
-      logger.info(`[${endpoint}] Approving request ${requestId}`);
-
-      //Get user based on email in the registration request
-      const user = await User.findOne({
-        where: { email: registrationRequest.emailId.toLowerCase() }
-      });
-
-      if (!user) {
-        return res.status(404).json({ error: "Associated user not found." });
-      }
-
-      //Update user role + clinic + org
-      await user.update({
-        role: "patient",
-        clinicId: registrationRequest.clinicId,
-        organizationId: registrationRequest.organizationId,
-        registered: true 
-      });
-
-      //Update request status
-      await registrationRequest.update({
-        status: "approved",
-        reviewedAt: new Date(),
-        reviewedBy: req.user.id
-      });
-
-      logger.info(`[${endpoint}] Request ${requestId} approved by ${req.user.email}`);
-
-      return res.status(200).json({
-        message: "Registration request approved.",
-        request: registrationRequest
-      });
+    if (error.message === "USER_NOT_FOUND") {
+      return res.status(404).json({ error: "Associated user not found." });
     }
 
-    //reject
-    if (action === "reject") {
-      logger.info(`[${endpoint}] Rejecting request ${requestId}`);
-
-      await registrationRequest.update({
-        status: "rejected",
-        reviewedAt: new Date(),
-        reviewedBy: req.user.id
-      });
-
-      return res.status(200).json({
-        message: "Registration request rejected.",
-        request: registrationRequest
-      });
-    }
-
-  } catch (error) {
     logger.error(
       `[${endpoint}] Error updating registration request: ${error.message}`,
       { stack: error.stack }
     );
-    return res.status(500).json({ error: "Failed to update registration request." });
+
+    return res
+      .status(500)
+      .json({ error: "Failed to update registration request." });
   }
 };
-
 
 module.exports = {
   createClinic,
