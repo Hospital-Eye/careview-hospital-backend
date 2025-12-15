@@ -35,7 +35,7 @@ jobs:
 
       - name: Build and Push Docker Image
         run: |
-          IMAGE="${{ secrets.REGION }}-docker.pkg.dev/${{ secrets.PROJECT_ID }}/backend-dev-repo/${{ secrets.SERVICE_NAME }}:${{ github.sha }}"
+          IMAGE="${{ secrets.REGION }}-docker.pkg.dev/${{ secrets.PROJECT_ID }}/careview-backend-production/${{ secrets.SERVICE_NAME }}:${{ github.sha }}"
           docker build -t "$IMAGE" .
           docker push "$IMAGE"
           echo "IMAGE=$IMAGE" >> $GITHUB_ENV
