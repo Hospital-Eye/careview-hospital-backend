@@ -371,4 +371,11 @@ const getDoctorReviewByScanId = async (req, res) => {
 
 
 
-module.exports = { getScans, uploadScan, getScansByPatientId, addDoctorReviewByScanId, generateReport, getDoctorReviewByScanId };
+module.exports = { 
+  getScans, 
+  uploadScan, 
+  getScansByPatientId, 
+  addDoctorReviewByScanId, 
+  generateReport, 
+  getDoctorReviewByScanId 
+};

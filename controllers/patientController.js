@@ -24,7 +24,6 @@ const createPatient = async (req, res) => {
 
   try {
     const { emailId, clinicId: bodyClinicId, name, dob, gender } = req.body;
-    let userId;
 
     // Ensure email exists
     if (!emailId) {
@@ -32,23 +31,27 @@ const createPatient = async (req, res) => {
       return res.status(400).json({ error: "Email is required to create a patient." });
     }
 
-    // Find or create user
-    let user = await User.findOne({ where: { email: emailId } });
-    if (user) {
-      logger.debug(`[Patient] Existing user found`, { email: emailId, userId: user.id });
-      userId = user.id;
-      req.body.emailId = user.email;
-    } else {
-      user = await User.create({
-        name: name || "Unknown",
-        email: emailId,
-        role: "patient",
-        organizationId: req.user.organizationId,
-        clinicId: req.user.clinicId,
+    //Ensure registration request is APPROVED
+    const approvedRequest = await PatientRegistrationRequest.findOne({
+      where: {
+        emailId: emailId.toLowerCase(),
+        status: "approved"
+      }
+    });
+
+    if (!approvedRequest) {
+      logger.warn(`[Patient] No approved registration request found`, { emailId });
+      return res.status(403).json({
+        error: "Patient creation not allowed. Registration request not approved yet."
       });
-      userId = user.id;
-      logger.info(`[Patient] Created new user for patient`, { email: emailId, userId });
     }
+
+    const user = await User.findOne({ where: { email: emailId.toLowerCase() } });
+    if (!user) {
+      return res.status(404).json({ error: "Associated user not found." });
+    }
+
+    const userId = user.id;
 
     const { role, organizationId: userOrgId, clinicId: userClinicId } = req.user;
     if (!userOrgId) {
@@ -56,13 +59,11 @@ const createPatient = async (req, res) => {
       return res.status(403).json({ error: "Missing organizationId in user context" });
     }
 
-    // Validate clinic
     let clinic;
     let clinicId;
 
     if (role === "admin") {
       if (!bodyClinicId) {
-        logger.warn(`[Patient] Admin missing clinicId in request to create patient`, { user: userEmail });
         return res.status(400).json({ error: "Admin must provide clinicId" });
       }
 
@@ -71,18 +72,12 @@ const createPatient = async (req, res) => {
         : { clinicId: bodyClinicId, organizationId: userOrgId };
 
       clinic = await Clinic.findOne({ where: query });
-
-      if (!clinic) {
-        logger.warn(`[Patient] Clinic not found for admin in request for creating patient`, { query });
-        return res.status(404).json({ error: "Clinic not found" });
-      }
+      if (!clinic) return res.status(404).json({ error: "Clinic not found" });
 
       clinicId = clinic.clinicId;
-      logger.debug(`[Patient] Admin resolved clinic`, { clinicId });
     } 
     else if (role === "manager" || role === "doctor") {
       if (!userClinicId) {
-        logger.warn(`[Patient] ${role} has no assigned clinicId in request to create patient`, { user: userEmail });
         return res.status(400).json({ error: `${role} has no assigned clinicId` });
       }
 
@@ -91,29 +86,20 @@ const createPatient = async (req, res) => {
         : { clinicId: userClinicId, organizationId: userOrgId };
 
       clinic = await Clinic.findOne({ where: query });
-      if (!clinic) {
-        logger.warn(`[Patient] Assigned clinic not found for ${role}`, { query });
-        return res.status(404).json({ error: "Assigned clinic not found" });
-      }
+      if (!clinic) return res.status(404).json({ error: "Assigned clinic not found" });
 
       clinicId = clinic.clinicId;
-      logger.debug(`[${endpoint}] ${role} resolved clinic`, { clinicId });
     } 
     else {
-      logger.warn(`[${endpoint}] Unauthorized role attempted to create patient`, { role });
       return res.status(403).json({ error: "Unauthorized role" });
     }
 
-    // Prevent duplicate patient
     const existingPatient = await Patient.findOne({ where: { userId } });
     if (existingPatient) {
-      logger.info(`[${endpoint}] Existing patient found, returning existing record`, {
-        patientId: existingPatient.id,
-      });
       return res.status(200).json(existingPatient);
     }
 
-    // MRN Generation
+    //generate MRN
     function clinicPrefix(clinicId) {
       const parts = clinicId.split("-");
       const name = parts[0].substring(0, 3).toUpperCase();
@@ -130,24 +116,32 @@ const createPatient = async (req, res) => {
     });
 
     let lastSeq = 1000;
-    if (lastPatient && lastPatient.mrn) {
-      const parts = lastPatient.mrn.split("-");
-      const num = parseInt(parts[1], 10);
+    if (lastPatient?.mrn) {
+      const num = parseInt(lastPatient.mrn.split("-")[1], 10);
       if (!isNaN(num)) lastSeq = num;
     }
 
-    const nextNumber = lastSeq + 1;
-    const mrn = `${prefix}-${nextNumber}`;
+    const mrn = `${prefix}-${lastSeq + 1}`;
 
-    logger.debug(`[${endpoint}] Generated MRN`, { mrn, prefix, lastSeq, nextNumber });
-
-    // Create patient
+    //cretate patient record
     const patient = await Patient.create({
       ...req.body,
       userId,
       organizationId: userOrgId,
       clinicId,
       mrn,
+    });
+
+    //update user role to patient and link clinic/org
+    await user.update({
+      role: "patient",
+      clinicId,
+      organizationId: userOrgId,
+      registered: true
+    });
+
+    await approvedRequest.update({
+      fulfilledAt: new Date()
     });
 
     const duration = Date.now() - startTime;
@@ -160,6 +154,7 @@ const createPatient = async (req, res) => {
     });
 
     res.status(201).json(patient);
+
   } catch (err) {
     logger.error(`[${endpoint}] Error creating patient`, {
       error: err.message,
@@ -169,7 +164,6 @@ const createPatient = async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 };
-
 
 //Get all patients, optionally filtered by status
 const getPatients = async (req, res) => {
