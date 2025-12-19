@@ -27,9 +27,6 @@ jobs:
           workload_identity_provider: projects/477943577410/locations/global/workloadIdentityPools/github-pool/providers/github-provider
           service_account: careview-backend-deployer@sigma-new-480301.iam.gserviceaccount.com
 
-      - name: Set GCP Project
-        run: gcloud config set project ${{ secrets.PROJECT_ID }}
-
       - name: Configure Docker for Artifact Registry
         run: gcloud auth configure-docker ${{ secrets.REGION }}-docker.pkg.dev --quiet
 
