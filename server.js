@@ -8,11 +8,6 @@ const { logger } = require('./utils/logger');
 
 dotenv.config();
 
-
-//Initialize cleanup cron job for CVEvent and MP4Event TTL
-connectDB().then(() => {
-  initCleanupCron(db);
-});
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: '2mb' }));
@@ -77,4 +72,9 @@ if (GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET && GOOGLE_REDIRECT_URI && FRONTEND_
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, '0.0.0.0', () => {
   logger.info(`Server running on port ${PORT}`);
+});
+
+//Initialize cleanup cron job for CVEvent and MP4Event TTL
+connectDB().then(() => {
+  initCleanupCron(db);
 });
