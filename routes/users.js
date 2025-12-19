@@ -5,12 +5,18 @@ const {
   createUser,
   getUsers,
   updateUser,
-  deleteUser
+  deleteUser,
+  welcomeNewUser,
+  registerUserAsPatient,
+  getUserbyEmail
 } = require('../controllers/userController');
 
 router.post('/', protect, createUser);
-router.get('/', protect, authorize('admin'), getUsers);
-router.patch('/:id', protect, authorize('admin'), updateUser);
-router.delete('/:id', protect, authorize('admin'), deleteUser);
+router.get('/', protect, authorize('admin', 'manager'), getUsers);
+router.get('/email', protect, authorize('admin', 'manager'), getUserbyEmail);
+router.get('/welcome', protect, authorize('user'), welcomeNewUser );
+router.post('/register', protect, authorize('user'), registerUserAsPatient);
+router.patch('/:id', protect, authorize('admin', 'manager'), updateUser);
+router.delete('/:id', protect, authorize('admin', 'manager'), deleteUser);
 
 module.exports = router;

@@ -1,5 +1,5 @@
 const multer = require("multer");
-const { Patient, Vital, Admission, User, Organization, Clinic, Counter } = require('../models');
+const { Patient, Vital, Admission, User, Organization, Clinic, Counter, PatientRegistrationRequest } = require('../models');
 const { Op } = require('sequelize');
 const { sequelize } = require('../config/db');
 const { validate: isUUID } = require('uuid');
@@ -7,8 +7,8 @@ const { logger } = require('../utils/logger');
 
 //create patient with automatic room assignment based on availability and patient needs, and document upload to GCS
 
-// Configure Multer for file uploads
-//const upload = multer({ storage: multer.memoryStorage() });
+//Configure Multer for file uploads
+const upload = multer({ storage: multer.memoryStorage() });
 
 // Init GCS client
 //const storage = new Storage();
@@ -24,31 +24,34 @@ const createPatient = async (req, res) => {
 
   try {
     const { emailId, clinicId: bodyClinicId, name, dob, gender } = req.body;
-    let userId;
 
-    //ensure email exists
+    // Ensure email exists
     if (!emailId) {
       logger.warn(`[Patient] Missing emailId in request to create patient`, { user: userEmail });
       return res.status(400).json({ error: "Email is required to create a patient." });
     }
 
-    //find or create user
-    let user = await User.findOne({ where: { email: emailId } });
-    if (user) {
-      logger.debug(`[Patient] Existing user found`, { email: emailId, userId: user.id });
-      userId = user.id;
-      req.body.emailId = user.email;
-    } else {
-      user = await User.create({
-        name: name || "Unknown",
-        email: emailId,
-        role: "patient",
-        organizationId: req.user.organizationId,
-        clinicId: req.user.clinicId,
+    //Ensure registration request is APPROVED
+    const approvedRequest = await PatientRegistrationRequest.findOne({
+      where: {
+        emailId: emailId.toLowerCase(),
+        status: "approved"
+      }
+    });
+
+    if (!approvedRequest) {
+      logger.warn(`[Patient] No approved registration request found`, { emailId });
+      return res.status(403).json({
+        error: "Patient creation not allowed. Registration request not approved yet."
       });
-      userId = user.id;
-      logger.info(`[Patient] Created new user for patient`, { email: emailId, userId });
     }
+
+    const user = await User.findOne({ where: { email: emailId.toLowerCase() } });
+    if (!user) {
+      return res.status(404).json({ error: "Associated user not found." });
+    }
+
+    const userId = user.id;
 
     const { role, organizationId: userOrgId, clinicId: userClinicId } = req.user;
     if (!userOrgId) {
@@ -56,13 +59,11 @@ const createPatient = async (req, res) => {
       return res.status(403).json({ error: "Missing organizationId in user context" });
     }
 
-    //validate clinic
     let clinic;
     let clinicId;
 
     if (role === "admin") {
       if (!bodyClinicId) {
-        logger.warn(`[Patient] Admin missing clinicId in request to create patient`, { user: userEmail });
         return res.status(400).json({ error: "Admin must provide clinicId" });
       }
 
@@ -71,51 +72,34 @@ const createPatient = async (req, res) => {
         : { clinicId: bodyClinicId, organizationId: userOrgId };
 
       clinic = await Clinic.findOne({ where: query });
-
-      if (!clinic) {
-        logger.warn(`[Patient] Clinic not found for admin in request for creating patient`, { query });
-        return res.status(404).json({ error: "Clinic not found" });
-      }
+      if (!clinic) return res.status(404).json({ error: "Clinic not found" });
 
       clinicId = clinic.clinicId;
-      logger.debug(`[Patient] Admin resolved clinic`, { clinicId });
-    }
-
-    else if (role === "manager") {
+    } 
+    else if (role === "manager" || role === "doctor") {
       if (!userClinicId) {
-        logger.warn(`[Patient] Manager has no assigned clinicId in request to create patient`, { user: userEmail });
-        return res.status(400).json({ error: "Manager has no assigned clinicId" });
+        return res.status(400).json({ error: `${role} has no assigned clinicId` });
       }
 
       const query = isUUID(userClinicId)
-        ? { id: userClinicId }
-        : { clinicId: userClinicId };
+        ? { id: userClinicId, organizationId: userOrgId }
+        : { clinicId: userClinicId, organizationId: userOrgId };
 
       clinic = await Clinic.findOne({ where: query });
-      if (!clinic) {
-        logger.warn(`[Patient] Assigned clinic not found for manager`, { query });
-        return res.status(404).json({ error: "Assigned clinic not found" });
-      }
+      if (!clinic) return res.status(404).json({ error: "Assigned clinic not found" });
 
       clinicId = clinic.clinicId;
-      logger.debug(`[${endpoint}] Manager resolved clinic`, { clinicId });
-    }
-
+    } 
     else {
-      logger.warn(`[${endpoint}] Unauthorized role attempted to create patient`, { role });
       return res.status(403).json({ error: "Unauthorized role" });
     }
 
-    //prevent duplicate patient
     const existingPatient = await Patient.findOne({ where: { userId } });
     if (existingPatient) {
-      logger.info(`[${endpoint}] Existing patient found, returning existing record`, {
-        patientId: existingPatient.id,
-      });
       return res.status(200).json(existingPatient);
     }
 
-    //MRN Generation
+    //generate MRN
     function clinicPrefix(clinicId) {
       const parts = clinicId.split("-");
       const name = parts[0].substring(0, 3).toUpperCase();
@@ -132,24 +116,32 @@ const createPatient = async (req, res) => {
     });
 
     let lastSeq = 1000;
-    if (lastPatient && lastPatient.mrn) {
-      const parts = lastPatient.mrn.split("-");
-      const num = parseInt(parts[1], 10);
+    if (lastPatient?.mrn) {
+      const num = parseInt(lastPatient.mrn.split("-")[1], 10);
       if (!isNaN(num)) lastSeq = num;
     }
 
-    const nextNumber = lastSeq + 1;
-    const mrn = `${prefix}-${nextNumber}`;
+    const mrn = `${prefix}-${lastSeq + 1}`;
 
-    logger.debug(`[${endpoint}] Generated MRN`, { mrn, prefix, lastSeq, nextNumber });
-
-    //create patient
+    //cretate patient record
     const patient = await Patient.create({
       ...req.body,
       userId,
       organizationId: userOrgId,
       clinicId,
       mrn,
+    });
+
+    //update user role to patient and link clinic/org
+    await user.update({
+      role: "patient",
+      clinicId,
+      organizationId: userOrgId,
+      registered: true
+    });
+
+    await approvedRequest.update({
+      fulfilledAt: new Date()
     });
 
     const duration = Date.now() - startTime;
@@ -162,6 +154,7 @@ const createPatient = async (req, res) => {
     });
 
     res.status(201).json(patient);
+
   } catch (err) {
     logger.error(`[${endpoint}] Error creating patient`, {
       error: err.message,
@@ -178,11 +171,7 @@ const getPatients = async (req, res) => {
   const userEmail = req.user?.email || 'unknown';
   const startTime = Date.now();
 
-  logger.info(`[${endpoint}] Request received from ${userEmail}`, {
-    method: req.method,
-    url: req.originalUrl,
-    query: req.query,
-  });
+  logger.info(`[${endpoint}] Incoming request to view all patients from user: ${userEmail}`);
 
   try {
     const { status } = req.query; 
@@ -269,7 +258,7 @@ const getPatientByMRN = async (req, res) => {
   const mrn = String(req.params.mrn).trim();
   const startTime = Date.now();
 
-  logger.info(`📋 [${endpoint}] Request received from ${userEmail}`, {
+  logger.info(`[${endpoint}] Request received from ${userEmail}`, {
     method: req.method,
     url: req.originalUrl,
     params: req.params,
@@ -414,6 +403,8 @@ const updatePatientByMRN = async (req, res) => {
       } else {
         logger.warn(`[${endpoint}] No active admission found for MRN: ${mrn}`);
       }
+
+      logger.info(`Patient with MRN: ${mrn} discharged successfully by user: ${userEmail}`);
     }
 
     //Update patient data

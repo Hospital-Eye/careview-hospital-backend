@@ -7,6 +7,11 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true
     },
+    signupByCall: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      allowNull: false,
+    },
     googleId: {
       type: DataTypes.STRING,
       unique: true,
@@ -19,6 +24,11 @@ module.exports = (sequelize, DataTypes) => {
       validate: {
         isEmail: true
       }
+    },
+    phone: {
+      type: DataTypes.STRING,
+      allowNull: true,   
+      unique: false      
     },
     password: {
       type: DataTypes.STRING,   
@@ -49,9 +59,9 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true
     },
     role: {
-      type: DataTypes.ENUM('admin', 'manager', 'doctor', 'nurse', 'patient'),
+      type: DataTypes.ENUM('admin', 'manager', 'doctor', 'nurse', 'patient', 'user'),
       allowNull: false,
-      defaultValue: 'patient'
+      defaultValue: 'user'
     },
     isActive: {
       type: DataTypes.BOOLEAN,
