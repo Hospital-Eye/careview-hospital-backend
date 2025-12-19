@@ -3,10 +3,9 @@ const path = require('path');
 
 const { combine, timestamp, printf, colorize, errors } = format;
 
-// Function to get file and line info from the stack trace
+//Function to get file and line info from the stack trace
 const getCallerInfo = () => {
   const stack = new Error().stack.split('\n');
-  // Stack line format differs slightly by OS/Node version
   const callerLine = stack[3] || stack[2];
   const match = callerLine.match(/\(([^)]+)\)/);
   if (!match) return 'unknown:0';
@@ -23,11 +22,11 @@ const logFormat = printf(({ level, message, timestamp, stack }) => {
 });
 
 const logger = createLogger({
-  level: 'debug',
+  level: 'info',
   format: combine(
     colorize(),
     timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-    errors({ stack: true }), // logs stack traces for errors
+    errors({ stack: true }), //to log stack traces
     logFormat
   ),
   transports: [

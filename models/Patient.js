@@ -53,7 +53,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true
     },
     allergies: {
-      type: DataTypes.JSONB,
+      type: DataTypes.ARRAY(DataTypes.STRING),
       allowNull: true,
       defaultValue: []
     },
@@ -86,6 +86,10 @@ module.exports = (sequelize, DataTypes) => {
     Patient.belongsTo(models.User, {
       foreignKey: 'userId',
       as: 'user'
+    });
+    Patient.belongsTo(models.Clinic, {
+      foreignKey: 'clinicId',
+      as: 'clinic'
     });
     Patient.hasMany(models.Admission, {
       foreignKey: 'patientId',
