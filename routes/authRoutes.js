@@ -62,7 +62,17 @@ module.exports = (
 
       let role = ALLOWED_DOMAINS.includes(domain) ? "nurse" : "user";
 
-      let user = await User.findOne({ where: { email: userEmail } });
+      const { Op } = require("sequelize");
+
+      let user = await User.findOne({
+        where: {
+          [Op.or]: [
+            { googleId: profile.id },
+            { email: userEmail },
+          ],
+        },
+      });
+
 
       if (!user) {
         user = await User.create({
@@ -75,7 +85,12 @@ module.exports = (
           clinicId: "newhope-1",
           isActive: true,
         });
-      } else {
+      } 
+      
+      if (!user.googleId) {
+          user.googleId = profile.id;
+      }
+      else {
         if (!user.isActive) {
           return res.redirect(
             `${FRONTEND_BASE_URL}/login?error=account_inactive`
