@@ -75,4 +75,6 @@ if (GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET && GOOGLE_REDIRECT_URI && FRONTEND_
 }
 
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => logger.info(`Server running on port ${PORT}`));
+app.listen(PORT, '0.0.0.0', () => {
+  logger.info(`Server running on port ${PORT}`);
+});
