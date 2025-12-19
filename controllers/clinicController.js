@@ -361,6 +361,7 @@ const updateRegistrationRequestStatus = async (req, res) => {
           ? "Registration request approved and patient created."
           : "Registration request rejected."
     });
+    
   } catch (error) {
     if (error.message === "REQUEST_NOT_FOUND") {
       return res.status(404).json({ error: "Request not found" });
