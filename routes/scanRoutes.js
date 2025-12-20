@@ -1,8 +1,8 @@
 const express = require("express");
 const multer = require("multer");
-const { getScans, uploadScan, getScanByMrn, addDoctorReviewByMrn } = require("../controllers/scanController");
+const { getScans, uploadScan, getScansByPatientId, addDoctorReviewByPatientId, generateReport, getDoctorReviewByPatientId } = require("../controllers/scanController");
 
-const { protect, authorize, scope } = require('../middleware/authMiddleware');
+const { protect, authorize, scope, patientCheck } = require('../middleware/authMiddleware');
 const path = require("path");
 
 const router = express.Router();
@@ -21,9 +21,9 @@ const upload = multer({ storage });
 
 //GET all scans
 router.get("/", protect, async (req, res, next) => {
-const allowedRoles = ["admin", "manager", "doctor"];
+const allowedRoles = ["admin", "manager", "doctor", 'nurse'];
 
-// If user is a patient → restrict to their own scans
+//If user is a patient → restrict to their own scans
 if (req.user.role === "patient") {
   const { Patient } = require("../models");
 
@@ -38,8 +38,8 @@ if (req.user.role === "patient") {
     });
   }
 
-  // Inject filter into req.query so controller only returns their scans
-  req.query.patientId = patient.id;   // or req.query.mrn = patient.mrn
+  //Inject filter into req.query so controller only returns their scans
+  req.query.patientId = patient.id;   
 
   return getScans(req, res);
 }
@@ -50,14 +50,34 @@ return authorize(...allowedRoles)(req, res, next);
 }, scope("Scan"), getScans);
 
 
-
 //Upload scan
-router.post("/upload", protect, authorize("admin", "manager", "doctor"), scope("Scan"), upload.single("scan"), uploadScan);
+router.post("/upload", protect, patientCheck, authorize("admin", "manager", "doctor", 'nurse'), scope("Scan"), upload.single("scan"), uploadScan);
 
-//Get scan info by MRN
-router.get("/:mrn", protect, authorize("admin", "manager", "doctor"), scope("Scan"), getScanByMrn);
+//View scans of a particular patient
+router.get("/:patientId", protect, patientCheck, authorize("admin", "manager", "doctor", "nurse"), scope("Scan"), getScansByPatientId);
 
-//Add doctor review notes
-router.put("/:mrn", protect, authorize("doctor"), scope("Scan"), addDoctorReviewByMrn);
+
+// Multer storage for doctor review image uploads
+const reviewStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, path.join(__dirname, "../uploads/doctorReviews"));
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + "-" + file.originalname);
+  },
+});
+
+const uploadReviewImage = multer({ storage: reviewStorage });
+
+
+//Add doctor review notes (+images if any)
+router.put("/:patientId", protect, authorize("doctor"), scope("Scan"), uploadReviewImage.single("doctorImage"),addDoctorReviewByPatientId);
+
+//generate report pdf
+router.get("/:scanId/report", protect, patientCheck, authorize("doctor", "nurse"), generateReport);
+
+//View doctor's notes for scans of a patientId
+router.get("/:patientId", protect, patientCheck, authorize("doctor"), scope("Scan"), getDoctorReviewByPatientId);
+
 
 module.exports = router;

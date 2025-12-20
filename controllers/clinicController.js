@@ -66,15 +66,14 @@ const createClinic = async (req, res) => {
 
 //Get all clinics (with managers)
 const getClinics = async (req, res) => {
-
-  const endpoint = 'editClinic';
+  const endpoint = 'getClinics';
   const userEmail = req.user?.email || 'unknown';
+  const userRole = req.user?.role?.toLowerCase();
   const userOrg = req.params?.organizationId || 'unknown';
-  
-  logger.info(`${endpoint}] Incoming request to view all clinics belonging to organization: ${userOrg} by user=${userEmail}`);
+
+  logger.info(`[${endpoint}] Incoming request to view clinics for org=${userOrg} by user=${userEmail} role=${userRole}`);
 
   try {
-    logger.info(`[${endpoint}] Incoming request to view all clinics from user=${req.user?.email || 'unknown'}`);
     const filter = req.scopeFilter || {};
 
     const clinics = await Clinic.findAll({
@@ -82,20 +81,41 @@ const getClinics = async (req, res) => {
       include: [
         {
           model: User,
-          as: 'managers',           
+          as: 'managers',
           where: { role: 'manager' },
-          required: false           //include clinics even if they have no managers
+          required: false
         }
       ]
     });
 
-    res.status(200).json(clinics);
+    //restricted fields for role 'patient'
+    if (userRole === 'patient') {
+      const limitedClinics = clinics.map(c => ({
+        clinicId: c.id,
+        organizationId: c.organizationId,
+        name: c.name,
+        registrationNumber: c.registrationNumber,
+        dateOfEstablishment: c.dateOfEstablishment,
+        type: c.type,
+        address: c.address,
+        location: c.location
+      }));
+
+      return res.status(200).json(limitedClinics);
+    }
+
+    // ⭐ All other roles → return full data
+    return res.status(200).json(clinics);
 
   } catch (error) {
-    logger.error(`[${endpoint}] Error fetching clinics: ${error.message}`, { stack: error.stack });
+    logger.error(
+      `[${endpoint}] Error fetching clinics: ${error.message}`,
+      { stack: error.stack }
+    );
     res.status(500).json({ message: "Server error" });
   }
 };
+
 
 
 //Get a clinic by clinicId

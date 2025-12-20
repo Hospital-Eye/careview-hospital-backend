@@ -10,8 +10,8 @@ const {
 } = require('../controllers/staffController');
 
 router.post('/', protect, authorize('admin', 'manager'), createStaff);
-router.get('/', protect, authorize('admin', 'manager', 'doctor'), scope('Staff'), getAllStaff);
-router.get('/:id', protect, authorize('admin', 'manager', 'doctor'), scope('Staff'), getStaffById);
+router.get('/', protect, authorize('admin', 'manager', 'doctor', 'nurse'), scope('Staff'), getAllStaff);
+router.get('/:id', protect, authorize('admin', 'manager', 'doctor', 'nurse'), scope('Staff'), getStaffById);
 router.put('/:id', protect, authorize('admin', 'manager', 'doctor'), scope('Staff'), updateStaff);
 router.delete('/:id', protect, authorize('admin', 'manager', 'doctor'), scope('Staff'), deleteStaff);
 

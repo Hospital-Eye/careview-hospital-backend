@@ -10,10 +10,10 @@ const {
   deletePatientByMRN
 } = require('../controllers/patientController');
 
-router.post('/', protect, authorize('admin', 'manager', 'doctor', 'nurse'), createPatient);
+router.post('/', protect, authorize('admin', 'manager', 'doctor'), createPatient);
 router.get('/', protect, authorize('admin', 'manager', 'doctor', 'nurse'), scope('Patient'), getPatients);
 router.get('/:mrn', protect, authorize('admin', 'manager', 'doctor', 'nurse'), scope('Patient'), getPatientByMRN);
-router.put('/:mrn', protect, authorize('admin', 'manager', 'doctor'), scope('Patient'), updatePatientByMRN);
-router.delete('/:mrn', protect, authorize('admin', 'manager'), scope('Patient'), deletePatientByMRN);
+router.put('/:mrn', protect, authorize('admin', 'manager', 'doctor', 'nurse'), scope('Patient'), updatePatientByMRN);
+router.delete('/:mrn', protect, authorize('admin', 'manager', 'doctor'), scope('Patient'), deletePatientByMRN);
 
 module.exports = router;

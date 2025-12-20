@@ -12,7 +12,7 @@ const {
 router.post('/', protect, authorize('admin', 'nurse', 'manager', 'doctor'), createAdmission);
 router.get('/', protect, authorize('admin', 'nurse', 'manager', 'doctor'), scope('Admission'), getAdmissions);
 router.get('/:id', protect, authorize('admin', 'nurse', 'manager', 'doctor'), scope('Admission'), getAdmissionById);
-router.put('/:id', protect, authorize('admin', 'nurse', 'manager'), scope('Admission'), updateAdmission);
-router.delete('/:id', protect, authorize('admin', 'manager'), scope('Admission'), deleteAdmission);
+router.put('/:id', protect, authorize('admin', 'nurse', 'manager', 'doctor'), scope('Admission'), updateAdmission);
+router.delete('/:id', protect, authorize('admin', 'manager', 'nurse'), scope('Admission'), deleteAdmission);
 
 module.exports = router;
