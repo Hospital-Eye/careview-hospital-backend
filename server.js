@@ -20,7 +20,6 @@ app.use((req, res, next) => {
 //health check
 app.get('/', (req, res) => res.send('Hospital Eye API Running'));
 
-
 //API Routes
 app.use('/api/clinics',           require('./routes/clinicRoutes'));
 app.use('/api/users',             require('./routes/users'));
@@ -49,6 +48,9 @@ app.use('/api/uploads', express.static(path.join(__dirname, 'uploads')));
 
 const camerasRoute = require('./routes/cameras');
 app.use('/api/cameras', camerasRoute);
+
+const calWebhookRoutes = require("./routes/calendarWebhookRoutes");
+app.use("/api/webhooks", calWebhookRoutes);
 
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID
