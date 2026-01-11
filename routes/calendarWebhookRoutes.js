@@ -1,8 +1,14 @@
 const express = require("express");
 const { Appointment } = require("../models"); 
+const { protect, authorize, scope, patientCheck } = require('../middleware/authMiddleware');
 const { logger } = require("../utils/logger");
 
 const router = express.Router();
+
+const { getAppointments } = require('../controllers/appointmentController');
+
+//view all schedule appointments
+router.get('/appointments', protect, patientCheck, authorize('admin', 'doctor', 'manager', 'nurse'), scope, getAppointments);
 
 // POST /webhooks/cal
 router.post("/cal", async (req, res) => {
