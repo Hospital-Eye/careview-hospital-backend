@@ -42,6 +42,7 @@ app.use('/api/dashboard',         require('./routes/dashboardRoutes'));
 app.use('/api/scans',             require('./routes/scanRoutes'));
 app.use('/api/mp4-uploads',       require('./routes/mp4Uploads'));
 app.use('/api/mp4-events',        require('./routes/mp4Events'));
+app.use('/api/retell',          require('./routes/callLogRoutes'));
 
 const path = require("path");
 app.use('/api/uploads', express.static(path.join(__dirname, 'uploads')));
