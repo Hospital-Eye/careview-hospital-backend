@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken'); 
 const User = require('../models/User'); 
+const { Op } = require('sequelize');
 const { logger } = require('../utils/logger');
 
 //Middleware to protect routes (Authentication)
@@ -49,50 +50,45 @@ const authorize = (...roles) => {
     };
 };
 
-//Middleware for clinic/organization-based filtering
-const scope = (modelName) => {
+
+//Middleware to apply organization and clinic scope based on user role
+const scope = () => {
   return (req, res, next) => {
     try {
-      const { role, organizationId, clinicId, id } = req.user;
+      const { role, organizationId, clinicId } = req.user;
 
-      const filter = { organizationId }; //always org-level first
+      // USE MODEL ATTRIBUTE NAMES
+      const filter = { organizationId };
 
       switch (role) {
-        case "admin":
-          //Admin: see everything in the organization
+        case 'admin':
           break;
 
-        case "manager":
-          //Manager: restricted to a single clinic
+        case 'manager':
           filter.clinicId = clinicId;
           break;
 
-        case "doctor":
-        case "nurse":
-          //Staff: handle single vs multi-clinic
+        case 'doctor':
+        case 'nurse':
           if (Array.isArray(clinicId)) {
-            filter.clinicId = { $in: clinicId };
+            filter.clinicId = { [Op.in]: clinicId };
           } else {
             filter.clinicId = clinicId;
           }
           break;
-        
-        case "patient":
-          return next();
-        
-        case "user":
+
+        case 'patient':
+        case 'user':
           return next();
 
         default:
-          return res.status(403).json({ message: "Unknown role, access denied" });
+          return res.status(403).json({ message: 'Unknown role' });
       }
 
       req.scopeFilter = filter;
-      logger.debug(`[AUTH: Scope] Applied scope filter for user ${req.user?.email || 'unknown'}: ${JSON.stringify(req.scopeFilter)}`);
-      next();
+      return next();
     } catch (err) {
-      logger.error(`[AUTH: Scope] Error applying scope filter: ${err.message}`, { stack: err.stack });
-      res.status(500).json({ message: "Internal server error" });
+      return res.status(500).json({ message: 'Internal server error' });
     }
   };
 };
