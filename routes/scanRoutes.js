@@ -74,10 +74,10 @@ const uploadReviewImage = multer({ storage: reviewStorage });
 router.put("/:scanId", protect, authorize("doctor"), scope("Scan"), uploadReviewImage.single("doctorImage"),addDoctorReviewByScanId);
 
 //generate report pdf
-router.get("/:scanId/report", protect, patientCheck, authorize("doctor", "nurse"), generateReport);
+router.get("/:scanId/report", protect, patientCheck, authorize("doctor", "nurse", "patient"), generateReport);
 
 //View doctor's notes for scans of a patientId
-router.get("/reviews/:scanId", protect, patientCheck, authorize("doctor"), scope("Scan"), getDoctorReviewByScanId);
+router.get("/reviews/:scanId", protect, patientCheck, authorize("doctor", "patient", "nurse"), scope("Scan"), getDoctorReviewByScanId);
 
 
 module.exports = router;
