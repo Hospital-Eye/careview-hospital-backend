@@ -53,6 +53,26 @@ const getUserbyEmail = async (req, res) => {
   }
 };
 
+//check if user exists by phone number
+const getUserByPhone = async (req, res) => {
+  const endpoint = 'getUserByPhone';
+  const userPhone = req.query.phone || 'unknown';
+
+  logger.info(`[${endpoint}] Request to view user by phone received from user: ${userPhone}`);
+
+  try {
+    const user = await User.findOne({ where: { phone: userPhone } });
+    logger.info(`[${endpoint}] Fetched user by phone: ${userPhone}`);
+    return res.status(200).json(user);
+  } catch (err) {
+    logger.error(
+      `[${endpoint}] Error fetching user by phone: ${err.stack}`
+    );
+    return res.status(500).json({ error: 'Server error' });
+  }
+};
+
+
 //Update a user session by ID
 const updateUser = async (req, res) => {
   const endpoint = 'updateUser';
@@ -252,5 +272,6 @@ module.exports = {
   deleteUser,
   welcomeNewUser,
   registerUserAsPatient,
-  getUserbyEmail
+  getUserbyEmail,
+  getUserByPhone
 };
