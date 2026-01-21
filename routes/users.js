@@ -8,12 +8,14 @@ const {
   deleteUser,
   welcomeNewUser,
   registerUserAsPatient,
-  getUserbyEmail
+  getUserbyEmail,
+  getUserByPhone
 } = require('../controllers/userController');
 
 router.post('/', protect, createUser);
 router.get('/', protect, authorize('admin', 'manager'), getUsers);
 router.get('/email', protect, authorize('admin', 'manager'), getUserbyEmail);
+router.get('/phone', protect, authorize('admin', 'manager'), getUserByPhone);
 router.get('/welcome', protect, authorize('user'), welcomeNewUser );
 router.post('/register', protect, authorize('user'), registerUserAsPatient);
 router.patch('/:id', protect, authorize('admin', 'manager'), updateUser);
