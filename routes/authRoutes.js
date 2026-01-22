@@ -92,7 +92,6 @@ module.exports = (
           googleId: profile.id,
           name: profile.name,
           profilePicture: profile.picture,
-          role,
         });
       }
 
