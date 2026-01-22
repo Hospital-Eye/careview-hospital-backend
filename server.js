@@ -59,8 +59,6 @@ const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET
 const GOOGLE_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI
 const FRONTEND_BASE_URL = process.env.FRONTEND_BASE_URL
 
-console.log("FRONTEND_BASE_URL at boot:", FRONTEND_BASE_URL);
-
 // --- auth routes for authentication ---
 if (GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET && GOOGLE_REDIRECT_URI && FRONTEND_BASE_URL) {
   const authRoutes = require('./routes/authRoutes')(
