@@ -9,7 +9,8 @@ const {
     editClinic,
     deleteClinic,
     getRegistrationRequestsForClinic,
-    updateRegistrationRequestStatus
+    updateRegistrationRequestStatus,
+    convertUserToPatient
 } = require('../controllers/clinicController');
 
 
@@ -22,6 +23,7 @@ router.get('/:id/requests', protect, authorize('admin', 'manager', 'doctor', 'nu
             scope("PatientRegistrationRequest"), getRegistrationRequestsForClinic);
 router.patch("/:id/requests/:requestId", protect, authorize("admin", "manager", "doctor", "nurse"), 
             scope("PatientRegistrationRequest"), updateRegistrationRequestStatus);
+router.post("/:id/requests/:requestId/convert", protect, authorize("admin", "manager", "doctor", "nurse"), convertUserToPatient);
 
 
 module.exports = router;
