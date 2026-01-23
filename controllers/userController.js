@@ -217,8 +217,10 @@ const welcomeNewUser = async (req, res) => {
     // Rejected
     if (request.status === "rejected") {
       return res.status(200).json({
-        status: "REJECTED",
-        message: "Your registration request was rejected."
+        requestStatus: "REJECTED",
+        canReRegister: true,
+        nextAction: "REGISTER",
+        message: "Your registration request was rejected. Please resubmit the form."
       });
     }
 
@@ -352,6 +354,112 @@ const registerUserAsPatient = async (req, res) => {
     });
   }
 };
+
+// Check registration state and decide next action
+const checkRegistrationState = async (req, res) => {
+  const endpoint = "checkRegistrationState";
+  const userId = req.user.id;
+
+  logger.info(`[${endpoint}] Checking registration state for user ${userId}`);
+
+  try {
+    const {
+      PatientRegistrationRequest,
+      Patient,
+      User
+    } = require("../models");
+
+    // Fetch user (for role safety)
+    const user = await User.findByPk(userId);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // If user is already a patient → go to dashboard
+    if (user.role === "patient") {
+      return res.status(200).json({
+        requestStatus: "COMPLETED",
+        nextAction: "DASHBOARD"
+      });
+    }
+
+    // Check if patient record already exists (extra safety)
+    const patient = await Patient.findOne({
+      where: {
+        userId,
+        ...req.scopeFilter
+      }
+    });
+
+    if (patient) {
+      return res.status(200).json({
+        requestStatus: "COMPLETED",
+        nextAction: "DASHBOARD"
+      });
+    }
+
+    // Fetch latest registration request (if any)
+    const request = await PatientRegistrationRequest.findOne({
+      where: {
+        emailId: user.email.toLowerCase(),
+        ...req.scopeFilter
+      },
+      order: [["createdAt", "DESC"]]
+    });
+
+    // No registration request yet
+    if (!request) {
+      return res.status(200).json({
+        requestStatus: "NONE",
+        nextAction: "REGISTER"
+      });
+    }
+
+    // Decide next action based on request status
+    switch (request.status) {
+      case "pending":
+        return res.status(200).json({
+          requestStatus: "PENDING",
+          nextAction: "WAIT",
+          message: "Your registration request is under review."
+        });
+
+      case "approved":
+        return res.status(200).json({
+          requestStatus: "APPROVED",
+          nextAction: "CONVERT_TO_PATIENT",
+          message: "Your registration request was approved."
+        });
+
+      case "rejected":
+        return res.status(200).json({
+          requestStatus: "REJECTED",
+          nextAction: "REGISTER",
+          canReRegister: true,
+          message: "Your registration request was rejected."
+        });
+
+      default:
+        logger.warn(
+          `[${endpoint}] Unknown request status: ${request.status}`
+        );
+        return res.status(500).json({
+          error: "Invalid registration state."
+        });
+    }
+
+  } catch (error) {
+    logger.error(
+      `[${endpoint}] Error checking registration state: ${error.message}`,
+      { stack: error.stack }
+    );
+    return res
+      .status(500)
+      .json({ error: "Failed to determine registration state." });
+  }
+};
+
   
 
 module.exports = {
@@ -363,5 +471,6 @@ module.exports = {
   registerUserAsPatient,
   getUserbyEmail,
   getUserByPhone,
-  verifyUserByPhoneAndName
+  verifyUserByPhoneAndName,
+  checkRegistrationState
 };
