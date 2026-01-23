@@ -326,15 +326,11 @@ const updateRegistrationRequestStatus = async (req, res) => {
           throw new Error("USER_NOT_FOUND");
         }
 
-        // Update request
-        await registrationRequest.update(
-          {
-            status: "approved",
-            reviewedAt: new Date(),
-            reviewedBy: req.user.id
-          },
-          { transaction: t }
-        );
+      await registrationRequest.update({
+          status: "approved",
+          reviewedAt: new Date(),
+          reviewedBy: req.user.id
+        });
 
         logger.info(
           `[${endpoint}] Request ${requestId} approved and patient created`
@@ -388,6 +384,133 @@ const updateRegistrationRequestStatus = async (req, res) => {
   }
 };
 
+//convert user to patient and create patient record
+//convert user to patient and create patient record
+const convertUserToPatient = async (req, res) => {
+  const endpoint = "convertUserToPatient";
+  const { requestId } = req.params;
+
+  logger.info(`[${endpoint}] Converting user to patient for request ${requestId}`);
+
+  try {
+    const {
+      sequelize,
+      PatientRegistrationRequest,
+      User,
+      Patient,
+      Clinic
+    } = require("../models");
+
+    await sequelize.transaction(async (t) => {
+      const request = await PatientRegistrationRequest.findOne({
+        where: {
+          id: requestId,
+          status: "approved",
+          ...req.scopeFilter
+        },
+        transaction: t
+      });
+
+      if (!request) throw new Error("REQUEST_NOT_APPROVED");
+
+      const user = await User.findOne({
+        where: { email: request.emailId.toLowerCase() },
+        transaction: t
+      });
+
+      if (!user) throw new Error("USER_NOT_FOUND");
+      if (user.role === "patient") throw new Error("ALREADY_PATIENT");
+
+      // Find clinic
+      const clinic = await Clinic.findOne({
+        where: { clinicId: request.clinicId },
+        transaction: t
+      });
+      if (!clinic) throw new Error("CLINIC_NOT_FOUND");
+
+      // MRN generation (same logic as createPatient)
+      function clinicPrefix(clinicId) {
+        const parts = clinicId.split("-");
+        const name = parts[0].substring(0, 3).toUpperCase();
+        const number = parts[1] || "1";
+        return `${name}${number}`;
+      }
+
+      const prefix = clinicPrefix(clinic.clinicId);
+
+      const lastPatient = await Patient.findOne({
+        where: { clinicId: clinic.clinicId },
+        order: [["mrn", "DESC"]],
+        limit: 1,
+        transaction: t
+      });
+
+      let lastSeq = 1000;
+      if (lastPatient?.mrn) {
+        const num = parseInt(lastPatient.mrn.split("-")[1], 10);
+        if (!isNaN(num)) lastSeq = num;
+      }
+
+      const mrn = `${prefix}-${lastSeq + 1}`;
+
+      // Create patient record with all required fields
+      await Patient.create(
+        {
+          userId: user.id,
+          clinicId: clinic.clinicId,
+          organizationId: request.organizationId,
+          name: request.name,
+          emailId: request.emailId.toLowerCase(),
+          mrn,
+          createdBy: req.user.id
+        },
+        { transaction: t }
+      );
+
+      // Update user role and link clinic/org
+      await user.update(
+        {
+          role: "patient",
+          clinicId: clinic.clinicId,
+          organizationId: request.organizationId,
+          registered: true
+        },
+        { transaction: t }
+      );
+
+      // Mark registration request as fulfilled
+      await request.update(
+        { fulfilledAt: new Date() },
+        { transaction: t }
+      );
+
+      logger.info(`[${endpoint}] User ${user.id} converted to patient (MRN: ${mrn})`);
+    });
+
+    return res.status(200).json({
+      message: "User successfully converted to patient."
+    });
+
+  } catch (error) {
+    if (error.message === "REQUEST_NOT_APPROVED")
+      return res.status(400).json({ error: "Request must be approved first." });
+    if (error.message === "ALREADY_PATIENT")
+      return res.status(400).json({ error: "User is already a patient." });
+    if (error.message === "USER_NOT_FOUND")
+      return res.status(404).json({ error: "User not found." });
+    if (error.message === "CLINIC_NOT_FOUND")
+      return res.status(404).json({ error: "Clinic not found." });
+
+    logger.error(
+      `[${endpoint}] Error converting user to patient: ${error.message}`,
+      { stack: error.stack }
+    );
+
+    return res.status(500).json({ error: "Failed to convert user to patient." });
+  }
+};
+
+
 module.exports = {
   createClinic,
   getClinics,
@@ -395,5 +518,6 @@ module.exports = {
   editClinic,
   deleteClinic,
   getRegistrationRequestsForClinic,
-  updateRegistrationRequestStatus
+  updateRegistrationRequestStatus,
+  convertUserToPatient
 };

@@ -166,10 +166,10 @@ const deleteUser = async (req, res) => {
   }
 };
 
-// new user welcome
+// Welcome new user and check registration status
 const welcomeNewUser = async (req, res) => {
   const endpoint = "welcomeNewUser";
-  const userEmail = req.user?.email || "unknown";
+  const userEmail = req.user?.email?.toLowerCase();
 
   logger.info(`[${endpoint}] Welcome check for ${userEmail}`);
 
@@ -177,36 +177,50 @@ const welcomeNewUser = async (req, res) => {
     const { Patient, PatientRegistrationRequest } = require("../models");
     const userId = req.user.id;
 
-    //Check if patient exists (fully registered)
+    // Fully registered patient
     const patient = await Patient.findOne({ where: { userId } });
     if (patient) {
-      logger.info(`[${endpoint}] Patient found for ${userEmail}. Redirecting to /my-health.`);
       return res.status(200).json({
-        registered: true,
-        redirect: "/my-health",
-        message: "Patient profile found."
+        status: "ACTIVE",
+        redirect: "/my-health"
       });
     }
 
-    //Check if a registration request is pending (user has already raised a request)
-    const pendingRequest = await PatientRegistrationRequest.findOne({
-      where: { userId, status: "pending" }
+    // Check registration request by EMAIL (source of truth)
+    const request = await PatientRegistrationRequest.findOne({
+      where: { emailId: userEmail }
     });
 
-    if (pendingRequest) {
-      logger.info(`[${endpoint}] Registration request pending for ${userEmail}.`);
+    if (!request) {
       return res.status(200).json({
-        registered: true,
+        status: "NOT_REGISTERED",
+        message: "Please register first."
+      });
+    }
+
+    // Pending approval
+    if (request.status === "pending") {
+      return res.status(200).json({
+        status: "PENDING",
         message: "Your request is being processed by your clinic."
       });
     }
 
-    //No patient record or pending request (user needs to register)
-    logger.info(`[${endpoint}] No patient record for ${userEmail}. Needs registration.`);
-    return res.status(200).json({
-      registered: false,
-      message: "Please register first."
-    });
+    // Approved but not converted
+    if (request.status === "approved") {
+      return res.status(200).json({
+        status: "APPROVED",
+        message: "Your request is approved. Finalizing your account."
+      });
+    }
+
+    // Rejected
+    if (request.status === "rejected") {
+      return res.status(200).json({
+        status: "REJECTED",
+        message: "Your registration request was rejected."
+      });
+    }
 
   } catch (error) {
     logger.error(`[${endpoint}] Error: ${error.message}`, { stack: error.stack });
@@ -214,18 +228,20 @@ const welcomeNewUser = async (req, res) => {
   }
 };
 
+
 // Register new user as patient (send registration request to clinic)
 const registerUserAsPatient = async (req, res) => {
   const endpoint = "registerUserAsPatient";
-  const userEmail = req.user?.email || "unknown";
+  const userEmail = req.user?.email?.toLowerCase() || "unknown";
 
   logger.info(`[${endpoint}] Registration request received from ${userEmail}`);
 
   try {
+    const { PatientRegistrationRequest, Patient } = require("../models");
     const user = req.user;
 
-    //Only newly signed-up users can register
-    if (user.role.toLowerCase() !== "user") {
+    // Only non-patient users can register
+    if (user.role?.toLowerCase() !== "user") {
       logger.warn(
         `[${endpoint}] Access denied for ${userEmail} — role: ${user.role}`
       );
@@ -248,32 +264,64 @@ const registerUserAsPatient = async (req, res) => {
       emergencyContact
     } = req.body;
 
-    //Validate required fields
+    // Required field validation
     if (!name || !dob || !gender || !phone || !emailId || !clinicId) {
       logger.warn(`[${endpoint}] Missing required fields from ${userEmail}`);
-      return res.status(400).json({ error: "Missing required fields." });
+      return res.status(400).json({
+        error: "Missing required fields."
+      });
     }
 
-    //Parse arrays safely
-    const parsedAllergies = allergies
-      ? (Array.isArray(allergies) ? allergies : allergies.split(",").map(a => a.trim()).filter(Boolean))
-      : [];
+    const normalizedEmail = emailId.trim().toLowerCase();
 
-    const parsedDiagnoses = diagnoses
-      ? (Array.isArray(diagnoses) ? diagnoses : diagnoses.split(",").map(d => d.trim()).filter(Boolean))
-      : [];
+    // Prevent duplicate patient creation
+    const existingPatient = await Patient.findOne({
+      where: { userId: user.id }
+    });
 
-    //Ensure emergencyContact is either JSON or null
-    const parsedEmergencyContact = emergencyContact || null;
+    if (existingPatient) {
+      return res.status(409).json({
+        error: "User is already a registered patient."
+      });
+    }
 
-    //Create a registration request instead of patient
+    // Prevent duplicate registration requests (any status)
+    const existingRequest = await PatientRegistrationRequest.findOne({
+      where: { emailId: normalizedEmail }
+    });
+
+    if (existingRequest) {
+      return res.status(409).json({
+        error: "A registration request already exists for this email.",
+        status: existingRequest.status
+      });
+    }
+
+    // Parse arrays safely
+    const parsedAllergies = Array.isArray(allergies)
+      ? allergies
+      : typeof allergies === "string"
+        ? allergies.split(",").map(a => a.trim()).filter(Boolean)
+        : [];
+
+    const parsedDiagnoses = Array.isArray(diagnoses)
+      ? diagnoses
+      : typeof diagnoses === "string"
+        ? diagnoses.split(",").map(d => d.trim()).filter(Boolean)
+        : [];
+
+    // Emergency contact should be JSON or null
+    const parsedEmergencyContact =
+      typeof emergencyContact === "object" ? emergencyContact : null;
+
+    // Create registration request
     const registrationRequest = await PatientRegistrationRequest.create({
       userId: user.id,
       name,
       dob,
       gender,
       phone,
-      emailId,
+      emailId: normalizedEmail,
       organizationId,
       clinicId,
       requiresIsolationPrecautions: Boolean(requiresIsolationPrecautions),
@@ -284,19 +332,13 @@ const registerUserAsPatient = async (req, res) => {
     });
 
     logger.info(
-      `[${endpoint}] Patient registration request created for ${userEmail} (requestId: ${registrationRequest.id})`
+      `[${endpoint}] Registration request created for ${userEmail} (requestId: ${registrationRequest.id})`
     );
-
-    //Mark user as registered (request in progress)
-    await User.update(
-      { registered: true },
-      { where: { id: user.id } }
-    );
-    logger.info(`[${endpoint}] User marked as registered: ${userEmail}`);
 
     return res.status(201).json({
       message: "Patient registration request sent successfully.",
-      registrationRequest
+      status: "PENDING",
+      requestId: registrationRequest.id
     });
 
   } catch (error) {
@@ -305,11 +347,12 @@ const registerUserAsPatient = async (req, res) => {
       { stack: error.stack }
     );
 
-    console.error(error);
-
-    return res.status(500).json({ error: "Internal server error." });
+    return res.status(500).json({
+      error: "Internal server error."
+    });
   }
 };
+  
 
 module.exports = {
   createUser,
