@@ -1,7 +1,7 @@
 const { Clinic, Organization, User, PatientRegistrationRequest } = require('../models');
 const { Op } = require('sequelize');
-const { sequelize } = require('../config/db');
 const { logger } = require('../utils/logger');
+const { transporter } = require("../utils/mailer");
 
 //Create a new clinic
 const createClinic = async (req, res) => {
@@ -121,7 +121,7 @@ const getClinics = async (req, res) => {
 //Get a clinic by clinicId
 const getClinicById = async (req, res) => {
 
-  const endpoint = 'editClinic';
+  const endpoint = 'getClinicById';
   const userEmail = req.user?.email || 'unknown';
   const userOrg = req.params?.organizationId || 'unknown';
   
@@ -272,31 +272,82 @@ const getRegistrationRequestsForClinic = async (req, res) => {
   }
 };
 
+// Send email notification for registration decision
+const sendRegistrationDecisionEmail = async ({ to, status }) => {
+  const approved = status === "approved";
+
+  await transporter.sendMail({
+    from: process.env.SMTP_USER,
+    to,
+    subject: approved
+      ? "Your registration was approved"
+      : "Your registration was rejected",
+    html: approved
+      ? `
+      <p>Dear User,</p>
+
+      <p>
+        Your recent registration request has been <b>approved</b> at
+        <b>New Hope LifeScan</b> Clinic! You have been successfully
+        registered as a patient in our system.
+      </p>
+
+      <p>
+        Kindly log in and continue with the onboarding process.
+        In case of any questions or concerns, please contact
+        us at <b>+1(681) 206-9434</b>.
+      </p>
+
+      <br />
+
+      <p>Regards,<br />
+      <b>New Hope LifeScan Team</b></p>
+    `
+      : `
+      <p>Dear User,</p>
+
+      <p>
+        Your recent registration request has been <b>rejected</b> by
+        <b>New Hope LifeScan</b> Clinic.
+      </p>
+
+      <p>
+        Kindly contact us at <b>+1(681) 206-9434</b> for more information.
+      </p>
+
+      <br />
+
+      <p>Regards,<br />
+      <b>New Hope LifeScan Team</b></p>
+    `
+  });
+};
+
 // Approve or reject a patient registration request
 const updateRegistrationRequestStatus = async (req, res) => {
   const endpoint = "updateRegistrationRequestStatus";
   const { requestId } = req.params;
-  const { action } = req.body; // "approve" | "reject"
+  const { action } = req.body;
 
   logger.info(
     `[${endpoint}] Incoming update for request ${requestId} - action: ${action}`
   );
 
+  if (!["approve", "reject"].includes(action)) {
+    return res
+      .status(400)
+      .json({ error: "Invalid action. Must be 'approve' or 'reject'." });
+  }
+
+  let emailPayload;
+
   try {
     const {
       sequelize,
       PatientRegistrationRequest,
-      User,
-      Patient
+      User
     } = require("../models");
 
-    if (!["approve", "reject"].includes(action)) {
-      return res
-        .status(400)
-        .json({ error: "Invalid action. Must be 'approve' or 'reject'." });
-    }
-
-    // Wrap everything in a transaction
     await sequelize.transaction(async (t) => {
       const registrationRequest = await PatientRegistrationRequest.findOne({
         where: {
@@ -315,8 +366,6 @@ const updateRegistrationRequestStatus = async (req, res) => {
       }
 
       if (action === "approve") {
-        logger.info(`[${endpoint}] Approving request ${requestId}`);
-
         const user = await User.findOne({
           where: { email: registrationRequest.emailId.toLowerCase() },
           transaction: t
@@ -326,20 +375,24 @@ const updateRegistrationRequestStatus = async (req, res) => {
           throw new Error("USER_NOT_FOUND");
         }
 
-      await registrationRequest.update({
-          status: "approved",
-          reviewedAt: new Date(),
-          reviewedBy: req.user.id
-        });
-
-        logger.info(
-          `[${endpoint}] Request ${requestId} approved and patient created`
+        await registrationRequest.update(
+          {
+            status: "approved",
+            reviewedAt: new Date(),
+            reviewedBy: req.user.id
+          },
+          { transaction: t }
         );
+
+        emailPayload = {
+          to: registrationRequest.emailId,
+          status: "approved"
+        };
+
+        logger.info(`[${endpoint}] Request ${requestId} approved`);
       }
 
       if (action === "reject") {
-        logger.info(`[${endpoint}] Rejecting request ${requestId}`);
-
         await registrationRequest.update(
           {
             status: "rejected",
@@ -348,16 +401,35 @@ const updateRegistrationRequestStatus = async (req, res) => {
           },
           { transaction: t }
         );
+
+        emailPayload = {
+          to: registrationRequest.emailId,
+          status: "rejected"
+        };
+
+        logger.info(`[${endpoint}] Request ${requestId} rejected`);
       }
     });
+
+    // Send email after transaction commits
+    if (emailPayload) {
+      try {
+        await sendRegistrationDecisionEmail(emailPayload);
+      } catch (emailErr) {
+        logger.error(
+          `[${endpoint}] Email failed for request ${requestId}: ${emailErr.message}`,
+          { stack: emailErr.stack }
+        );
+      }
+    }
 
     return res.status(200).json({
       message:
         action === "approve"
-          ? "Registration request approved and patient created."
+          ? "Registration request approved."
           : "Registration request rejected."
     });
-    
+
   } catch (error) {
     if (error.message === "REQUEST_NOT_FOUND") {
       return res.status(404).json({ error: "Request not found" });
@@ -384,7 +456,6 @@ const updateRegistrationRequestStatus = async (req, res) => {
   }
 };
 
-//convert user to patient and create patient record
 //convert user to patient and create patient record
 const convertUserToPatient = async (req, res) => {
   const endpoint = "convertUserToPatient";
