@@ -27,6 +27,7 @@ db.AnalyticsEvent = require('./AnalyticsEvent')(sequelize, DataTypes);
 db.DeviceLog = require('./DeviceLog')(sequelize, DataTypes);
 db.Counter = require('./Counter')(sequelize, DataTypes);
 db.PatientRegistrationRequest = require('./PatientRegistrationRequest')(sequelize, DataTypes);
+db.CallLog = require('./VoiceCallLog')(sequelize, DataTypes);
 
 // Define associations
 Object.keys(db).forEach(modelName => {

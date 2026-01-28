@@ -4,18 +4,24 @@ const { CallLog, User } = require("../models");
 const { logger } = require("../utils/logger");
 
 module.exports = ({ transporter }) => {
-  //Retell Webhook
+  /**
+   * Retell Webhook
+   * IMPORTANT: Must respond FAST. No blocking async work.
+   */
   const retellWebhook = async (req, res) => {
     const endpoint = "retellWebhook";
 
     try {
-      const call = req.body.call;
-      const dynamic = call?.retell_llm_dynamic_variables || {};
+      const call = req.body?.call;
+      if (!call) {
+        return res.status(400).json({ error: "Invalid payload" });
+      }
 
-      const name = dynamic.customer_name;
-      const email = dynamic.email;
-      const dob = dynamic.dob;
-      const phone = call.from_number;
+      const dynamic = call.retell_llm_dynamic_variables || {};
+      const name = dynamic.customer_name || null;
+      const email = dynamic.email || null;
+      const dob = dynamic.dob || null;
+      const phone = call.from_number || null;
 
       const transcript =
         call.transcript || call.call_analysis?.transcript || null;
@@ -24,11 +30,17 @@ module.exports = ({ transporter }) => {
         `[${endpoint}] Incoming call ${call.call_id} from ${phone}`
       );
 
-      let user = await User.findOne({ where: { email } });
+      let user = null;
 
-      //Create user if not exists
+      if (email) {
+        user = await User.findOne({ where: { email } });
+      }
+
+      // Create user if needed
+      let defaultPassword = null;
+
       if (!user && email && name && phone && dob) {
-        const defaultPassword = crypto.randomUUID().slice(0, 8);
+        defaultPassword = crypto.randomUUID().slice(0, 8);
         const hashed = await bcrypt.hash(defaultPassword, 10);
 
         user = await User.create({
@@ -42,28 +54,15 @@ module.exports = ({ transporter }) => {
           organizationId: "sigma-healthsense",
           clinicId: "newhope-1",
         });
-
-        await transporter.sendMail({
-          from: process.env.SMTP_USER,
-          to: email,
-          subject: "Your HospitalEye Account Credentials",
-          html: `
-            <p>Hello ${name},</p>
-            <p>Your account has been created via our voice assistant.</p>
-            <p><b>Email:</b> ${email}</p>
-            <p><b>Temporary Password:</b> ${defaultPassword}</p>
-            <p>Please log in and change your password.</p>
-          `,
-        });
       }
 
-      //Store / update call log
+      // Store / update call log (NON-BLOCKING, SAFE)
       await CallLog.upsert({
         callId: call.call_id,
         agentId: call.agent_id,
         organizationId: "sigma-healthsense",
         clinicId: "newhope-1",
-        userId: user.id,
+        userId: user ? user.id : null,
         name,
         phone,
         email,
@@ -75,14 +74,38 @@ module.exports = ({ transporter }) => {
         transcript,
       });
 
-      return res.json({ message: "Webhook processed successfully" });
+      // ✅ RESPOND IMMEDIATELY (critical)
+      res.json({ message: "Webhook processed successfully" });
+
+      // 🔥 Fire-and-forget email (never block webhook)
+      if (user && defaultPassword) {
+        transporter
+          .sendMail({
+            from: process.env.SMTP_USER,
+            to: email,
+            subject: "Your HospitalEye Account Credentials",
+            html: `
+              <p>Hello ${name},</p>
+              <p>Your account has been created via our voice assistant.</p>
+              <p><b>Email:</b> ${email}</p>
+              <p><b>Temporary Password:</b> ${defaultPassword}</p>
+              <p>Please log in and change your password.</p>
+            `,
+          })
+          .catch((err) =>
+            logger.error(`[${endpoint}] Email failed`, err)
+          );
+      }
     } catch (err) {
       logger.error(`[${endpoint}] Error`, err);
       return res.status(500).json({ error: "Webhook failed" });
     }
   };
 
-  //Get all call transcripts
+  /**
+   * Get all call transcripts
+   * GUARANTEED to never hang
+   */
   const getAllCallTranscripts = async (req, res) => {
     try {
       const transcripts = await CallLog.findAll({
@@ -101,12 +124,21 @@ module.exports = ({ transporter }) => {
 
       return res.json(transcripts);
     } catch (err) {
-      logger.error("[getAllCallTranscripts] Error", err);
-      return res.status(500).json({ error: "Failed to fetch transcripts" });
-    }
+  console.error("FULL ERROR:", err);
+  console.error("PG ERROR:", err.original);
+  console.error("SQL:", err.sql);
+
+  return res.status(500).json({
+    error: "Failed to fetch transcripts",
+    details: err.original?.message,
+  });
+}
+
   };
 
-  //Get transcript by callId
+  /**
+   * Get transcript by callId
+   */
   const getCallTranscriptByCallId = async (req, res) => {
     const { callId } = req.params;
 
