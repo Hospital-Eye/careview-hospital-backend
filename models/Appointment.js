@@ -8,13 +8,13 @@ module.exports = (sequelize, DataTypes) => {
       primaryKey: true
     },
 
-    calBookingId: {
+    booking_id: {
       type: DataTypes.STRING,
       allowNull: false,
       unique: true
     },
 
-    patientId: {
+    patient_id: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
@@ -24,18 +24,13 @@ module.exports = (sequelize, DataTypes) => {
     },
 
     clinicId: {
-      type: DataTypes.UUID,
+      type: DataTypes.STRING,
       allowNull: false,
-      references: {
-        model: 'Clinic',
-        key: 'id'
-      }
     },
 
     organizationId: {
-      type: DataTypes.UUID,
-      allowNull: false
-      // add FK reference if you have an Organization table
+      type: DataTypes.STRING,
+      allowNull: false,
     },
 
     startTime: {
@@ -48,43 +43,40 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false
     },
 
+    scheduledBy: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue: 'portal',
+    },
+
     status: {
-      type: DataTypes.ENUM(
-        'scheduled',
-        'cancelled',
-        'rescheduled',
-        'completed'
-      ),
+      type: DataTypes.STRING,
       allowNull: false,
       defaultValue: 'scheduled'
     }
   }, {
-    tableName: 'Appointments',
+    tableName: 'Appointment',
     timestamps: true,
     indexes: [
-      { fields: ['calBookingId'], unique: true },
-      { fields: ['patientId'] },
+      // Use actual column names (snake_case) that are defined in the model
+      { fields: ['booking_id'], unique: true },
+      { fields: ['patient_id'] },
       { fields: ['clinicId'] },
       { fields: ['organizationId'] },
-      { fields: ['startTime'] }
+      { fields: ['startTime'] },
+      { fields: ['endTime'] },
+      { fields: ['scheduledBy'] },
+      { fields: ['status'] }
     ]
   });
 
   Appointment.associate = (models) => {
+    // Associations should reference the actual foreign key column names
     Appointment.belongsTo(models.Patient, {
-      foreignKey: 'patientId',
+      foreignKey: 'patient_id',
       as: 'patient'
     });
 
-    Appointment.belongsTo(models.Clinic, {
-      foreignKey: 'clinicId',
-      as: 'clinic'
-    });
-
-    Appointment.belongsTo(models.Organization, {
-       foreignKey: 'organizationId',
-       as: 'organization'
-     });
   };
 
   return Appointment;

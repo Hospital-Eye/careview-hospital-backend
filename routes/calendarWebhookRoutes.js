@@ -1,80 +1,172 @@
 const express = require("express");
-const { Appointment } = require("../models"); 
-const { protect, authorize, scope, patientCheck } = require('../middleware/authMiddleware');
+const router = express.Router();
+const { Appointment, Patient, Organization, Clinic } = require("../models");
 const { logger } = require("../utils/logger");
 
-const router = express.Router();
+const ORGANIZATION_ID = process.env.DEFAULT_ORGANIZATION_ID;
+const CLINIC_ID = process.env.DEFAULT_CLINIC_ID;
 
-const { getAppointments } = require('../controllers/appointmentController');
 
-//view all schedule appointments
-router.get('/appointments', protect, patientCheck, authorize('admin', 'doctor', 'manager', 'nurse'), scope, getAppointments);
+//Webhook signature verification middleware
+const verifyCalSignature = (req, res, next) => {
+  const calSecret = req.headers["x-cal-secret"];
 
-// POST /webhooks/cal
-router.post("/cal", async (req, res) => {
-  const endpoint = "calWebhook";
+  if (!calSecret) {
+    logger.warn("[Cal Webhook] Missing x-cal-secret header");
+    return res.status(401).json({ message: "Missing webhook secret" });
+  }
 
-  try {
+  if (calSecret !== process.env.CAL_WEBHOOK_SECRET) {
+    logger.warn("[Cal Webhook] Invalid webhook secret");
+    return res.status(401).json({ message: "Invalid webhook signature" });
+  }
+
+  next();
+};
+
+//webhook
+router.post(
+  "/cal",
+  express.json(),
+  verifyCalSignature,
+  async (req, res) => {
     const { triggerEvent, payload } = req.body;
 
-    logger.info(`[${endpoint}] Event received: ${triggerEvent}`);
+    logger.info(`[Cal Webhook] Event received: ${triggerEvent}`);
 
-    const calBookingId = payload?.uid;
-    const startTime = payload?.startTime;
-    const endTime = payload?.endTime;
+    try {
+      switch (triggerEvent) {
+        case "BOOKING_CREATED":
+          await handleBookingCreated(payload);
+          break;
 
-    // patientId passed from metadata during booking creation 
-    const patientId = payload?.metadata?.patient_id;
+        case "BOOKING_CANCELLED":
+          await handleBookingCancelled(payload);
+          break;
 
-    if (!calBookingId || !startTime || !endTime || !patientId) {
-      logger.error(`[${endpoint}] Missing required payload fields`);
-      return res.status(400).json({ error: "Invalid webhook payload" });
+        case "BOOKING_RESCHEDULED":
+          await handleBookingRescheduled(payload);
+          break;
+
+        default:
+          logger.warn(`[Cal Webhook] Unsupported event: ${triggerEvent}`);
+      }
+
+      // Always respond fast to Cal
+      return res.status(200).json({ received: true });
+    } catch (err) {
+      logger.error("[Cal Webhook] Processing error", err);
+      return res.status(500).json({ message: "Webhook processing failed" });
     }
-
-    switch (triggerEvent) {
-      case "BOOKING_CREATED":
-        await Appointment.upsert({
-          cal_booking_id: calBookingId,
-          patient_id: patientId,
-          start_time: startTime,
-          end_time: endTime,
-          clinic_id: payload.eventType?.metadata?.clinic_id,
-          organization_id: payload.eventType?.metadata?.organization_id,
-          status: "scheduled"
-        });
-        break;
-
-      case "BOOKING_RESCHEDULED":
-        await Appointment.update(
-          {
-            start_time: startTime,
-            end_time: endTime,
-            status: "rescheduled"
-          },
-          {
-            where: { cal_booking_id: calBookingId }
-          }
-        );
-        break;
-
-      case "BOOKING_CANCELLED":
-        await Appointment.update(
-          { status: "cancelled" },
-          {
-            where: { cal_booking_id: calBookingId }
-          }
-        );
-        break;
-
-      default:
-        logger.warn(`[${endpoint}] Unhandled event: ${triggerEvent}`);
-    }
-
-    return res.status(200).json({ received: true });
-  } catch (err) {
-    logger.error(`[${endpoint}] ${err.message}`);
-    return res.status(500).json({ error: "Failed to process webhook" });
   }
-});
+);
+
+//event handlers
+const handleBookingCreated = async (payload) => {
+
+  const { uid, startTime, endTime } = payload;
+
+  const organizationId = await resolveOrganizationId();
+  const clinicId = await resolveClinicId();
+  const patientId = await resolvePatientId(payload);
+
+  await Appointment.findOrCreate({
+    where: { booking_id: uid },
+    defaults: {
+      patient_id: patientId,
+      clinicId,
+      organizationId,
+      startTime: new Date(startTime),
+      endTime: new Date(endTime),
+      status: "scheduled",
+      scheduledBy: payload.metadata?.scheduledBy || 'portal'
+    }
+  });
+};
+
+
+const handleBookingCancelled = async (payload) => {
+  const { uid } = payload;
+
+  const appointment = await Appointment.findOne({
+    where: { booking_id: uid }
+  });
+
+  if (!appointment) {
+    logger.warn(`[Cal Webhook] Appointment not found for cancel: ${uid}`);
+    return;
+  }
+
+  await appointment.update({ status: "cancelled" });
+
+  logger.info(`[Cal Webhook] Appointment cancelled: ${uid}`);
+};
+
+const handleBookingRescheduled = async (payload) => {
+  const {
+    rescheduleUid,
+    uid,
+    startTime,
+    endTime
+  } = payload;
+
+  const appointment = await Appointment.findOne({
+    where: { booking_id: rescheduleUid }
+  });
+
+  if (!appointment) {
+    logger.warn(
+      `[Cal Webhook] Appointment not found for reschedule: ${rescheduleUid}`
+    );
+    return;
+  }
+
+  await appointment.update({
+    booking_id: uid,
+    startTime: new Date(startTime),
+    endTime: new Date(endTime),
+    status: "rescheduled"
+  });
+
+  logger.info(
+    `[Cal Webhook] Appointment rescheduled: ${rescheduleUid} → ${uid}`
+  );
+};
+
+//resolvers
+const resolvePatientId = async (payload) => {
+  const email =
+    payload?.attendees?.[0]?.email ||
+    payload?.responses?.email?.value;
+
+  if (!email) {
+    throw new Error("No patient email found in Cal payload");
+  }
+
+  const patient = await Patient.findOne({
+    where: { emailId: email }
+  });
+
+  if (!patient) {
+    throw new Error(`Patient not found for email: ${email}`);
+  }
+  return patient.id;
+};
+
+
+const resolveOrganizationId = async () => {
+  if (!ORGANIZATION_ID) {
+    throw new Error("DEFAULT_ORGANIZATION_ID not configured");
+  }
+  return ORGANIZATION_ID;
+};
+
+const resolveClinicId = async () => {
+  if (!CLINIC_ID) {
+    throw new Error("DEFAULT_CLINIC_ID not configured");
+  }
+  return CLINIC_ID;
+};
+
 
 module.exports = router;

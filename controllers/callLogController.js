@@ -1,68 +1,73 @@
 const crypto = require("crypto");
 const bcrypt = require("bcrypt");
-const { CallLog, User } = require("../models");
+const { CallLog, User, Patient } = require("../models");
 const { logger } = require("../utils/logger");
 
 module.exports = ({ transporter }) => {
-  /**
-   * Retell Webhook
-   * IMPORTANT: Must respond FAST. No blocking async work.
-   */
+  // Retell Webhook
   const retellWebhook = async (req, res) => {
     const endpoint = "retellWebhook";
 
     try {
+      const event = req.body?.event;
       const call = req.body?.call;
-      if (!call) {
-        return res.status(400).json({ error: "Invalid payload" });
+
+      // Always ACK webhook, even if payload is weird
+      if (!call || !call.call_id) {
+        logger.warn(`[${endpoint}] Invalid payload`);
+        return res.status(200).json({ ok: true });
       }
 
       const dynamic = call.retell_llm_dynamic_variables || {};
-      const name = dynamic.customer_name || null;
-      const email = dynamic.email || null;
+
+      const name = dynamic.customer_name?.trim() || null;
       const dob = dynamic.dob || null;
+      const email = dynamic.email || null;
       const phone = call.from_number || null;
 
-      const transcript =
-        call.transcript || call.call_analysis?.transcript || null;
-
       logger.info(
-        `[${endpoint}] Incoming call ${call.call_id} from ${phone}`
+        `[${endpoint}] Event=${event} Call=${call.call_id}`
       );
 
-      let user = null;
+      //check if patient exists (name + dob based)
+      let patient = null;
 
+      if (name && dob) {
+        const normalizedName = name.toLowerCase();
+
+        patient = await Patient.findOne({
+          where: {
+            normalized_full_name: normalizedName,
+            date_of_birth: dob,
+          },
+        });
+
+        if (patient) {
+          logger.info(
+            `[${endpoint}] Patient verified: ${patient.id}`
+          );
+        } else {
+          logger.info(
+            `[${endpoint}] No patient found for name=${name}, dob=${dob}`
+          );
+        }
+      }
+
+      //check if user exists (email-based)
+      let user = null;
       if (email) {
         user = await User.findOne({ where: { email } });
       }
 
-      // Create user if needed
-      let defaultPassword = null;
-
-      if (!user && email && name && phone && dob) {
-        defaultPassword = crypto.randomUUID().slice(0, 8);
-        const hashed = await bcrypt.hash(defaultPassword, 10);
-
-        user = await User.create({
-          name,
-          email,
-          phone,
-          password: hashed,
-          signupByCall: true,
-          isActive: true,
-          role: "user",
-          organizationId: "sigma-healthsense",
-          clinicId: "newhope-1",
-        });
-      }
-
-      // Store / update call log (NON-BLOCKING, SAFE)
+      
+      // ALWAYS upsert call metadata
       await CallLog.upsert({
         callId: call.call_id,
         agentId: call.agent_id,
         organizationId: "sigma-healthsense",
         clinicId: "newhope-1",
-        userId: user ? user.id : null,
+        userId: user?.id ?? null,
+        patientId: patient?.id ?? null,
         name,
         phone,
         email,
@@ -71,41 +76,40 @@ module.exports = ({ transporter }) => {
         endTimestamp: call.end_timestamp,
         durationSeconds: call.duration_seconds,
         disconnectionReason: call.disconnection_reason,
-        transcript,
       });
 
-      // ✅ RESPOND IMMEDIATELY (critical)
-      res.json({ message: "Webhook processed successfully" });
+      
+      // STORE TRANSCRIPT ONLY WHEN READY
+      if (event === "call.analysis.completed") {
+        const transcript =
+        call.call_analysis?.transcript ||
+        call.call_analysis?.transcript_text ||
+        call.transcript ||
+        null;
 
-      // 🔥 Fire-and-forget email (never block webhook)
-      if (user && defaultPassword) {
-        transporter
-          .sendMail({
-            from: process.env.SMTP_USER,
-            to: email,
-            subject: "Your HospitalEye Account Credentials",
-            html: `
-              <p>Hello ${name},</p>
-              <p>Your account has been created via our voice assistant.</p>
-              <p><b>Email:</b> ${email}</p>
-              <p><b>Temporary Password:</b> ${defaultPassword}</p>
-              <p>Please log in and change your password.</p>
-            `,
-          })
-          .catch((err) =>
-            logger.error(`[${endpoint}] Email failed`, err)
-          );
+      if (transcript && transcript.length > 0) {
+        const [updated] = await CallLog.update(
+          { transcript },
+          { where: { callId: call.call_id } }
+        );
+
+        logger.info(
+          `[${endpoint}] Transcript update rows=${updated}`
+        );
       }
+   }
+
+      // ALWAYS respond 200 (Retell retries on non-200)
+      return res.status(200).json({ ok: true });
     } catch (err) {
       logger.error(`[${endpoint}] Error`, err);
-      return res.status(500).json({ error: "Webhook failed" });
+
+      // Never fail a webhook
+      return res.status(200).json({ ok: true });
     }
   };
 
-  /**
-   * Get all call transcripts
-   * GUARANTEED to never hang
-   */
+  //Get all call transcripts
   const getAllCallTranscripts = async (req, res) => {
     try {
       const transcripts = await CallLog.findAll({
@@ -124,21 +128,12 @@ module.exports = ({ transporter }) => {
 
       return res.json(transcripts);
     } catch (err) {
-  console.error("FULL ERROR:", err);
-  console.error("PG ERROR:", err.original);
-  console.error("SQL:", err.sql);
-
-  return res.status(500).json({
-    error: "Failed to fetch transcripts",
-    details: err.original?.message,
-  });
-}
-
+      logger.error("[getAllCallTranscripts] Error", err);
+      return res.status(500).json({ error: "Failed to fetch transcripts" });
+    }
   };
 
-  /**
-   * Get transcript by callId
-   */
+  //Get transcript by callId
   const getCallTranscriptByCallId = async (req, res) => {
     const { callId } = req.params;
 
