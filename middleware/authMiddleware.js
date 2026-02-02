@@ -152,6 +152,4 @@ const patientCheck = async (req, res, next) => {
   }
 };
 
-
-
 module.exports = { protect, authorize, scope, patientCheck };

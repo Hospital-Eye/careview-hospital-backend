@@ -1,5 +1,5 @@
 const { User, Clinic, PatientRegistrationRequest } = require('../models');
-const { Op } = require('sequelize');
+const { Op, fn, col, where } = require("sequelize");
 const { sequelize } = require('../config/db');
 const { logger } = require('../utils/logger');
 
@@ -73,50 +73,36 @@ const getUserByPhone = async (req, res) => {
 };
 
 //check if user exists by dob+name combination
-const verifyUserByPhoneAndName = async (req, res) => {
-  const endpoint = 'verifyUserByPhoneAndName';
-  const { phone, name } = req.query;
+const verifyUserByNameAndDob = async (req, res) => {
+  const { name, dob } = req.body;
 
-  logger.info(`[${endpoint}] Verification request received | phone: ${phone || 'unknown'}, name: ${name || 'unknown'}`);
-
-  if (!phone || !name) {
-    logger.warn(`[${endpoint}] Missing phone or name`);
+  if (!name || !dob) {
     return res.status(400).json({
+      message: 'Name and DOB are required',
+    });
+  }
+
+  const normalizedName = name.trim().toLowerCase();
+
+  const patient = await Patient.findOne({
+    where: {
+      normalized_full_name: normalizedName,
+      date_of_birth: dob,
+    },
+  });
+
+  if (!patient) {
+    return res.status(404).json({
       exists: false,
-      message: 'Phone number and name are required',
+      message: 'No patient found',
     });
   }
 
-  try {
-    const user = await User.findOne({
-      where: {
-        phone,
-        name,
-      },
-    });
-
-    if (!user) {
-      logger.info(
-        `[${endpoint}] No user found for phone: ${phone}, name: ${name}`
-      );
-      return res.status(200).json({ exists: false });
-    }
-
-    logger.info(
-      `[${endpoint}] User verified for phone: ${phone}, name: ${name}`
-    );
-    return res.status(200).json({
-      exists: true,
-      userId: user.id, // optional but useful
-    });
-  } catch (err) {
-    logger.error(
-      `[${endpoint}] Error verifying user by phone and name: ${err.stack}`
-    );
-    return res.status(500).json({ error: 'Server error' });
-  }
+  return res.status(200).json({
+    exists: true,
+    patientId: patient.id,
+  });
 };
-
 
 
 //Update a user session by ID
@@ -471,6 +457,6 @@ module.exports = {
   registerUserAsPatient,
   getUserbyEmail,
   getUserByPhone,
-  verifyUserByPhoneAndName,
+  verifyUserByNameAndDob,
   checkRegistrationState
 };
