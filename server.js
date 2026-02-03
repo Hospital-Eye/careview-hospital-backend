@@ -13,7 +13,8 @@ app.use(cors());
 
 // --- For Cal webhooks: capture raw body for signature verification ---
 const calWebhookRoutes = require("./routes/calendarWebhookRoutes");
-app.use("/api/webhooks", calWebhookRoutes);
+app.use("/api/webhooks", express.raw({ type: "application/json" }), calWebhookRoutes);
+
 
 // --- For all other routes ---
 app.use(
@@ -76,10 +77,12 @@ if (GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET && GOOGLE_REDIRECT_URI && FRONTEND_
   console.warn('⚠️ Google OAuth env not fully set; authRoutes disabled.');
 }
 
+
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, '0.0.0.0', () => {
   logger.info(`Server running on port ${PORT}`);
 });
+
 
 //Initialize cleanup cron job for CVEvent and MP4Event TTL
 connectDB().then(() => {

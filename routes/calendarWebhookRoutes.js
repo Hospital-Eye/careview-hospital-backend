@@ -1,4 +1,5 @@
 const express = require("express");
+const crypto = require("crypto");
 const router = express.Router();
 const { Appointment, Patient, Organization, Clinic } = require("../models");
 const { logger } = require("../utils/logger");
@@ -9,57 +10,68 @@ const CLINIC_ID = process.env.DEFAULT_CLINIC_ID;
 
 //Webhook signature verification middleware
 const verifyCalSignature = (req, res, next) => {
-  const calSecret = req.headers["x-cal-secret"];
+  const signature = req.headers["x-cal-signature-256"];
 
-  if (!calSecret) {
-    logger.warn("[Cal Webhook] Missing x-cal-secret header");
-    return res.status(401).json({ message: "Missing webhook secret" });
+  if (!signature) {
+    logger.warn("[Cal Webhook] Missing x-cal-signature header");
+    return res.status(401).json({ message: "Missing Cal signature" });
   }
 
-  if (calSecret !== process.env.CAL_WEBHOOK_SECRET) {
-    logger.warn("[Cal Webhook] Invalid webhook secret");
-    return res.status(401).json({ message: "Invalid webhook signature" });
+  const expectedSignature = crypto
+    .createHmac("sha256", process.env.CAL_WEBHOOK_SECRET)
+    .update(req.body) // must be RAW buffer
+    .digest("hex");
+
+  if (signature !== expectedSignature) {
+    logger.warn("[Cal Webhook] Invalid signature");
+    return res.status(401).json({ message: "Invalid Cal signature" });
   }
 
   next();
 };
 
+
 //webhook
-router.post(
-  "/cal",
-  express.json(),
-  verifyCalSignature,
-  async (req, res) => {
-    const { triggerEvent, payload } = req.body;
+router.post("/cal", (req, res, next) => {
+  next();
+}, verifyCalSignature, async (req, res) => {
+  let body;
 
-    logger.info(`[Cal Webhook] Event received: ${triggerEvent}`);
-
-    try {
-      switch (triggerEvent) {
-        case "BOOKING_CREATED":
-          await handleBookingCreated(payload);
-          break;
-
-        case "BOOKING_CANCELLED":
-          await handleBookingCancelled(payload);
-          break;
-
-        case "BOOKING_RESCHEDULED":
-          await handleBookingRescheduled(payload);
-          break;
-
-        default:
-          logger.warn(`[Cal Webhook] Unsupported event: ${triggerEvent}`);
-      }
-
-      // Always respond fast to Cal
-      return res.status(200).json({ received: true });
-    } catch (err) {
-      logger.error("[Cal Webhook] Processing error", err);
-      return res.status(500).json({ message: "Webhook processing failed" });
-    }
+  try {
+    body = JSON.parse(req.body.toString());
+  } catch (err) {
+    logger.error("[Cal Webhook] Invalid JSON body");
+    return res.status(400).json({ message: "Invalid JSON" });
   }
-);
+
+  const { triggerEvent, payload } = body;
+
+  logger.info(`[Cal Webhook] Event received: ${triggerEvent}`);
+
+  try {
+    switch (triggerEvent) {
+      case "BOOKING_CREATED":
+        await handleBookingCreated(payload);
+        break;
+
+      case "BOOKING_CANCELLED":
+        await handleBookingCancelled(payload);
+        break;
+
+      case "BOOKING_RESCHEDULED":
+        await handleBookingRescheduled(payload);
+        break;
+
+      default:
+        logger.warn(`[Cal Webhook] Unsupported event: ${triggerEvent}`);
+    }
+
+    return res.status(200).json({ received: true });
+  } catch (err) {
+    logger.error("[Cal Webhook] Processing error", err);
+    return res.status(500).json({ message: "Webhook processing failed" });
+  }
+});
 
 //event handlers
 const handleBookingCreated = async (payload) => {
