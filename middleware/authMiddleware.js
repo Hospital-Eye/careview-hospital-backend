@@ -94,17 +94,14 @@ const scope = () => {
 };
 
 
-// patient can view only their own records
 const patientCheck = async (req, res, next) => {
   try {
-    // Only apply to patients
     if (req.user.role !== "patient") {
       return next();
     }
 
-    const { Patient } = require("../models");
+    const { Patient, Scan } = require("../models");
 
-    // Get the logged-in user's patient record
     const patientRecord = await Patient.findOne({
       where: { userId: req.user.id }
     });
@@ -115,11 +112,32 @@ const patientCheck = async (req, res, next) => {
       });
     }
 
-    // Extract identifier from params
+    // 🧠 CASE 1: scan-based access
+    if (req.params.scanId) {
+      const scan = await Scan.findOne({
+        where: { id: req.params.scanId }
+      });
+
+      if (!scan) {
+        return res.status(404).json({ error: "Scan not found." });
+      }
+
+      if (String(scan.patientId) !== String(patientRecord.id)) {
+        return res.status(403).json({
+          error: "Patients can only access their own scans."
+        });
+      }
+
+      req._skipAuthorize = true;
+      return next();
+    }
+
+    // 🧠 CASE 2: patient-based access (existing logic)
     const requestedId =
       req.params.patientId ||
       req.params.id ||
-      req.params.mrn;
+      req.params.mrn ||
+      req.query.mrn;
 
     if (!requestedId) {
       return res.status(403).json({
@@ -127,7 +145,6 @@ const patientCheck = async (req, res, next) => {
       });
     }
 
-    // Allowed identifiers for this patient
     const allowedIdentifiers = [
       patientRecord.id,
       patientRecord.uuid,
@@ -135,21 +152,19 @@ const patientCheck = async (req, res, next) => {
       patientRecord.userId
     ].map(String);
 
-    // Check if user is requesting their own record
     if (!allowedIdentifiers.includes(String(requestedId))) {
       return res.status(403).json({
         error: "Patients can only access their own records."
       });
     }
 
-    // Mark this request as patient-approved → skip authorize()
     req._skipAuthorize = true;
-
-    next(); // ← Normal next() (NO arguments!)
+    next();
   } catch (err) {
     console.error("patientCheck error:", err);
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
 
 module.exports = { protect, authorize, scope, patientCheck };
