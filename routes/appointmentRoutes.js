@@ -9,7 +9,6 @@ const {
 
 
 router.get('/', protect, authorize('admin', 'nurse', 'manager', 'doctor'), scope('Appointment'), getAppointments);
-router.get('/:id', protect, authorize('admin', 'nurse', 'manager', 'doctor'), scope('Appointment'), getAppointmentById);
-router.get('/:patientId', protect, patientCheck, authorize('admin', 'nurse', 'manager', 'doctor', 'patient'), scope('Appointment'), getAppointmentsByPatientId);
-
+router.get('/patient/:patientId', protect, patientCheck, authorize('admin', 'nurse', 'manager', 'doctor', 'patient'), scope('Appointment'), getAppointmentsByPatientId);
+router.get('/:id', protect, patientCheck, authorize('admin', 'nurse', 'manager', 'doctor', 'patient'), scope('Appointment'), getAppointmentById);
 module.exports = router;
