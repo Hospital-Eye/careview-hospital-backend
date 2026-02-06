@@ -109,6 +109,8 @@ const getAppointmentsByPatientId = async (req, res) => {
   const userEmail = req.user?.email || 'unknown';
   const patientId = req.params.patientId;
 
+  console.log("payload patientId", patientId);
+
   logger.info(
     `[${endpoint}] Request to view appointments for patientId=${patientId} from user=${userEmail}`
   );
@@ -119,8 +121,10 @@ const getAppointmentsByPatientId = async (req, res) => {
 
     const query = {
       ...scopeFilter,
-      patientId
+      patient_id: patientId
     };
+
+    console.log("constructed query", query);
 
     // Optional filters
     if (req.query.status) query.status = req.query.status;

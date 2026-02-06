@@ -414,7 +414,6 @@ const getDoctorReviewByScanId = async (req, res) => {
 };
 
 
-
 module.exports = { 
   getScans, 
   uploadScan, 
