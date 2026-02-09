@@ -18,7 +18,7 @@ router.post('/', protect, createUser);
 router.get('/', protect, authorize('admin', 'manager'), getUsers);
 router.get('/email', getUserbyEmail);
 router.get('/phone', getUserByPhone);
-router.get('/verify-phone-name', verifyUserByNameAndDob);
+router.get('/verify-name-dob', verifyUserByNameAndDob);
 router.get('/welcome', protect, authorize('user'), welcomeNewUser );
 router.post('/register', protect, authorize('user'), registerUserAsPatient);
 router.patch('/:id', protect, authorize('admin', 'manager'), updateUser);

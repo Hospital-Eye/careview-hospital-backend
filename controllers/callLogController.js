@@ -4,7 +4,6 @@ const { CallLog, User, Patient } = require("../models");
 const { logger } = require("../utils/logger");
 
 module.exports = ({ transporter }) => {
-  // Retell Webhook
   const retellWebhook = async (req, res) => {
     const endpoint = "retellWebhook";
 
@@ -12,62 +11,35 @@ module.exports = ({ transporter }) => {
       const event = req.body?.event;
       const call = req.body?.call;
 
-      // Always ACK webhook, even if payload is weird
+      // Always ACK webhook
       if (!call || !call.call_id) {
         logger.warn(`[${endpoint}] Invalid payload`);
         return res.status(200).json({ ok: true });
       }
 
+      logger.info(
+        `[${endpoint}] Event=${event} Call=${call.call_id}`
+      );
+
       const dynamic = call.retell_llm_dynamic_variables || {};
+
+      // 🔹 Data directly from Retell (NO DB LOOKUPS)
+      const patientId = dynamic.patient_id || null;
+      const userId = dynamic.user_id || null;
 
       const name = dynamic.customer_name?.trim() || null;
       const dob = dynamic.dob || null;
       const email = dynamic.email || null;
       const phone = call.from_number || null;
 
-      logger.info(
-        `[${endpoint}] Event=${event} Call=${call.call_id}`
-      );
-
-      //check if patient exists (name + dob based)
-      let patient = null;
-
-      if (name && dob) {
-        const normalizedName = name.toLowerCase();
-
-        patient = await Patient.findOne({
-          where: {
-            normalized_full_name: normalizedName,
-            date_of_birth: dob,
-          },
-        });
-
-        if (patient) {
-          logger.info(
-            `[${endpoint}] Patient verified: ${patient.id}`
-          );
-        } else {
-          logger.info(
-            `[${endpoint}] No patient found for name=${name}, dob=${dob}`
-          );
-        }
-      }
-
-      //check if user exists (email-based)
-      let user = null;
-      if (email) {
-        user = await User.findOne({ where: { email } });
-      }
-
-      
-      // ALWAYS upsert call metadata
+      // 🔹 UPSERT CALL METADATA ONLY
       await CallLog.upsert({
         callId: call.call_id,
         agentId: call.agent_id,
         organizationId: "sigma-healthsense",
         clinicId: "newhope-1",
-        userId: user?.id ?? null,
-        patientId: patient?.id ?? null,
+        userId,
+        patientId,
         name,
         phone,
         email,
@@ -78,33 +50,41 @@ module.exports = ({ transporter }) => {
         disconnectionReason: call.disconnection_reason,
       });
 
-      
-      // STORE TRANSCRIPT ONLY WHEN READY
+      logger.info(
+        `[${endpoint}] Call metadata stored. patientId=${patientId} userId=${userId}`
+      );
+
+      // 🔹 STORE TRANSCRIPT WHEN ANALYSIS COMPLETED
       if (event === "call.analysis.completed") {
         const transcript =
-        call.call_analysis?.transcript ||
-        call.call_analysis?.transcript_text ||
-        call.transcript ||
-        null;
+          call.call_analysis?.transcript ||
+          call.call_analysis?.transcript_text ||
+          call.transcript ||
+          null;
 
-      if (transcript && transcript.length > 0) {
-        const [updated] = await CallLog.update(
-          { transcript },
-          { where: { callId: call.call_id } }
-        );
+        if (transcript && transcript.length > 0) {
+          const [updated] = await CallLog.update(
+            { transcript },
+            { where: { callId: call.call_id } }
+          );
 
-        logger.info(
-          `[${endpoint}] Transcript update rows=${updated}`
-        );
+          logger.info(
+            `[${endpoint}] Transcript update rows=${updated}`
+          );
+        } else {
+          logger.info(
+            `[${endpoint}] No transcript found for call=${call.call_id}`
+          );
+        }
       }
-   }
 
-      // ALWAYS respond 200 (Retell retries on non-200)
+      // 🔹 ALWAYS RETURN 200
       return res.status(200).json({ ok: true });
+
     } catch (err) {
       logger.error(`[${endpoint}] Error`, err);
 
-      // Never fail a webhook
+      // Never fail webhook
       return res.status(200).json({ ok: true });
     }
   };
