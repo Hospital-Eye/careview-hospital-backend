@@ -63,8 +63,16 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: true
     },
+    finalReportUrl: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
     notes: {
       type: DataTypes.TEXT,
+      allowNull: true
+    },
+    aiAnalysis:{
+      type: DataTypes.JSONB,
       allowNull: true
     }
   }, {
