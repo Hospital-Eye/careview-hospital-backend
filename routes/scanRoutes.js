@@ -1,6 +1,6 @@
 const express = require("express");
 const multer = require("multer");
-const { getScans, uploadScan, getScansByPatientId, saveAIAnalysis, addDoctorReviewByScanId, generateReport, getFinalReportByScanId } = require("../controllers/scanController");
+const { getScans, uploadScan, getScansByPatientId, saveAIAnalysis, addDoctorReviewByScanId, generateReport, getFinalReportByScanId, getFinalReportsByPatientId } = require("../controllers/scanController");
 
 const { protect, authorize, scope, patientCheck } = require('../middleware/authMiddleware');
 const path = require("path");
@@ -80,5 +80,7 @@ router.post("/:scanId/generate-report", protect, patientCheck, authorize("doctor
 //View final report for scans of a patientId
 router.get("/:scanId/final-report", protect, patientCheck, authorize("doctor", "nurse", "patient"), scope("Scan"), getFinalReportByScanId);
 
+//View all final reports for a patient
+router.get("/:patientId/final-reports", protect, patientCheck, authorize("doctor", "nurse", "patient"), scope("Scan"), getFinalReportsByPatientId);
 
 module.exports = router;

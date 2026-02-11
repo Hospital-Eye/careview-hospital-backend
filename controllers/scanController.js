@@ -274,6 +274,8 @@ const generateReport = async (req, res) => {
   const { scanId } = req.params;
   const userEmail = req.user?.email || "unknown";
 
+  console.log("👏generateReport endpoint hit");
+  
   logger.info(
     `[${endpoint}] Request to generate PDF for scanId=${scanId} by user=${userEmail}`
   );
@@ -290,6 +292,9 @@ const generateReport = async (req, res) => {
         },
       ],
     });
+
+    console.log("scan.notes:", scan.notes);
+    console.log("scan.patient:", scan.patient);
 
     if (!scan) {
       return res.status(404).json({ error: "Scan not found" });
@@ -509,6 +514,53 @@ const getFinalReportByScanId = async (req, res) => {
   }
 };
 
+// GET all final reports for a patient
+const getFinalReportsByPatientId = async (req, res) => {
+  const endpoint = "getFinalReportsByPatientId";
+  const userEmail = req.user?.email || "unknown";
+  const { patientId } = req.params;
+
+  logger.info(
+    `[${endpoint}] Request to fetch final reports for patientId=${patientId} from user=${userEmail}`
+  );
+
+  try {
+    const scans = await Scan.findAll({
+      where: {
+        patientId,
+        finalReportUrl: {
+          [Op.ne]: null,
+        },
+      },
+      attributes: [
+        "id",
+        "scanType",
+        "urgencyLevel",
+        "status",
+        "finalReportUrl",
+        "createdAt",
+      ],
+      order: [["createdAt", "DESC"]],
+    });
+
+    logger.info(
+      `[${endpoint}] Found ${scans.length} final reports for patientId=${patientId}`
+    );
+
+    return res.status(200).json({
+      message: "Final reports fetched successfully",
+      reports: scans,
+    });
+
+  } catch (err) {
+    logger.error(`[${endpoint}] Error: ${err.stack}`);
+    return res.status(500).json({
+      error: "Server error while fetching final reports",
+    });
+  }
+};
+
+
 
 
 module.exports = { 
@@ -518,5 +570,6 @@ module.exports = {
   saveAIAnalysis,
   addDoctorReviewByScanId, 
   generateReport, 
-  getFinalReportByScanId 
+  getFinalReportByScanId,
+  getFinalReportsByPatientId
 };
