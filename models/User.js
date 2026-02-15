@@ -12,6 +12,10 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: false,
       allowNull: false,
     },
+    registrationStatus: {
+      type: DataTypes.ENUM('pending', 'approved', 'auto_voice'),
+      defaultValue: 'pending'
+    },  
     googleId: {
       type: DataTypes.STRING,
       unique: true,

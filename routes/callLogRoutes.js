@@ -3,9 +3,8 @@ const express = require("express");
 module.exports = ({ transporter }) => {
   const router = express.Router();
 
-  const callLogController = require("../controllers/callLogController")({
-    transporter,
-  });
+  const callLogController = require("../controllers/callLogController");
+
 
   //Webhook 
   router.post("/webhook", callLogController.retellWebhook);
