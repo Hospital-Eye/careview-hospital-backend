@@ -4,6 +4,7 @@ const { Op } = require('sequelize');
 const { sequelize } = require('../config/db');
 const { validate: isUUID } = require('uuid');
 const { logger } = require('../utils/logger');
+const { generateMRN } = require("../utils/patientUtils");
 
 //create patient with automatic room assignment based on availability and patient needs, and document upload to GCS
 
@@ -100,28 +101,7 @@ const createPatient = async (req, res) => {
     }
 
     //generate MRN
-    function clinicPrefix(clinicId) {
-      const parts = clinicId.split("-");
-      const name = parts[0].substring(0, 3).toUpperCase();
-      const number = parts[1] || "1";
-      return `${name}${number}`;
-    }
-
-    const prefix = clinicPrefix(clinic.clinicId);
-
-    const lastPatient = await Patient.findOne({
-      where: { clinicId: clinic.clinicId },
-      order: [['mrn', 'DESC']],
-      limit: 1,
-    });
-
-    let lastSeq = 1000;
-    if (lastPatient?.mrn) {
-      const num = parseInt(lastPatient.mrn.split("-")[1], 10);
-      if (!isNaN(num)) lastSeq = num;
-    }
-
-    const mrn = `${prefix}-${lastSeq + 1}`;
+    const mrn = await generateMRN(clinic.clinicId);
 
     //cretate patient record
     const patient = await Patient.create({
@@ -451,6 +431,7 @@ const deletePatientByMRN = async (req, res) => {
 
 module.exports = {
   createPatient,
+  generateMRN,
   getPatients,
   getPatientByMRN,
   updatePatientByMRN,

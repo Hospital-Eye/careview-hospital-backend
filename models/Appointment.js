@@ -16,7 +16,7 @@ module.exports = (sequelize, DataTypes) => {
 
     patient_id: {
       type: DataTypes.UUID,
-      allowNull: false,
+      allowNull: true,
       references: {
         model: 'Patient',
         key: 'id'
@@ -48,6 +48,9 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: 'portal',
     },
+
+    attendeeEmail: DataTypes.STRING,
+    pendingIdentity: DataTypes.BOOLEAN,
 
     status: {
       type: DataTypes.STRING,

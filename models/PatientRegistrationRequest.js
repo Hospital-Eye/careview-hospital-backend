@@ -22,6 +22,14 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.UUID,
       allowNull: false
     },
+    source: {
+      type: DataTypes.STRING,
+      defaultValue: 'portal'
+    },
+    autoApproved: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
     requiresIsolationPrecautions: DataTypes.BOOLEAN,
     allergies: DataTypes.ARRAY(DataTypes.STRING),
     diagnoses: DataTypes.ARRAY(DataTypes.STRING),

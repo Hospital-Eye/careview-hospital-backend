@@ -68,19 +68,39 @@ router.post("/cal", (req, res, next) => {
 
     return res.status(200).json({ received: true });
   } catch (err) {
-    logger.error("[Cal Webhook] Processing error", err);
+    logger.error("DB MESSAGE:", err.message);
+    logger.error("SQL:", err.sql);
+    logger.error("DETAIL:", err.parent?.detail);
     return res.status(500).json({ message: "Webhook processing failed" });
   }
 });
 
 //event handlers
 const handleBookingCreated = async (payload) => {
+  const { uid, startTime, endTime, attendees } = payload;
 
-  const { uid, startTime, endTime } = payload;
+  logger.info("[Cal Booking] payload:", JSON.stringify(payload, null, 2));
+  logger.info("[Cal Booking] startTime:", startTime, "endTime:", endTime);
 
   const organizationId = await resolveOrganizationId();
   const clinicId = await resolveClinicId();
-  const patientId = await resolvePatientId(payload);
+
+  const attendeeEmail =
+    attendees?.[0]?.email ||
+    payload?.responses?.email ||
+    null;
+
+  let patientId = null;
+
+  if (attendeeEmail) {
+    const patient = await Patient.findOne({
+      where: { emailId: attendeeEmail }
+    });
+
+    if (patient) {
+      patientId = patient.id;
+    }
+  }
 
   await Appointment.findOrCreate({
     where: { booking_id: uid },
@@ -88,13 +108,16 @@ const handleBookingCreated = async (payload) => {
       patient_id: patientId,
       clinicId,
       organizationId,
-      startTime: new Date(startTime),
-      endTime: new Date(endTime),
-      status: "scheduled",
-      scheduledBy: payload.metadata?.scheduledBy || 'portal'
+      startTime: new Date(startTime).toISOString(),
+      endTime: new Date(endTime).toISOString(),
+      attendeeEmail,
+      pendingIdentity: !patientId,
+      scheduledBy: patientId ? "portal" : "voice_agent",
+      status: "scheduled"
     }
   });
 };
+
 
 
 const handleBookingCancelled = async (payload) => {
@@ -147,9 +170,9 @@ const handleBookingRescheduled = async (payload) => {
 
 //resolvers
 const resolvePatientId = async (payload) => {
-  const email =
-    payload?.attendees?.[0]?.email ||
-    payload?.responses?.email?.value;
+  const patientId = payload.metadata?.patientId;
+
+  if (patientId) return patientId;
 
   if (!email) {
     throw new Error("No patient email found in Cal payload");

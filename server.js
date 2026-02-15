@@ -53,6 +53,9 @@ app.use('/api/appointments',     require('./routes/appointmentRoutes'));
 const callLogRoutes = require('./routes/callLogRoutes');
 app.use('/api/retell', callLogRoutes({transporter: require('./utils/mailer'),}));
 
+const voiceRoutes = require('./routes/voiceRoutes');
+app.use('/api/voice', voiceRoutes);
+
 const path = require("path");
 app.use('/api/uploads', express.static(path.join(__dirname, 'uploads')));
 
