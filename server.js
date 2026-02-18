@@ -17,11 +17,7 @@ app.use("/api/webhooks", express.raw({ type: "application/json" }), calWebhookRo
 
 
 // --- For all other routes ---
-app.use(
-  express.json({
-    limit: '2mb',
-  })
-);
+app.use(express.json());
 
 //health check
 app.get('/', (req, res) => res.send('Hospital Eye API Running'));
