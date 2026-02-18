@@ -1,14 +1,13 @@
 const express = require('express');
-const { protect, authorize} = require('../middleware/authMiddleware');
 const router = express.Router();
 
 const {
-    finalizeVoiceCall,
+    handleRetellEvent,
     identityCheck,
 } = require('../controllers/voiceController');
 
 // Voice onboarding / processing
-router.post('/finalize', finalizeVoiceCall);
+router.post('/retell/events', handleRetellEvent);
 router.post('/identity-check', identityCheck);
 
 module.exports = router;

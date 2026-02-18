@@ -1,8 +1,11 @@
 const { Op } = require("sequelize");
-const { User, Patient, PatientRegistrationRequest, Appointment } = require("../models");
+const dotenv = require('dotenv');
+const { User, Patient, PatientRegistrationRequest, Appointment, CallLog } = require("../models");
 const { v4: uuidv4 } = require("uuid");
 const { generateMRN } = require("./patientController");
 const finalizeVoiceCallService = require("../services/finalizeVoiceCallService");
+
+dotenv.config();
 
 const identityCheck = async (req, res) => {
   try {
@@ -79,29 +82,108 @@ const identityCheck = async (req, res) => {
   }
 };
 
-const finalizeVoiceCall = async (req, res) => {
+const handleRetellEvent = async (req, res) => {
   try {
-    const callId = req.body?.call?.call_id;
-    const args = req.body?.args || {};
+    console.log("=================================");
+    console.log("EVENT WEBHOOK HIT");
+    console.log("Payload:", JSON.stringify(req.body, null, 2));
+    console.log("=================================");
 
-    if (!callId) {
-      throw new Error("Missing call_id from Retell");
+    const { event, call } = req.body;
+
+    /* =====================================================
+       🟢 CASE 1: CALL LIFECYCLE EVENTS
+    ====================================================== */
+    if (event && call?.call_id) {
+      const callId = call.call_id;
+
+      // 🔹 CALL STARTED
+      if (event === "call_started") {
+        await CallLog.create({
+          callId,
+          agentId: call.agent_id,
+          organizationId: "sigma-healthsense",
+          clinicId: "newhope-1",
+          callStatus: call.call_status,
+          startTimestamp: call.start_timestamp,
+          phone: call.from_number || call.to_number || null
+        });
+
+        console.log("✅ CallLog created (call_started)");
+      }
+
+      // 🔹 CALL ENDED
+      if (event === "call_ended") {
+        await CallLog.update(
+          {
+            callStatus: call.call_status || "ended",
+            endTimestamp: call.end_timestamp || null,
+            durationSeconds: call.duration_seconds || null,
+            disconnectionReason: call.disconnection_reason || null
+          },
+          { where: { callId } }
+        );
+
+        console.log("✅ CallLog updated (call_ended)");
+      }
+
+      // 🔹 CALL ANALYZED
+      if (event === "call_analyzed") {
+        await CallLog.update(
+          {
+            transcript: call.transcript || null,
+            finalized: true,
+            callStatus: "analyzed"
+          },
+          { where: { callId } }
+        );
+
+        console.log("✅ CallLog updated (call_analyzed)");
+      }
+
+      return res.sendStatus(200);
     }
 
-    const result = await finalizeVoiceCallService({
-      ...args,
-      callId // inject real ID
-    });
+    /* =====================================================
+       🟢 CASE 2: LLM EXTRACTION PAYLOAD
+       Structure:
+       {
+         call_id: "...",
+         output: { name, email, phone, ... }
+       }
+    ====================================================== */
+    if (!event && req.body?.call_id) {
+        const callId = (req.body.call_id || "").trim();
+        const extraction = req.body.output || {};
 
-    return res.status(200).json(result);
+        console.log("📦 Extraction received for:", callId);
+
+        await CallLog.upsert({
+            callId,
+            name: extraction.name || null,
+            email: extraction.email || null,
+            phone: extraction.phone || null,
+            finalized: true
+        });
+
+        console.log("✅ Upsert complete");
+
+        return res.sendStatus(200);
+        }
+    /* =====================================================
+       🟡 UNKNOWN PAYLOAD
+    ====================================================== */
+    console.log("⚠️ Unknown webhook structure received");
+    return res.sendStatus(200);
+
   } catch (err) {
-    console.error("Finalize Error:", err);
-    return res.status(200).json({ success: false });
+    console.error("❌ Retell Webhook Error:", err);
+    return res.sendStatus(200); // prevent retries
   }
 };
 
 
 module.exports = {
     identityCheck,
-    finalizeVoiceCall
+    handleRetellEvent
 };
