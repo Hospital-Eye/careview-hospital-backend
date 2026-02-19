@@ -231,40 +231,51 @@ const retellWebhook = async (req, res) => {
   console.log("ANALYSIS DATA:", dynamic);
 
   const updatedFields = {
-    transcript: call.transcript || callLog.transcript,
-    callStatus: "analyzed",
-    finalized: true
-  };
+      transcript: call.transcript || callLog.transcript,
+      callStatus: "analyzed",
+      finalized: true
+    };
 
-  // Only update if value exists
-  if (dynamic.name)
-  updatedFields.name = dynamic.name;
+    // Extracted dynamic fields
+    if (dynamic.name)
+      updatedFields.name = dynamic.name;
 
-  if (dynamic.email)
-    updatedFields.email =
-      dynamic.email.toLowerCase().trim();
+    if (dynamic.email)
+      updatedFields.email =
+        dynamic.email.toLowerCase().trim();
 
-  if (dynamic.phone)
-    updatedFields.phone = dynamic.phone;
+    if (dynamic.phone)
+      updatedFields.phone = dynamic.phone;
 
-  if (dynamic.dob)
-    updatedFields.dob = dynamic.dob;
+    if (dynamic.dob)
+      updatedFields.dob = dynamic.dob;
 
-  if (dynamic.appointment_date)
-    updatedFields.appointmentDate =
-      dynamic.appointment_date;
+    if (dynamic.gender)
+      updatedFields.gender = dynamic.gender;
 
-  if (dynamic.appointment_time)
-    updatedFields.appointmentTime =
-      dynamic.appointment_time;
+    if (dynamic.appointment_date)
+      updatedFields.appointmentDate =
+        dynamic.appointment_date;
 
+    if (dynamic.appointment_time)
+      updatedFields.appointmentTime =
+        dynamic.appointment_time;
 
-  console.log("SAFE UPDATE:", updatedFields);
+    // 🔥 These are NOT inside dynamic
+    if (call.call_analysis?.call_summary)
+      updatedFields.callSummary =
+        call.call_analysis.call_summary;
 
-  await callLog.update(updatedFields);
+    if (call.call_cost?.total_duration_seconds)
+      updatedFields.durationSeconds =
+        call.call_cost.total_duration_seconds;
 
-  console.log("✅ Updated (call_analyzed safely)");
-  return res.sendStatus(200);
+    console.log("SAFE UPDATE:", updatedFields);
+
+    await callLog.update(updatedFields);
+
+    console.log("✅ Updated (call_analyzed safely)");
+    return res.sendStatus(200);
 }
     }
     /* =====================================================
@@ -311,8 +322,11 @@ const retellWebhook = async (req, res) => {
         email: dynamicVariables.patientEmail,
         phone: dynamicVariables.patientPhone,
         dob: dynamicVariables.patientDOB,
+        gender: body.gender || callLog.gender,
+        callSummary: body.call?.call_analysis?.call_summary ?? callLog.callSummary,
         appointmentDate: dynamicVariables.appointmentDate,
-        appointmentTime: dynamicVariables.appointmentTime
+        appointmentTime: dynamicVariables.appointmentTime,
+        durationSeconds: body.call?.call_cost?.total_duration_seconds ?? callLog.durationSeconds,
       });
 
       console.log("✅ Tool/extraction updated");

@@ -25,7 +25,11 @@ module.exports = (sequelize) => {
       durationSeconds: { type: DataTypes.INTEGER, allowNull: true },
       disconnectionReason: { type: DataTypes.STRING, allowNull: true },
       transcript: { type: DataTypes.TEXT, allowNull: true },
+      callSummary: { type: DataTypes.TEXT, allowNull: true},
+      gender: { type: DataTypes.ENUM('male', 'female', 'other'), allowNull: true },
+
     },
+    
     {
       tableName: "CallLog",   
       freezeTableName: true,   
