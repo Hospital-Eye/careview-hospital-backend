@@ -87,6 +87,10 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'userId',
       as: 'user'
     });
+    Patient.belongsTo(models.Clinic, {
+      foreignKey: 'clinicId',
+      as: 'clinic'
+    });
     Patient.hasMany(models.Admission, {
       foreignKey: 'patientId',
       as: 'admissions'

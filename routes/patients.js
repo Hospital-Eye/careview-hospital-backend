@@ -7,7 +7,7 @@ const {
   getPatients,
   getPatientByMRN,
   updatePatientByMRN,
-  deletePatientByMRN
+  deletePatientByMRN,
 } = require('../controllers/patientController');
 
 router.post('/', protect, authorize('admin', 'manager', 'doctor'), createPatient);
