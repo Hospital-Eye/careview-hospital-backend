@@ -26,6 +26,9 @@ db.MP4Event = require('./MP4Event')(sequelize, DataTypes);
 db.AnalyticsEvent = require('./AnalyticsEvent')(sequelize, DataTypes);
 db.DeviceLog = require('./DeviceLog')(sequelize, DataTypes);
 db.Counter = require('./Counter')(sequelize, DataTypes);
+db.PatientRegistrationRequest = require('./PatientRegistrationRequest')(sequelize, DataTypes);
+db.CallLog = require('./CallLog')(sequelize, DataTypes);
+db.Appointment = require('./Appointment')(sequelize, DataTypes);
 
 // Define associations
 Object.keys(db).forEach(modelName => {

@@ -4,7 +4,7 @@ const { sequelize } = require('../config/db');
 const path = require("path");
 const fs = require("fs");
 const { logger } = require('../utils/logger');
-const PDFDocument = require("pdfkit");
+const PdfPrinter = require("pdfmake");
 
 //GET all scans
 const getScans = async (req, res) => {
@@ -56,6 +56,9 @@ const uploadScan = async (req, res) => {
     logger.debug(`[${endpoint}] Upload request body: ${JSON.stringify({ patientName, mrn, scanType, urgencyLevel })}`);
     logger.debug(`[${endpoint}] Uploader info: ${JSON.stringify({ id: req.user?.id, email: req.user?.email, role: req.user?.role })}`);
 
+    // Debug log for file
+    logger.debug(`[${endpoint}] req.file: ${JSON.stringify(req.file)}`);
+
     //find patient by name + MRN
     const patient = await Patient.findOne({ where: { name: patientName, mrn } });
     if (!patient) {
@@ -65,25 +68,30 @@ const uploadScan = async (req, res) => {
 
     //create new scan record
     const scan = await Scan.create({
-    organizationId: patient.organizationId,
-    clinicId: patient.clinicId,
-    patientId: patient.id,
-    mrn: patient.mrn,
-    uploadedBy: req.user.id,
-    scanType,
-    urgencyLevel,
-    fileUrl: `/uploads/scans/${req.file.filename}`,
-    notes,
-});
-
+      organizationId: patient.organizationId,
+      clinicId: patient.clinicId,
+      patientId: patient.id,
+      mrn: patient.mrn,
+      uploadedBy: req.user.id,
+      scanType,
+      urgencyLevel,
+      fileUrl: `/uploads/scans/${req.file?.filename}`,
+      notes,
+    });
 
     logger.info(`[${endpoint}] New scan uploaded successfully by ${req.user?.email || 'unknown'} for patient MRN=${mrn}`);
 
-    res.status(201).json(scan);
+    return res.status(201).json(scan);
 
   } catch (err) {
-    logger.error(`[${endpoint}] Error in uploadScan: ${err.stack}`);
-    res.status(500).json({ error: "Server error while uploading scan" });
+    logger.error(`[${endpoint}] Error in uploadScan: ${err?.message}`);
+    logger.error(`[${endpoint}] Full Error: ${JSON.stringify(err, null, 2)}`);
+    logger.error(err); // prints stack if available
+
+    return res.status(500).json({
+      error: "Server error while uploading scan",
+      details: err?.message,
+    });
   }
 };
 
@@ -173,74 +181,77 @@ const getScansByPatientId = async (req, res) => {
   }
 };
 
-//Add Doctor Review by Patient ID (supports notes + image upload)
-const addDoctorReviewByPatientId = async (req, res) => {
-  const endpoint = "addDoctorReviewByPatientId";
+
+// save AI analysis results by Scan ID
+const saveAIAnalysis = async (req, res) => {
+  const { scanId } = req.params;
+  const { aiAnalysis } = req.body;
+
+  const scan = await Scan.findByPk(scanId);
+
+  if (!scan) {
+    return res.status(404).json({ error: "Scan not found" });
+  }
+
+  await scan.update({
+    aiAnalysis,
+    aiReportGeneratedAt: new Date()
+  });
+
+  return res.json({ success: true });
+};
+
+//Add Doctor Review by Scan ID (preferred)
+const addDoctorReviewByScanId = async (req, res) => {
+  const endpoint = "addDoctorReviewByScanId";
   const userEmail = req.user?.email || "unknown";
 
-  logger.info(`[${endpoint}] Incoming request to add doctor review from user: ${userEmail}`);
+  logger.info(`[${endpoint}] Incoming request from: ${userEmail}`);
 
   try {
-    const { patientId } = req.params;
-    const { notes, scanId } = req.body;
+    const { scanId } = req.params;
+    const { notes } = req.body;
 
-    logger.debug(
-      `[${endpoint}] Incoming review for patientId=${patientId}, scanId=${scanId || "latest"}`
-    );
+    logger.debug(`[${endpoint}] req.body: ${JSON.stringify(req.body)}`);
 
-    //Fetch patient
-    const patient = await Patient.findOne({ where: { id: patientId } });
+
+    logger.debug(`[${endpoint}] scanId received: ${scanId}`);
+
+    const scan = await Scan.findOne({ where: { id: scanId } });
+
+    if (!scan) {
+      logger.warn(`[${endpoint}] Scan not found for scanId="${scanId}"`);
+      return res.status(404).json({ error: "Scan not found" });
+    }
+
+    logger.info(`[${endpoint}] Scan found. scanId=${scan.id}, patientId=${scan.patientId}`);
+
+    //load the patient from scan.patientId
+    const patient = await Patient.findOne({ where: { id: scan.patientId } });
 
     if (!patient) {
-      logger.warn(`[${endpoint}] Patient not found for patientId="${patientId}"`);
-      return res.status(404).json({ error: "Patient not found" });
+      logger.warn(`[${endpoint}] Invalid scan — patient not found for patientId=${scan.patientId}`);
+      return res.status(404).json({ error: "Patient not found for this scan" });
     }
 
     logger.info(`[${endpoint}] Patient found: ID=${patient.id}`);
 
-    //Fetch scan (latest or by ID)
-    let scan;
-
-    if (scanId) {
-      logger.debug(`[${endpoint}] Fetching scanId=${scanId}`);
-      scan = await Scan.findOne({ where: { id: scanId, patientId: patient.id } });
-    } else {
-      logger.debug(`[${endpoint}] Fetching latest scan`);
-      scan = await Scan.findOne({
-        where: { patientId: patient.id },
-        order: [["createdAt", "DESC"]],
-      });
-    }
-
-    if (!scan) {
-      logger.warn(
-        `[${endpoint}] No scan found for patientId=${patientId}, scanId=${scanId || "latest"}`
-      );
-      return res.status(404).json({ error: "Scan not found" });
-    }
-
-    logger.info(`[${endpoint}] Scan to review: ID=${scan.id}`);
-
-    //Prepare update fields
+    //update status
     const updateFields = {
       notes: notes || scan.notes,
       status: "Reviewed",
     };
 
-    //If doctor uploaded an image, save its URL
     if (req.file) {
       const imageUrl = `/uploads/reviews/${req.file.filename}`;
       updateFields.doctorReviewUrl = imageUrl;
 
-      logger.info(`[${endpoint}] Doctor review image saved at: ${imageUrl}`);
+      logger.info(`[${endpoint}] Doctor review image saved: ${imageUrl}`);
     }
 
-    //Update the scan record
     await scan.update(updateFields);
 
-    logger.info(
-      `[${endpoint}] Review updated for scanID=${scan.id}, patientId=${patientId}`
-    );
+    logger.info(`[${endpoint}] Doctor review saved for scanId=${scan.id}`);
 
     return res.status(200).json({
       message: "Doctor review saved",
@@ -248,131 +259,321 @@ const addDoctorReviewByPatientId = async (req, res) => {
     });
 
   } catch (err) {
-    logger.error(
-      `[${endpoint}] Error adding doctor review for patientId=${req.params?.patientId}: ${err.stack}`
-    );
-    return res.status(500).json({ error: "Server error while saving review" });
+    logger.error(`[${endpoint}] Error: ${err.stack}`);
+    return res.status(500).json({ error: "Server error while saving doctor review" });
   }
 };
 
-//generate report pdf (currently contains doctor's notes + images if any)
+
+//generate pdf
 const generateReport = async (req, res) => {
   const endpoint = "generateReport";
-  const userEmail = req.user?.email || "unknown";
   const { scanId } = req.params;
+  const userEmail = req.user?.email || "unknown";
 
-  logger.info(`[${endpoint}] Incoming request by user: ${userEmail} to generate report for scanId=${scanId}`);
+  console.log("👏generateReport endpoint hit");
+  
+  logger.info(
+    `[${endpoint}] Request to generate PDF for scanId=${scanId} by user=${userEmail}`
+  );
 
   try {
-    // Fetch scan
-    const scan = await Scan.findOne({ where: { id: scanId } });
+    // 1️⃣ Fetch scan + patient
+    const scan = await Scan.findOne({
+      where: { id: scanId },
+      include: [
+        {
+          model: Patient,
+          as: "patient",
+          attributes: ["name", "mrn", "dob", "gender"],
+        },
+      ],
+    });
+
+    console.log("scan.notes:", scan.notes);
+    console.log("scan.patient:", scan.patient);
+
     if (!scan) {
-      logger.warn(`[${endpoint}] Scan not found for scanId=${scanId}`);
       return res.status(404).json({ error: "Scan not found" });
     }
-    logger.info(`[${endpoint}] Found scan: ID=${scan.id}, patientId=${scan.patientId}`);
 
-    // Fetch patient
-    const patient = await Patient.findOne({ where: { id: scan.patientId } });
-    if (!patient) {
-      logger.warn(`[${endpoint}] Patient not found for patientId=${scan.patientId}`);
-      return res.status(404).json({ error: "Patient not found" });
+    if (!scan.patient) {
+      return res.status(404).json({
+        error: "Patient not found for this scan",
+      });
     }
-    logger.info(`[${endpoint}] Patient found: ID=${patient.id}, Name=${patient.name}`);
 
-    //Create PDF document
-    const doc = new PDFDocument();
-    logger.debug(`[${endpoint}] PDF document created`);
+    // 2️⃣ Fonts
+    const fonts = {
+      Roboto: {
+        normal: path.join(
+          __dirname,
+          "../fonts/Roboto-VariableFont_wdth,wght.ttf"
+        ),
+      },
+    };
 
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename=DoctorReview_${scan.id}.pdf`
-    );
-    logger.debug(`[${endpoint}] Response headers set for PDF download`);
+    const printer = new PdfPrinter(fonts);
 
-    doc.pipe(res);
-    logger.debug(`[${endpoint}] PDF piped to response`);
+    // 3️⃣ Parse AI analysis safely
+    const ai = scan.aiAnalysis || {};
 
-    //Add PDF content
-    doc.fontSize(20).text("Doctor Review Report", { align: "center" });
-    doc.moveDown();
+    // 4️⃣ Load scan image if exists
+    let scanImageBlock = [];
+    if (scan.fileUrl) {
+      try {
+        const imagePath = path.join(
+          __dirname,
+          "..",
+          scan.fileUrl
+        );
 
-    doc.fontSize(14).text(`Patient: ${patient.name}`);
-    doc.text(`Patient ID: ${patient.id}`);
-    doc.text(`Scan ID: ${scan.id}`);
-    doc.text(`Status: ${scan.status}`);
-    doc.moveDown();
-
-    doc.fontSize(16).text("Doctor Notes:");
-    doc.fontSize(14).text(scan.notes || "No notes provided");
-    doc.moveDown();
-
-    //Include image if uploaded
-    if (scan.doctorReviewUrl) {
-      const imagePath = path.join(__dirname, "..", scan.doctorReviewUrl);
-      if (fs.existsSync(imagePath)) {
-        doc.fontSize(16).text("Doctor Review Image:");
-        doc.image(imagePath, { fit: [400, 400], align: "center" });
-        logger.info(`[${endpoint}] Doctor review image embedded in PDF from ${imagePath}`);
-      } else {
-        doc.fontSize(14).text(`Image available at: ${scan.doctorReviewUrl}`);
-        logger.warn(`[${endpoint}] Image file not found at ${imagePath}, added URL instead`);
+        if (fs.existsSync(imagePath)) {
+          scanImageBlock = [
+            { text: "Original Scan Image", style: "sectionHeader" },
+            {
+              image: imagePath,
+              width: 400,
+              margin: [0, 10, 0, 10],
+            },
+          ];
+        }
+      } catch (err) {
+        logger.warn(
+          `[${endpoint}] Failed loading scan image: ${err.message}`
+        );
       }
-    } else {
-      logger.info(`[${endpoint}] No doctor review image found for scanId=${scan.id}`);
     }
 
-    //Finalize PDF
-    doc.end();
-    logger.info(`[${endpoint}] PDF generation completed for scanId=${scan.id}`);
+    // 5️⃣ Build AI analysis block
+    const aiBlock = [
+      { text: "AI Analysis", style: "sectionHeader" },
+      {
+        text:
+          typeof ai === "string"
+            ? ai
+            : JSON.stringify(ai, null, 2),
+        margin: [0, 5, 0, 10],
+      },
+    ];
+
+    // 6️⃣ PDF Definition
+    const docDefinition = {
+      content: [
+        { text: "Patient Scan Report", style: "header" },
+
+        { text: "Patient Details", style: "sectionHeader" },
+        { text: `Name: ${scan.patient.name}` },
+        { text: `MRN: ${scan.patient.mrn}` },
+        { text: `DOB: ${scan.patient.dob || "-"}` },
+        { text: `Gender: ${scan.patient.gender || "-"}` },
+        { text: `Scan Type: ${scan.scanType}` },
+        { text: `Urgency Level: ${scan.urgencyLevel}` },
+        { text: `Status: ${scan.status}` },
+
+        ...scanImageBlock,
+
+        ...aiBlock,
+
+        { text: "Doctor's Notes", style: "sectionHeader" },
+        { text: scan.notes || "-" },
+
+        {
+          text: `Generated By: ${userEmail}`,
+          margin: [0, 20, 0, 0],
+        },
+      ],
+
+      styles: {
+        header: {
+          fontSize: 18,
+          margin: [0, 0, 0, 10],
+        },
+        sectionHeader: {
+          fontSize: 14,
+          margin: [0, 15, 0, 5],
+        },
+      },
+
+      defaultStyle: {
+        font: "Roboto",
+      },
+    };
+
+    // 7️⃣ Create PDF
+    const pdfDoc = printer.createPdfKitDocument(docDefinition);
+    const chunks = [];
+
+    pdfDoc.on("data", (chunk) => chunks.push(chunk));
+
+    pdfDoc.on("end", async () => {
+      try {
+        const result = Buffer.concat(chunks);
+
+        const reportsDir = path.join(
+          __dirname,
+          "../uploads/scans/reports"
+        );
+
+        if (!fs.existsSync(reportsDir)) {
+          fs.mkdirSync(reportsDir, { recursive: true });
+        }
+
+        const fileName = `scan_${scanId}.pdf`;
+        const filePath = path.join(reportsDir, fileName);
+
+        fs.writeFileSync(filePath, result);
+
+        const finalReportUrl = `/uploads/scans/reports/${fileName}`;
+
+        // Save report URL
+        scan.finalReportUrl = finalReportUrl;
+        scan.status = "Reviewed";
+        await scan.save();
+
+        logger.info(
+          `[${endpoint}] PDF saved successfully at ${finalReportUrl}`
+        );
+
+        return res.status(200).json({
+          success: true,
+          reportUrl: finalReportUrl,
+        });
+      } catch (err) {
+        logger.error(`[${endpoint}] Failed saving PDF`, err);
+        return res.status(500).json({
+          error: "Failed to save report",
+        });
+      }
+    });
+
+    pdfDoc.end();
   } catch (err) {
-    logger.error(`[${endpoint}] Error generating PDF for scanId=${scanId}: ${err.stack}`);
-    return res.status(500).json({ error: "Server error while generating report" });
+    logger.error(`[${endpoint}] Error generating PDF`, err);
+    return res.status(500).json({
+      error: "Failed to generate PDF",
+      details: err?.message,
+    });
   }
 };
 
-
-//View Doctor's notes for a particular patientId
-const getDoctorReviewByPatientId = async (req, res) => {
-  const endpoint = "getDoctorReviewByPatientId";
+const getFinalReportByScanId = async (req, res) => {
+  const endpoint = "getFinalReportByScanId";
 
   try {
-    const patientId = req.params.patientId;
+    const { scanId } = req.params;
 
-    logger.info(`[${endpoint}] Fetching doctor reviews for patientId: ${patientId}`);
+    logger.info(`[${endpoint}] Fetching review/report for scanId: ${scanId}`);
 
-    const reviews = await Scan.findAll({
-      where: {
-        patientId,
-        notes: { $ne: null }  //Only scans where doctor added notes
-      },
+    const scan = await Scan.findOne({
+      where: { id: scanId },
       include: [
         {
           model: User,
           as: "uploader",
-          attributes: ["id", "fullName", "email"]
-        }
+          attributes: ["id", "name", "email"],
+        },
+        {
+          model: Patient,
+          as: "patient",
+          attributes: ["id", "name", "mrn", "dob", "gender"],
+        },
       ],
-      order: [["createdAt", "DESC"]]
     });
 
-    logger.info(`[${endpoint}] Total doctor reviews found: ${reviews.length}`);
+    if (!scan) {
+      logger.warn(`[${endpoint}] No scan found for scanId: ${scanId}`);
+      return res.status(404).json({
+        success: false,
+        error: "Scan not found",
+      });
+    }
 
     return res.status(200).json({
       success: true,
-      reviews
+      review: {
+        id: scan.id,
+        patientId: scan.patientId,
+        mrn: scan.patient?.mrn || null,
+        uploadedBy: scan.uploader?.name || null,
+        uploader: scan.uploader || null,
+        scanType: scan.scanType,
+        urgencyLevel: scan.urgencyLevel,
+        status: scan.status,
+        notes: scan.notes,
+        aiAnalysis: scan.aiAnalysis,
+        reportUrl: scan.finalReportUrl,
+        patient: scan.patient,
+        createdAt: scan.createdAt,
+      },
     });
 
   } catch (error) {
     logger.error(`[${endpoint}] Error: ${error.message}`);
     return res.status(500).json({
       success: false,
-      error: "Failed to fetch doctor notes for this patient"
+      error: "Failed to fetch review/report for this scan",
+    });
+  }
+};
+
+
+// GET all final reports for a patient
+const getFinalReportsByPatientId = async (req, res) => {
+  const endpoint = "getFinalReportsByPatientId";
+  const userEmail = req.user?.email || "unknown";
+  const { patientId } = req.params;
+
+  logger.info(
+    `[${endpoint}] Request to fetch final reports for patientId=${patientId} from user=${userEmail}`
+  );
+
+  try {
+    const scans = await Scan.findAll({
+      where: {
+        patientId,
+        finalReportUrl: {
+          [Op.ne]: null,
+        },
+      },
+      attributes: [
+        "id",
+        "scanType",
+        "urgencyLevel",
+        "status",
+        "finalReportUrl",
+        "createdAt",
+      ],
+      order: [["createdAt", "DESC"]],
+    });
+
+    logger.info(
+      `[${endpoint}] Found ${scans.length} final reports for patientId=${patientId}`
+    );
+
+    return res.status(200).json({
+      message: "Final reports fetched successfully",
+      reports: scans,
+    });
+
+  } catch (err) {
+    logger.error(`[${endpoint}] Error: ${err.stack}`);
+    return res.status(500).json({
+      error: "Server error while fetching final reports",
     });
   }
 };
 
 
 
-module.exports = { getScans, uploadScan, getScansByPatientId, addDoctorReviewByPatientId, generateReport, getDoctorReviewByPatientId };
+
+module.exports = { 
+  getScans, 
+  uploadScan, 
+  getScansByPatientId, 
+  saveAIAnalysis,
+  addDoctorReviewByScanId, 
+  generateReport, 
+  getFinalReportByScanId,
+  getFinalReportsByPatientId
+};
