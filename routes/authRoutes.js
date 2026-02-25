@@ -299,6 +299,75 @@ module.exports = (
 
   //CALL LOG ROUTES
 
+
+  // FORGOT PASSWORD - send reset link
+  router.post("/forgot-password", async (req, res) => {
+    try {
+      const { email } = req.body;
+      if (!email) return res.status(400).json({ error: "Email required" });
+
+      const user = await User.findOne({ where: { email } });
+
+      // Always respond 200 to avoid user enumeration
+      if (!user) {
+        return res.json({ message: "If an account with that email exists, a reset link has been sent." });
+      }
+
+      // Create a short-lived JWT token for password reset
+      const resetToken = jwt.sign(
+        { id: user.id, type: 'password_reset' },
+        process.env.JWT_SECRET,
+        { expiresIn: '1h' }
+      );
+
+      const resetLink = `${FRONTEND_BASE_URL}/reset-password?token=${resetToken}`;
+
+      // Send email with reset link
+      await transporter.sendMail({
+        from: process.env.SMTP_USER,
+        to: user.email,
+        subject: 'Password reset for your account',
+        html: `<p>Click the link below to reset your password. This link is valid for 1 hour.</p><p><a href="${resetLink}">${resetLink}</a></p>`,
+      });
+
+      return res.json({ message: "If an account with that email exists, a reset link has been sent." });
+    } catch (err) {
+      logger.error("Forgot password error:", err);
+      return res.status(500).json({ error: "Failed to send reset link" });
+    }
+  });
+
+  // RESET PASSWORD - verify token and set new password
+  router.post("/reset-password", async (req, res) => {
+    try {
+      const { token, password } = req.body;
+      if (!token || !password) return res.status(400).json({ error: "Token and password required" });
+
+      let payload;
+      try {
+        payload = jwt.verify(token, process.env.JWT_SECRET);
+      } catch (err) {
+        return res.status(400).json({ error: "Invalid or expired token" });
+      }
+
+      if (payload.type !== 'password_reset' || !payload.id) {
+        return res.status(400).json({ error: "Invalid reset token" });
+      }
+
+      const user = await User.findByPk(payload.id);
+      if (!user) return res.status(404).json({ error: "User not found" });
+
+      const hashed = await bcrypt.hash(password, 10);
+      await user.update({ password: hashed, otp: null, otpExpiresAt: null });
+
+      return res.json({ message: "Password reset successful" });
+    } catch (err) {
+      logger.error("Reset password error:", err);
+      return res.status(500).json({ error: "Failed to reset password" });
+    }
+  });
+
+  // CALL LOG ROUTES mounted after auth endpoints to avoid interfering with auth paths
   const callLogRoutes = require("../routes/callLogRoutes")({ transporter });
   router.use("/", callLogRoutes);
 
