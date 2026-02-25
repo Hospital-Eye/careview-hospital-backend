@@ -317,7 +317,7 @@ module.exports = (
       const resetToken = jwt.sign(
         { id: user.id, type: 'password_reset' },
         process.env.JWT_SECRET,
-        { expiresIn: '1h' }
+        { expiresIn: '15m' }
       );
 
       const resetLink = `${FRONTEND_BASE_URL}/reset-password?token=${resetToken}`;
