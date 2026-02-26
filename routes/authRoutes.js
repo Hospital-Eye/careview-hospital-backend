@@ -327,7 +327,7 @@ module.exports = (
         from: process.env.SMTP_USER,
         to: user.email,
         subject: 'Password reset for your account',
-        html: `<p>Click the link below to reset your password. This link is valid for 1 hour.</p><p><a href="${resetLink}">${resetLink}</a></p>`,
+        html: `<p>Click the link below to reset your password. This link is valid for 15 minutes.</p><p><a href="${resetLink}">${resetLink}</a></p>`,
       });
 
       return res.json({ message: "If an account with that email exists, a reset link has been sent." });
