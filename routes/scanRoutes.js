@@ -51,10 +51,10 @@ return authorize(...allowedRoles)(req, res, next);
 
 
 //Upload scan
-router.post("/upload", protect, patientCheck, authorize("admin", "manager", "doctor", 'nurse'), scope("Scan"), upload.single("scan"), uploadScan);
+router.post("/upload", protect, patientCheck, authorize("manager", "doctor", 'nurse'), scope("Scan"), upload.single("scan"), uploadScan);
 
 //View scans of a particular patient
-router.get("/:patientId", protect, patientCheck, authorize("admin", "manager", "doctor", "nurse"), scope("Scan"), getScansByPatientId);
+router.get("/:patientId", protect, patientCheck, authorize("manager", "doctor", "nurse"), scope("Scan"), getScansByPatientId);
 
 
 // Multer storage for doctor review image uploads

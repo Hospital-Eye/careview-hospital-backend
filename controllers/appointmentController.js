@@ -161,8 +161,127 @@ const getAppointmentsByPatientId = async (req, res) => {
   }
 };
 
+// Reschedule appointment by ID
+const rescheduleAppointmentById = async (req, res) => {
+  const endpoint = 'rescheduleAppointmentById';
+  const userEmail = req.user?.email || 'unknown';
+  const appointmentId = req.params.id;
+  const { newStartTime, newEndTime } = req.body;
+
+  logger.info(
+    `[${endpoint}] Request to reschedule appointment id=${appointmentId} from user=${userEmail}`
+  );
+
+  try {
+    if (!newStartTime) {
+      return res.status(400).json({ error: 'newStartTime is required' });
+    }
+
+    const scopeFilter = req.scopeFilter || {};
+
+    const appointment = await Appointment.findOne({
+      where: {
+        id: appointmentId,
+        ...scopeFilter
+      }
+    });
+
+    if (!appointment) {
+      logger.warn(
+        `[${endpoint}] Appointment not found or access denied for id=${appointmentId}, user=${userEmail}`
+      );
+      return res.status(404).json({ error: 'Appointment not found' });
+    }
+
+    if (appointment.status === 'cancelled') {
+      return res.status(400).json({
+        error: 'Cannot reschedule a cancelled appointment'
+      });
+    }
+
+    appointment.startTime = new Date(newStartTime);
+
+    if (newEndTime) {
+      appointment.endTime = new Date(newEndTime);
+    }
+
+    appointment.status = 'rescheduled';
+
+    await appointment.save();
+
+    logger.info(
+      `[${endpoint}] Successfully rescheduled appointment id=${appointmentId} by user=${userEmail}`
+    );
+
+    res.json(appointment);
+  } catch (err) {
+    logger.error(
+      `[${endpoint}] Error rescheduling appointment id=${appointmentId}: ${err.message}`,
+      { stack: err.stack }
+    );
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// Cancel appointment by ID
+const cancelAppointmentById = async (req, res) => {
+  const endpoint = 'cancelAppointmentById';
+  const userEmail = req.user?.email || 'unknown';
+  const appointmentId = req.params.id;
+
+  logger.info(
+    `[${endpoint}] Request to cancel appointment id=${appointmentId} from user=${userEmail}`
+  );
+
+  try {
+    const scopeFilter = req.scopeFilter || {};
+
+    const appointment = await Appointment.findOne({
+      where: {
+        id: appointmentId,
+        ...scopeFilter
+      }
+    });
+
+    if (!appointment) {
+      logger.warn(
+        `[${endpoint}] Appointment not found or access denied for id=${appointmentId}, user=${userEmail}`
+      );
+      return res.status(404).json({ error: 'Appointment not found' });
+    }
+
+    if (appointment.status === 'cancelled') {
+      return res.status(400).json({
+        error: 'Appointment is already cancelled'
+      });
+    }
+
+    appointment.status = 'cancelled';
+    appointment.cancelledAt = new Date();
+
+    await appointment.save();
+
+    logger.info(
+      `[${endpoint}] Successfully cancelled appointment id=${appointmentId} by user=${userEmail}`
+    );
+
+    res.json({
+      message: 'Appointment cancelled successfully',
+      appointment
+    });
+  } catch (err) {
+    logger.error(
+      `[${endpoint}] Error cancelling appointment id=${appointmentId}: ${err.message}`,
+      { stack: err.stack }
+    );
+    res.status(500).json({ error: err.message });
+  }
+};
+
 module.exports = {
   getAppointments,
   getAppointmentById,
-  getAppointmentsByPatientId
+  getAppointmentsByPatientId,
+  rescheduleAppointmentById,
+  cancelAppointmentById
 };
