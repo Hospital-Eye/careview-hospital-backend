@@ -8,6 +8,8 @@ const {
   deleteUser,
   welcomeNewUser,
   registerUserAsPatient,
+  createStaffUser,
+  setupPassword,
   getUserbyEmail,
   getUserByPhone,
   verifyUserByNameAndDob,
@@ -24,5 +26,7 @@ router.post('/register', protect, authorize('user'), registerUserAsPatient);
 router.patch('/:id', protect, authorize('admin', 'manager'), updateUser);
 router.delete('/:id', protect, authorize('admin', 'manager'), deleteUser);
 router.get('/registration-state', protect, authorize('user'), checkRegistrationState);
+router.post("/staff/create", protect, authorize("admin", "manager"), createStaffUser);
+router.post("/staff/setup-password", setupPassword);
 
 module.exports = router;
