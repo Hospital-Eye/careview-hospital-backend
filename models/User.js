@@ -29,6 +29,26 @@ module.exports = (sequelize, DataTypes) => {
         isEmail: true
       }
     },
+    personalEmail: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      validate: {
+        isEmail: true
+      }
+    },
+    onboardingToken: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    onboardingTokenExpiresAt: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    accountStatus: {
+      type: DataTypes.ENUM('pending', 'active', 'disabled'),
+      defaultValue: 'pending',
+      allowNull: false
+    },
     phone: {
       type: DataTypes.STRING,
       allowNull: true,   
