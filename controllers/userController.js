@@ -1,7 +1,10 @@
 const { User, Clinic, PatientRegistrationRequest } = require('../models');
+const crypto = require("crypto");
+const bcrypt = require("bcrypt");
 const { Op, fn, col, where } = require("sequelize");
 const { sequelize } = require('../config/db');
 const { logger } = require('../utils/logger');
+const { sendOnboardingEmail } = require("../utils/onboardEmail");
 
 //Create a new user session
 const createUser = async (req, res) => {
@@ -446,13 +449,160 @@ const checkRegistrationState = async (req, res) => {
   }
 };
 
-  
+
+//onboard clinic staff (work email + default password + onboarding email)
+// onboard clinic staff (work email + onboarding email)
+const createStaffUser = async (req, res) => {
+  const endpoint = "createStaffUser";
+
+  logger.info(`[${endpoint}] Request received`, {
+    body: {
+      firstName: req.body.firstName,
+      lastName: req.body.lastName,
+      personalEmail: req.body.personalEmail,
+      role: req.body.role,
+      organizationId: req.body.organizationId,
+      clinicId: req.body.clinicId
+    }
+  });
+
+  try {
+    const { firstName, lastName, personalEmail, role, organizationId, clinicId } = req.body;
+
+    if (!firstName || !lastName || !personalEmail || !role || !organizationId || !clinicId) {
+      logger.warn(`[${endpoint}] Missing required fields`);
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const fullName = `${firstName.trim()} ${lastName.trim()}`;
+    const workEmail =
+      `${firstName.toLowerCase().replace(/\s+/g, ".")}.` +
+      `${lastName.toLowerCase().replace(/\s+/g, ".")}@newhopelifescan.com`;
+
+    logger.info(`[${endpoint}] Generated work email`, { workEmail });
+
+    const existingUser = await User.findOne({ where: { email: workEmail } });
+
+    if (existingUser) {
+      logger.warn(`[${endpoint}] User already exists`, { workEmail });
+      return res.status(400).json({ error: "User already exists" });
+    }
+
+    const token = crypto.randomBytes(32).toString("hex");
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+    logger.info(`[${endpoint}] Creating user in database`, { workEmail });
+
+    const user = await User.create({
+      name: fullName,
+      email: workEmail,
+      personalEmail,
+      role,
+      password: null,
+      accountStatus: "pending",
+      onboardingToken: token,
+      onboardingTokenExpiresAt: expiresAt,
+      isActive: true,
+      organizationId,
+      clinicId
+    });
+
+    logger.info(`[${endpoint}] User created successfully`, {
+      userId: user.id,
+      email: user.email
+    });
+
+    await sendOnboardingEmail(personalEmail, workEmail, token);
+
+    logger.info(`[${endpoint}] Onboarding email sent`, {
+      personalEmail,
+      workEmail
+    });
+
+    return res.status(201).json({
+      message: "Staff user created and onboarding email sent",
+      userId: user.id
+    });
+
+  } catch (error) {
+    logger.error(
+      `[${endpoint}] Error creating staff user: ${error.message}`,
+      { stack: error.stack }
+    );
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+// Setup password for new staff user using token from email
+// Setup password for new staff user using token
+const setupPassword = async (req, res) => {
+  const endpoint = "setupPassword";
+
+  logger.info(`[${endpoint}] Setup password request received`);
+
+  try {
+    const { token, password } = req.body;
+
+    if (!token || !password) {
+      logger.warn(`[${endpoint}] Missing token or password`);
+      return res.status(400).json({ error: "Missing token or password" });
+    }
+
+    logger.info(`[${endpoint}] Looking up user by onboarding token`);
+
+    const user = await User.findOne({
+      where: { onboardingToken: token }
+    });
+
+    if (!user) {
+      logger.warn(`[${endpoint}] Invalid onboarding token`);
+      return res.status(400).json({ error: "Invalid token" });
+    }
+
+    if (user.onboardingTokenExpiresAt < new Date()) {
+      logger.warn(`[${endpoint}] Onboarding token expired`, {
+        userId: user.id
+      });
+      return res.status(400).json({ error: "Token expired" });
+    }
+
+    logger.info(`[${endpoint}] Token valid. Hashing password`, {
+      userId: user.id
+    });
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    user.password = hashedPassword;
+    user.accountStatus = "active";
+    user.onboardingToken = null;
+    user.onboardingTokenExpiresAt = null;
+
+    await user.save();
+
+    logger.info(`[${endpoint}] Password setup complete`, {
+      userId: user.id
+    });
+
+    return res.status(200).json({
+      message: "Password set successfully"
+    });
+
+  } catch (error) {
+    logger.error(
+      `[${endpoint}] Error setting up password: ${error.message}`,
+      { stack: error.stack }
+    );
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
 
 module.exports = {
   createUser,
   getUsers,
   updateUser,
   deleteUser,
+  createStaffUser,
+  setupPassword,
   welcomeNewUser,
   registerUserAsPatient,
   getUserbyEmail,
