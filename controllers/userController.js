@@ -1,10 +1,12 @@
 const { User, Clinic, PatientRegistrationRequest } = require('../models');
 const crypto = require("crypto");
 const bcrypt = require("bcrypt");
+const dotenv = require("dotenv");
 const { Op, fn, col, where } = require("sequelize");
 const { sequelize } = require('../config/db');
 const { logger } = require('../utils/logger');
 const { sendOnboardingEmail } = require("../utils/onboardEmail");
+dotenv.config();
 
 //Create a new user session
 const createUser = async (req, res) => {
@@ -247,7 +249,7 @@ const registerUserAsPatient = async (req, res) => {
       gender,
       phone,
       emailId,
-      organizationId = "sigma-healthsense",
+      organizationId,
       clinicId,
       requiresIsolationPrecautions = false,
       allergies,
@@ -313,8 +315,8 @@ const registerUserAsPatient = async (req, res) => {
       gender,
       phone,
       emailId: normalizedEmail,
-      organizationId,
-      clinicId,
+      organizationId: process.env.DEFAULT_ORGANIZATION_ID,
+      clinicId: process.env.DEFAULT_CLINIC_ID,
       requiresIsolationPrecautions: Boolean(requiresIsolationPrecautions),
       allergies: parsedAllergies,
       diagnoses: parsedDiagnoses,
