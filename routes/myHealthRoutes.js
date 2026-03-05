@@ -1,5 +1,5 @@
 const express = require('express');
-const { Patient, Vital, Staff, User } = require('../models');
+const { Patient, Vital, Staff, User, Organization, Clinic } = require('../models');
 const { protect, authorize } = require('../middleware/authMiddleware');
 const { Op } = require('sequelize');
 const { sequelize } = require('../config/db');
@@ -34,19 +34,41 @@ router.get('/', protect, authorize('patient'), async (req, res) => {
       vitalsHistory
     };
 
+    let organizationName = null;
+    let clinicName = null;
+
+    // Fetch organization name
+    if (req.user.organizationId) {
+      const organization = await Organization.findOne({
+        where: { organizationId: req.user.organizationId }
+      });
+      organizationName = organization?.name || null;
+    }
+
+    // Fetch clinic name
+    if (req.user.clinicId) {
+      const clinic = await Clinic.findOne({
+        where: { clinicId: req.user.clinicId }
+      });
+      clinicName = clinic?.name || null;
+    }
+
     res.json({
       name: req.user.name || patient.name,
       email: req.user.email,
       role: req.user.role,
       organizationId: req.user.organizationId || null,
+      organizationName: organizationName,
       clinicId: req.user.clinicId || null,
+      clinicName: clinicName,
       profilePicture: req.user.profilePicture || null,
       details: patientDetails,
     });
-
-  } catch (err) {
-    logger.error(`[${endpoint}] Error fetching patient health for user: ${req.user.email}: ${err.stack}`);
-    res.status(500).json({ message: 'Server error', error: err.message });
+  } 
+    catch (err) {
+    logger.error(`[GetMyHealth] Error fetching patient health for user: ${req.user.email}`, err);
+    console.error(err); // temporary
+    return res.status(500).json({ error: "Failed to fetch health data" });
   }
 });
 
