@@ -129,8 +129,8 @@ const getScansByPatientId = async (req, res) => {
     });
 
     if (!scans.length) {
-      logger.warn(`[${endpoint}] No scans found for patientId=${patient.id}`);
-      return res.status(404).json({ error: "No scans found for this patient" });
+      logger.info(`[${endpoint}] No scans found for patientId=${patient.id}`);
+      return res.status(200).json([]);
     }
 
     logger.info(
