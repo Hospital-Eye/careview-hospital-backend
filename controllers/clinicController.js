@@ -527,18 +527,27 @@ const convertUserToPatient = async (req, res) => {
 
       // Create patient record with all required fields
       await Patient.create(
-        {
-          userId: user.id,
-          clinicId: clinic.clinicId,
-          organizationId: request.organizationId,
-          name: request.name,
-          emailId: request.emailId.toLowerCase(),
-          mrn,
-          createdBy: req.user.id
-        },
-        { transaction: t }
-      );
+      {
+        userId: user.id,
+        clinicId: clinic.clinicId,
+        organizationId: request.organizationId,
 
+        name: request.name,
+        emailId: request.emailId.toLowerCase(),
+        phone: request.phone,
+        dob: request.dob,
+        gender: request.gender,
+
+        allergies: request.allergies,
+        diagnoses: request.diagnoses,
+        emergencyContact: request.emergencyContact,
+        requiresIsolationPrecautions: request.requiresIsolationPrecautions,
+
+        mrn,
+        createdBy: req.user.id
+      },
+      { transaction: t }
+    );
       // Update user role and link clinic/org
       await user.update(
         {
@@ -552,7 +561,7 @@ const convertUserToPatient = async (req, res) => {
 
       // Mark registration request as fulfilled
       await request.update(
-        { fulfilledAt: new Date() },
+        { fulfilledAt: new Date(), status: "converted" },
         { transaction: t }
       );
 
