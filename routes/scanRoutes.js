@@ -1,5 +1,7 @@
 const express = require("express");
 const multer = require("multer");
+
+
 const { getScans, uploadScan, getScansByPatientId, saveAIAnalysis, addDoctorReviewByScanId, generateReport, getFinalReportByScanId, getFinalReportsByPatientId } = require("../controllers/scanController");
 
 const { protect, authorize, scope, patientCheck } = require('../middleware/authMiddleware');
@@ -7,17 +9,10 @@ const path = require("path");
 
 const router = express.Router();
 
-//Configure Multer for scan uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, "../uploads/scans"));
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + "-" + file.originalname);
-  }
-});
-
+// Use memory storage so we get req.file.buffer
+const storage = multer.memoryStorage();
 const upload = multer({ storage });
+
 
 //GET all scans
 router.get("/", protect, async (req, res, next) => {
