@@ -4,8 +4,7 @@ const { sequelize } = require('../config/db');
 const path = require("path");
 const { logger } = require('../utils/logger');
 const PdfPrinter = require("pdfmake");
-const { uploadBuffer } = require("../utils/gcs");
-
+const { uploadBuffer, getSignedUrl } = require("../utils/gcs");
 const multer = require("multer");
 
 // Use memory storage so we get req.file.buffer
@@ -41,7 +40,19 @@ const getScans = async (req, res) => {
     }
 
     logger.info(`[${endpoint}] Fetched ${scans.length} scans from database`);
-    res.status(200).json(scans);
+    const scansWithSignedUrls = await Promise.all(
+    scans.map(async (scan) => {
+      const scanObj = scan.toJSON();
+
+      if (scanObj.fileUrl) {
+        scanObj.fileUrl = await getSignedUrl(scanObj.fileUrl);
+      }
+
+      return scanObj;
+    })
+  );
+
+  res.status(200).json(scansWithSignedUrls);
 
   } catch (err) {
     logger.error(`[${endpoint}] Error in getScans: ${err.stack}`);
@@ -77,7 +88,7 @@ const uploadScan = async (req, res) => {
     }
 
     // Upload to GCS
-    const gcsPath = `scans/${Date.now()}_${req.file.originalname}`;
+    const gcsPath = `reports/${patient.id}/scan_${Date.now()}.pdf`;
     const fileUrl = await uploadBuffer(req.file.buffer, gcsPath, req.file.mimetype);
 
     // Save scan record in DB
@@ -404,25 +415,22 @@ const generateReport = async (req, res) => {
         // GCS upload path
         const gcsPath = `reports/scan_${scanId}.pdf`;
 
-        // Upload buffer to GCS
-        const fileUrl = await uploadBuffer(
+        const filePath = await uploadBuffer(
           result,
           gcsPath,
           "application/pdf"
         );
 
-        // Save report URL to DB
-        scan.finalReportUrl = fileUrl;
+        scan.finalReportUrl = filePath;
         scan.status = "Reviewed";
         await scan.save();
 
-        logger.info(
-          `[${endpoint}] PDF uploaded successfully to GCS: ${fileUrl}`
-        );
+        // generate signed URL
+        const signedUrl = await getSignedUrl(filePath);
 
         return res.status(200).json({
           success: true,
-          reportUrl: fileUrl,
+          reportUrl: signedUrl,
         });
 
       } catch (err) {
@@ -478,6 +486,12 @@ const getFinalReportByScanId = async (req, res) => {
       });
     }
 
+    let signedReportUrl = null;
+
+    if (scan.finalReportUrl) {
+      signedReportUrl = await getSignedUrl(scan.finalReportUrl);
+    }
+
     return res.status(200).json({
       success: true,
       review: {
@@ -491,7 +505,7 @@ const getFinalReportByScanId = async (req, res) => {
         status: scan.status,
         notes: scan.notes,
         aiAnalysis: scan.aiAnalysis,
-        reportUrl: scan.finalReportUrl,
+        reportUrl: signedReportUrl,
         patient: scan.patient,
         createdAt: scan.createdAt,
       },
@@ -540,9 +554,21 @@ const getFinalReportsByPatientId = async (req, res) => {
       `[${endpoint}] Found ${scans.length} final reports for patientId=${patientId}`
     );
 
+    const reportsWithSignedUrls = await Promise.all(
+      scans.map(async (scan) => {
+        const scanObj = scan.toJSON();
+
+        if (scanObj.finalReportUrl) {
+          scanObj.finalReportUrl = await getSignedUrl(scanObj.finalReportUrl);
+        }
+
+        return scanObj;
+      })
+    );
+
     return res.status(200).json({
       message: "Final reports fetched successfully",
-      reports: scans,
+      reports: reportsWithSignedUrls,
     });
 
   } catch (err) {
