@@ -11,7 +11,7 @@ const transporter = nodemailer.createTransport({
 });
 
 const sendOnboardingEmail = async (to, workEmail, token) => {
-  const setupLink = `${process.env.FRONTEND_URL}/setup-password?token=${token}`;
+  const setupLink = `${process.env.FRONTEND_BASE_URL}/activate-account?token=${token}`;
 
   await transporter.sendMail({
     from: `"New Hope" <no-reply@newhope1.com>`,
