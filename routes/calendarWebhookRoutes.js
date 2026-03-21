@@ -77,22 +77,22 @@ router.post("/cal", (req, res, next) => {
 
 //event handlers
 const handleBookingCreated = async (payload) => {
-  const { uid, startTime, endTime, attendees } = payload;
+  const { uid, startTime, endTime, attendees, metadata } = payload;
 
   logger.info("[Cal Booking] payload:", JSON.stringify(payload, null, 2));
-  logger.info("[Cal Booking] startTime:", startTime, "endTime:", endTime);
 
-  const organizationId = await resolveOrganizationId();
-  const clinicId = await resolveClinicId();
+  const organizationId = metadata?.orgId || await resolveOrganizationId();
+  const clinicId = metadata?.clinicId || await resolveClinicId();
 
   const attendeeEmail =
     attendees?.[0]?.email ||
     payload?.responses?.email ||
     null;
 
-  let patientId = null;
+  let patientId = metadata?.patientId || null;
 
-  if (attendeeEmail) {
+  // fallback if metadata missing (voice flow safety)
+  if (!patientId && attendeeEmail) {
     const patient = await Patient.findOne({
       where: { emailId: attendeeEmail }
     });
@@ -108,14 +108,16 @@ const handleBookingCreated = async (payload) => {
       patient_id: patientId,
       clinicId,
       organizationId,
-      startTime: new Date(startTime).toISOString(),
-      endTime: new Date(endTime).toISOString(),
+      startTime: new Date(startTime),
+      endTime: new Date(endTime),
       attendeeEmail,
       pendingIdentity: !patientId,
-      scheduledBy: patientId ? "portal" : "voice_agent",
+      scheduledBy: metadata?.source || "voice_agent", // ✅ FIXED
       status: "scheduled"
     }
   });
+
+  logger.info(`[Cal Webhook] Appointment created: ${uid}`);
 };
 
 
