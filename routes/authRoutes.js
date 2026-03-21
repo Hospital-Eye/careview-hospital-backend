@@ -109,16 +109,10 @@ module.exports = (
 
       return res.redirect(`${FRONTEND_BASE_URL}/dashboard?token=${token}`);
     } catch (err) {
-      console.error("GOOGLE OAUTH ERROR:", err);
-      console.error("GOOGLE OAUTH RESPONSE:", err?.response?.data);
-      console.error("GOOGLE OAUTH STATUS:", err?.response?.status);
-
-      logger.error(`Google OAuth error: ${err.message}`);
-
-  return res.redirect(
-    `${FRONTEND_BASE_URL}/login?error=google_oauth_failed`
-  );
-
+      logger.error("Google OAuth error:", err);
+      return res.redirect(
+        `${FRONTEND_BASE_URL}/login?error=google_oauth_failed`
+      );
     }
   });
 

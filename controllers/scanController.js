@@ -2,14 +2,9 @@ const { Scan, Patient, User } = require('../models');
 const { Op } = require('sequelize');
 const { sequelize } = require('../config/db');
 const path = require("path");
+const fs = require("fs");
 const { logger } = require('../utils/logger');
 const PdfPrinter = require("pdfmake");
-const { uploadBuffer, getSignedUrl } = require("../utils/gcs");
-const multer = require("multer");
-
-// Use memory storage so we get req.file.buffer
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
 
 //GET all scans
 const getScans = async (req, res) => {
@@ -40,19 +35,7 @@ const getScans = async (req, res) => {
     }
 
     logger.info(`[${endpoint}] Fetched ${scans.length} scans from database`);
-    const scansWithSignedUrls = await Promise.all(
-    scans.map(async (scan) => {
-      const scanObj = scan.toJSON();
-
-      if (scanObj.fileUrl) {
-        scanObj.fileUrl = await getSignedUrl(scanObj.fileUrl);
-      }
-
-      return scanObj;
-    })
-  );
-
-  res.status(200).json(scansWithSignedUrls);
+    res.status(200).json(scans);
 
   } catch (err) {
     logger.error(`[${endpoint}] Error in getScans: ${err.stack}`);
@@ -68,19 +51,15 @@ const uploadScan = async (req, res) => {
   logger.info(`[${endpoint}] Incoming request to upload a new scan from user: ${userEmail}`);
 
   try {
-    // Check that a file was uploaded
-    if (!req.file) {
-      logger.warn(`[${endpoint}] No file uploaded`);
-      return res.status(400).json({ error: "No file uploaded" });
-    }
-
     const { patientName, mrn, scanType, urgencyLevel, notes } = req.body;
 
     logger.debug(`[${endpoint}] Upload request body: ${JSON.stringify({ patientName, mrn, scanType, urgencyLevel })}`);
     logger.debug(`[${endpoint}] Uploader info: ${JSON.stringify({ id: req.user?.id, email: req.user?.email, role: req.user?.role })}`);
-    logger.debug(`[${endpoint}] req.file: ${JSON.stringify({ originalname: req.file.originalname, mimetype: req.file.mimetype, size: req.file.size })}`);
 
-    // Find patient
+    // Debug log for file
+    logger.debug(`[${endpoint}] req.file: ${JSON.stringify(req.file)}`);
+
+    //find patient by name + MRN
     const patient = await Patient.findOne({ where: { name: patientName, mrn } });
     if (!patient) {
       logger.warn(`[${endpoint}] Patient not found for name="${patientName}" and MRN="${mrn}"`);
