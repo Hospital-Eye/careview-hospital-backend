@@ -66,7 +66,11 @@ const uploadScan = async (req, res) => {
       return res.status(404).json({ error: "Patient not found" });
     }
 
-    //create new scan record
+    // Upload to GCS
+    const gcsPath = `reports/${patient.id}/scan_${Date.now()}.pdf`;
+    const fileUrl = await uploadBuffer(req.file.buffer, gcsPath, req.file.mimetype);
+
+    // Save scan record in DB
     const scan = await Scan.create({
       organizationId: patient.organizationId,
       clinicId: patient.clinicId,
@@ -75,23 +79,18 @@ const uploadScan = async (req, res) => {
       uploadedBy: req.user.id,
       scanType,
       urgencyLevel,
-      fileUrl: `/uploads/scans/${req.file?.filename}`,
+      fileUrl,
       notes,
     });
 
-    logger.info(`[${endpoint}] New scan uploaded successfully by ${req.user?.email || 'unknown'} for patient MRN=${mrn}`);
-
+    logger.info(`[${endpoint}] Scan uploaded successfully by ${userEmail} for patient MRN=${mrn}`);
     return res.status(201).json(scan);
 
   } catch (err) {
     logger.error(`[${endpoint}] Error in uploadScan: ${err?.message}`);
     logger.error(`[${endpoint}] Full Error: ${JSON.stringify(err, null, 2)}`);
-    logger.error(err); // prints stack if available
-
-    return res.status(500).json({
-      error: "Server error while uploading scan",
-      details: err?.message,
-    });
+    logger.error(err);
+    return res.status(500).json({ error: "Server error while uploading scan", details: err?.message });
   }
 };
 
@@ -139,18 +138,6 @@ const getScansByPatientId = async (req, res) => {
 
     // Build response objects for each scan
     const scanResponses = scans.map((scan) => {
-      const filePath = path.join(__dirname, "..", scan.fileUrl);
-
-      // Safe check for missing file
-      let fileData = null;
-      if (fs.existsSync(filePath)) {
-        fileData = fs.readFileSync(filePath, { encoding: "base64" });
-      } else {
-        logger.error(
-          `[${endpoint}] Missing scan file on disk for ScanID=${scan.id}, path="${filePath}"`
-        );
-      }
-
       return {
         id: scan.id,
         patientId: scan.patientId,
@@ -162,13 +149,9 @@ const getScansByPatientId = async (req, res) => {
         status: scan.status,
         notes: scan.notes,
         createdAt: scan.createdAt,
-        file: fileData
-          ? {
-              mimetype: scan.fileType || "image/jpeg",
-              data: fileData,
-            }
-          : null,
+        fileUrl: scan.fileUrl
       };
+
     });
 
     return res.status(200).json(scanResponses);
@@ -243,10 +226,17 @@ const addDoctorReviewByScanId = async (req, res) => {
     };
 
     if (req.file) {
-      const imageUrl = `/uploads/reviews/${req.file.filename}`;
+      const gcsPath = `reviews/${Date.now()}_${req.file.originalname}`;
+
+      const imageUrl = await uploadBuffer(
+        req.file.buffer,
+        gcsPath,
+        req.file.mimetype
+      );
+
       updateFields.doctorReviewUrl = imageUrl;
 
-      logger.info(`[${endpoint}] Doctor review image saved: ${imageUrl}`);
+      logger.info(`[${endpoint}] Doctor review image uploaded to GCS: ${imageUrl}`);
     }
 
     await scan.update(updateFields);
@@ -264,15 +254,12 @@ const addDoctorReviewByScanId = async (req, res) => {
   }
 };
 
-
 //generate pdf
 const generateReport = async (req, res) => {
   const endpoint = "generateReport";
   const { scanId } = req.params;
   const userEmail = req.user?.email || "unknown";
 
-  console.log("👏generateReport endpoint hit");
-  
   logger.info(
     `[${endpoint}] Request to generate PDF for scanId=${scanId} by user=${userEmail}`
   );
@@ -289,9 +276,6 @@ const generateReport = async (req, res) => {
         },
       ],
     });
-
-    console.log("scan.notes:", scan.notes);
-    console.log("scan.patient:", scan.patient);
 
     if (!scan) {
       return res.status(404).json({ error: "Scan not found" });
@@ -322,18 +306,15 @@ const generateReport = async (req, res) => {
     let scanImageBlock = [];
     if (scan.fileUrl) {
       try {
-        const imagePath = path.join(
-          __dirname,
-          "..",
-          scan.fileUrl
-        );
+        let scanImageBlock = [];
 
-        if (fs.existsSync(imagePath)) {
+        if (scan.fileUrl) {
           scanImageBlock = [
             { text: "Original Scan Image", style: "sectionHeader" },
             {
-              image: imagePath,
-              width: 400,
+              text: scan.fileUrl,
+              link: scan.fileUrl,
+              color: "blue",
               margin: [0, 10, 0, 10],
             },
           ];
@@ -410,46 +391,41 @@ const generateReport = async (req, res) => {
       try {
         const result = Buffer.concat(chunks);
 
-        const reportsDir = path.join(
-          __dirname,
-          "../uploads/scans/reports"
+        // GCS upload path
+        const gcsPath = `reports/scan_${scanId}.pdf`;
+
+        const filePath = await uploadBuffer(
+          result,
+          gcsPath,
+          "application/pdf"
         );
 
-        if (!fs.existsSync(reportsDir)) {
-          fs.mkdirSync(reportsDir, { recursive: true });
-        }
-
-        const fileName = `scan_${scanId}.pdf`;
-        const filePath = path.join(reportsDir, fileName);
-
-        fs.writeFileSync(filePath, result);
-
-        const finalReportUrl = `/uploads/scans/reports/${fileName}`;
-
-        // Save report URL
-        scan.finalReportUrl = finalReportUrl;
+        scan.finalReportUrl = filePath;
         scan.status = "Reviewed";
         await scan.save();
 
-        logger.info(
-          `[${endpoint}] PDF saved successfully at ${finalReportUrl}`
-        );
+        // generate signed URL
+        const signedUrl = await getSignedUrl(filePath);
 
         return res.status(200).json({
           success: true,
-          reportUrl: finalReportUrl,
+          reportUrl: signedUrl,
         });
+
       } catch (err) {
-        logger.error(`[${endpoint}] Failed saving PDF`, err);
+        logger.error(`[${endpoint}] Failed uploading PDF`, err);
+
         return res.status(500).json({
-          error: "Failed to save report",
+          error: "Failed to upload report",
         });
       }
     });
 
     pdfDoc.end();
+
   } catch (err) {
     logger.error(`[${endpoint}] Error generating PDF`, err);
+
     return res.status(500).json({
       error: "Failed to generate PDF",
       details: err?.message,
@@ -489,6 +465,12 @@ const getFinalReportByScanId = async (req, res) => {
       });
     }
 
+    let signedReportUrl = null;
+
+    if (scan.finalReportUrl) {
+      signedReportUrl = await getSignedUrl(scan.finalReportUrl);
+    }
+
     return res.status(200).json({
       success: true,
       review: {
@@ -502,7 +484,7 @@ const getFinalReportByScanId = async (req, res) => {
         status: scan.status,
         notes: scan.notes,
         aiAnalysis: scan.aiAnalysis,
-        reportUrl: scan.finalReportUrl,
+        reportUrl: signedReportUrl,
         patient: scan.patient,
         createdAt: scan.createdAt,
       },
@@ -551,9 +533,21 @@ const getFinalReportsByPatientId = async (req, res) => {
       `[${endpoint}] Found ${scans.length} final reports for patientId=${patientId}`
     );
 
+    const reportsWithSignedUrls = await Promise.all(
+      scans.map(async (scan) => {
+        const scanObj = scan.toJSON();
+
+        if (scanObj.finalReportUrl) {
+          scanObj.finalReportUrl = await getSignedUrl(scanObj.finalReportUrl);
+        }
+
+        return scanObj;
+      })
+    );
+
     return res.status(200).json({
       message: "Final reports fetched successfully",
-      reports: scans,
+      reports: reportsWithSignedUrls,
     });
 
   } catch (err) {
