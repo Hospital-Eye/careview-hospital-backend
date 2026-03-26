@@ -7,6 +7,8 @@ const { logger } = require('../utils/logger');
 //Middleware to protect routes (Authentication)
 const protect = async (req, res, next) => {
   let token;
+
+  // ✅ Check for Bearer token
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith("Bearer ")
@@ -14,28 +16,41 @@ const protect = async (req, res, next) => {
     try {
       token = req.headers.authorization.split(" ")[1];
 
+      // 🔐 Verify JWT
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
+      console.log("Decoded JWT payload:", decoded);
+
+      // 🔍 Fetch user from DB
       const user = await User.findByPk(decoded.id, {
-        attributes: ["id", "email", "role", "organizationId", "clinicId"]
+        attributes: ["id", "email", "role", "organizationId", "clinicId"],
       });
 
       if (!user) {
+        logger.warn(
+          `[AUTH: protect] No user found for ID: ${decoded.id}`
+        );
         return res.status(401).json({ message: "User not found" });
       }
 
-      console.log('Decoded JWT payload:', decoded);
+      // ✅ CRITICAL FIX: attach user to request
+      req.user = user;
 
-      logger.info(`[AUTH: protect] Token validated for user: ${decoded.email || 'unknown'}`);
+      // (Optional but useful) also attach decoded token
+      req.auth = decoded;
 
       logger.info(
-        `[AUTH: protect] Token validated for user: ${user.email}`
+        `[AUTH: protect] Token validated for user: ${user.email} (role: ${user.role})`
       );
 
       return next();
     } catch (err) {
-      logger.warn(`[AUTH: protect] Token verification failed: ${err.message}`);
-      return res.status(401).json({ message: "Not authorized, token failed" });
+      logger.warn(
+        `[AUTH: protect] Token verification failed: ${err.message}`
+      );
+      return res
+        .status(401)
+        .json({ message: "Not authorized, token failed" });
     }
   }
 
