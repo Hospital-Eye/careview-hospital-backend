@@ -7,7 +7,6 @@ const { logger } = require('../utils/logger');
 //Middleware to protect routes (Authentication)
 const protect = async (req, res, next) => {
   let token;
-
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith("Bearer ")
@@ -25,7 +24,9 @@ const protect = async (req, res, next) => {
         return res.status(401).json({ message: "User not found" });
       }
 
-      req.user = user;
+      console.log('Decoded JWT payload:', decoded);
+
+      logger.info(`[AUTH: protect] Token validated for user: ${decoded.email || 'unknown'}`);
 
       logger.info(
         `[AUTH: protect] Token validated for user: ${user.email}`
