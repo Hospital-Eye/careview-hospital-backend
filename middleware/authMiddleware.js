@@ -6,7 +6,6 @@ const { logger } = require('../utils/logger');
 //Middleware to protect routes (Authentication)
 const protect = (req, res, next) => {
   let token;
-
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith('Bearer ')
@@ -17,6 +16,8 @@ const protect = (req, res, next) => {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
       req.user = decoded;
+
+      console.log('Decoded JWT payload:', decoded);
 
       logger.info(`[AUTH: protect] Token validated for user: ${decoded.email || 'unknown'}`);
 

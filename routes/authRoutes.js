@@ -40,87 +40,100 @@ module.exports = (
   const ALLOWED_DOMAINS = ["sigmahealthsense.com", "usc.edu"];
 
   router.get("/auth/google/callback", async (req, res) => {
-    const { code } = req.query;
+  const { code } = req.query;
 
-    try {
-      const { data } = await axios.post("https://oauth2.googleapis.com/token", {
-        client_id: GOOGLE_CLIENT_ID,
-        client_secret: GOOGLE_CLIENT_SECRET,
-        code,
-        redirect_uri: GOOGLE_REDIRECT_URI,
-        grant_type: "authorization_code",
+  try {
+    // Exchange code for access token
+    const { data } = await axios.post("https://oauth2.googleapis.com/token", {
+      client_id: GOOGLE_CLIENT_ID,
+      client_secret: GOOGLE_CLIENT_SECRET,
+      code,
+      redirect_uri: GOOGLE_REDIRECT_URI,
+      grant_type: "authorization_code",
+    });
+
+    const { access_token } = data;
+
+    // Get Google profile
+    const { data: profile } = await axios.get(
+      "https://www.googleapis.com/oauth2/v1/userinfo",
+      { headers: { Authorization: `Bearer ${access_token}` } }
+    );
+
+    const userEmail = profile.email.toLowerCase();
+    const domain = userEmail.split("@")[1];
+    const role = ALLOWED_DOMAINS.includes(domain) ? "nurse" : "user";
+
+    // ✅ STEP 1: Find by Google ID
+    let user = await User.findOne({
+      where: { googleId: profile.id },
+    });
+
+    // ✅ STEP 2: If not found, find by email
+    if (!user) {
+      user = await User.findOne({
+        where: { email: userEmail },
       });
+    }
 
-      const { access_token } = data;
-
-      const { data: profile } = await axios.get(
-        "https://www.googleapis.com/oauth2/v1/userinfo",
-        { headers: { Authorization: `Bearer ${access_token}` } }
-      );
-
-      const userEmail = profile.email.toLowerCase();
-      const domain = userEmail.split("@")[1];
-      const role = ALLOWED_DOMAINS.includes(domain) ? "nurse" : "user";
-
-      const { Op } = require("sequelize");
-
-      let user = await User.findOne({
-        where: {
-          [Op.or]: [{ googleId: profile.id }, { email: userEmail }],
-        },
+    // ✅ STEP 3: If still not found → create user
+    if (!user) {
+      user = await User.create({
+        googleId: profile.id,
+        email: userEmail,
+        name: profile.name,
+        profilePicture: profile.picture,
+        role,
+        organizationId: "sigma-healthsense",
+        clinicId: "newhope-1",
+        isActive: true,
       });
-
-      if (!user) {
-        user = await User.create({
-          googleId: profile.id,
-          email: userEmail,
-          name: profile.name,
-          profilePicture: profile.picture,
-          role,
-          organizationId: "sigma-healthsense",
-          clinicId: "newhope-1",
-          isActive: true,
-        });
-      } else {
-        if (!user.isActive) {
-          return res.redirect(
-            `${FRONTEND_BASE_URL}/login?error=account_inactive`
-          );
-        }
-
-        await user.update({
-          googleId: profile.id,
-          name: profile.name,
-          profilePicture: profile.picture,
-        });
+    } else {
+      // ❗ Block inactive users
+      if (!user.isActive) {
+        return res.redirect(
+          `${FRONTEND_BASE_URL}/login?error=account_inactive`
+        );
       }
 
-      const payload = {
-        id: user.id,
-        email: user.email,
-        role: user.role,
-        organizationId: user.organizationId,
-        clinicId: user.clinicId,
-      };
+      // ✅ Link Google ID if missing
+      if (!user.googleId) {
+        await user.update({ googleId: profile.id });
+      }
 
-      const token = jwt.sign(payload, process.env.JWT_SECRET, {
-        expiresIn: "24h",
+      // ✅ Always update profile info
+      await user.update({
+        name: profile.name,
+        profilePicture: profile.picture,
       });
-
-      return res.redirect(`${FRONTEND_BASE_URL}/dashboard?token=${token}`);
-    } catch (err) {
-      console.error("GOOGLE OAUTH ERROR:", err);
-      console.error("GOOGLE OAUTH RESPONSE:", err?.response?.data);
-      console.error("GOOGLE OAUTH STATUS:", err?.response?.status);
-
-      logger.error(`Google OAuth error: ${err.message}`);
-
-  return res.redirect(
-    `${FRONTEND_BASE_URL}/login?error=google_oauth_failed`
-  );
-
     }
-  });
+
+    // ✅ Generate JWT from correct user
+    const payload = {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      organizationId: user.organizationId,
+      clinicId: user.clinicId,
+    };
+
+    const token = jwt.sign(payload, process.env.JWT_SECRET, {
+      expiresIn: "24h",
+    });
+
+    return res.redirect(`${FRONTEND_BASE_URL}/dashboard?token=${token}`);
+  } catch (err) {
+    console.error("GOOGLE OAUTH ERROR:", err);
+    console.error("GOOGLE OAUTH RESPONSE:", err?.response?.data);
+    console.error("GOOGLE OAUTH STATUS:", err?.response?.status);
+
+    logger.error(`Google OAuth error: ${err.message}`);
+
+    return res.redirect(
+      `${FRONTEND_BASE_URL}/login?error=google_oauth_failed`
+    );
+  }
+});
 
   //EMAIL SIGNUP
 
