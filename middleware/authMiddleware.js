@@ -1,35 +1,46 @@
 const jwt = require('jsonwebtoken'); 
-const User = require('../models/User'); 
+const db = require('../models'); 
+const User = db.User;
 const { Op } = require('sequelize');
 const { logger } = require('../utils/logger');
 
 //Middleware to protect routes (Authentication)
-const protect = (req, res, next) => {
+const protect = async (req, res, next) => {
   let token;
   if (
     req.headers.authorization &&
-    req.headers.authorization.startsWith('Bearer ')
+    req.headers.authorization.startsWith("Bearer ")
   ) {
     try {
-      token = req.headers.authorization.split(' ')[1];
+      token = req.headers.authorization.split(" ")[1];
 
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-      req.user = decoded;
+      const user = await User.findByPk(decoded.id, {
+        attributes: ["id", "email", "role", "organizationId", "clinicId"]
+      });
+
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
 
       console.log('Decoded JWT payload:', decoded);
 
       logger.info(`[AUTH: protect] Token validated for user: ${decoded.email || 'unknown'}`);
 
-      return next(); 
+      logger.info(
+        `[AUTH: protect] Token validated for user: ${user.email}`
+      );
+
+      return next();
     } catch (err) {
       logger.warn(`[AUTH: protect] Token verification failed: ${err.message}`);
-      return res.status(401).json({ message: 'Not authorized, token failed' });
+      return res.status(401).json({ message: "Not authorized, token failed" });
     }
   }
 
-  logger.warn('[AUTH: protect] No token provided in request');
-  return res.status(401).json({ message: 'Not authorized, no token' });
+  logger.warn("[AUTH: protect] No token provided in request");
+  return res.status(401).json({ message: "Not authorized, no token" });
 };
 
 //Middleware for role-based authorization

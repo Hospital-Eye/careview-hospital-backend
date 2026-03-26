@@ -21,6 +21,7 @@ module.exports = {
       freezeTableName: true
     }
   },
+
   test: {
     username: process.env.POSTGRES_USER || 'postgres',
     password: process.env.POSTGRES_PASSWORD || 'password',
@@ -41,12 +42,12 @@ module.exports = {
       freezeTableName: true
     }
   },
+
   production: {
     username: process.env.POSTGRES_USER,
     password: process.env.POSTGRES_PASSWORD,
     database: process.env.POSTGRES_DB,
-    host: process.env.POSTGRES_HOST,
-    port: process.env.POSTGRES_PORT || 5432,
+    host: process.env.POSTGRES_HOST, // /cloudsql/... in Cloud Run
     dialect: 'postgres',
     logging: false,
     pool: {
@@ -59,12 +60,8 @@ module.exports = {
       timestamps: true,
       underscored: false,
       freezeTableName: true
-    },
-    dialectOptions: {
-      ssl: process.env.DB_SSL === 'true' ? {
-        require: true,
-        rejectUnauthorized: false
-      } : false
     }
+    // ❌ No port
+    // ❌ No SSL (Cloud SQL socket doesn’t need it)
   }
 };

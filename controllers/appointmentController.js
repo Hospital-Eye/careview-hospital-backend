@@ -2,7 +2,92 @@ const { Appointment } = require('../models');
 const { Op } = require('sequelize');
 const { sequelize } = require('../config/db');
 const { logger } = require('../utils/logger');
+const axios = require("axios");
 
+//schedule new appointment via portal
+const scheduleAppointment = async (req, res) => {
+  const endpoint = "scheduleAppointment";
+  const userEmail = req.user?.email || "unknown";
+
+  logger.info(`[${endpoint}] Request to schedule appointment received from user: ${userEmail}`);
+
+  try {
+    const { patientId, doctorId, startTime, endTime, patientName, patientEmail } = req.body;
+
+    // org + clinic scope injected by middleware
+    const scopeFilter = req.scopeFilter || {};
+
+    // Basic validation
+    if (!patientId || !doctorId || !startTime || !patientName || !patientEmail) {
+      logger.warn(`[${endpoint}] Missing required fields`);
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    // Optional: prevent duplicate booking attempt in your DB (soft check)
+    const existing = await Appointment.findOne({
+      where: {
+        patientId,
+        startTime: new Date(startTime),
+        ...scopeFilter
+      }
+    });
+
+    if (existing) {
+      logger.warn(`[${endpoint}] Duplicate booking attempt detected`);
+      return res.status(409).json({ message: "Appointment already exists" });
+    }
+
+    // 🔥 Call Cal.com API
+    const calResponse = await axios.post(
+      "https://api.cal.com/v1/bookings",
+      {
+        eventTypeId: process.env.CAL_EVENT_TYPE_ID,
+        start: startTime,
+        end: endTime, // optional depending on your event type
+        responses: {
+          name: patientName,
+          email: patientEmail
+        },
+        metadata: {
+          patientId,
+          doctorId,
+          source: "portal",
+          orgId: scopeFilter.orgId,
+          clinicId: scopeFilter.clinicId
+        }
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.CAL_API_KEY}`,
+          "Content-Type": "application/json"
+        }
+      }
+    );
+
+    logger.info(
+      `[${endpoint}] Booking created in Cal.com for patientId=${patientId}, doctorId=${doctorId}`
+    );
+
+    return res.status(200).json({
+      message: "Appointment scheduled successfully",
+      calBookingId: calResponse.data?.id || null
+    });
+
+  } catch (err) {
+    logger.error(
+      `[${endpoint}] Error scheduling appointment: ${err.response?.data || err.message}`,
+      { stack: err.stack }
+    );
+
+    return res.status(500).json({
+      error: "Failed to schedule appointment"
+    });
+  }
+};
+
+module.exports = {
+  scheduleAppointment
+};
 
 //Get all appointments
 const getAppointments = async (req, res) => {
@@ -279,6 +364,7 @@ const cancelAppointmentById = async (req, res) => {
 };
 
 module.exports = {
+  scheduleAppointment,
   getAppointments,
   getAppointmentById,
   getAppointmentsByPatientId,
