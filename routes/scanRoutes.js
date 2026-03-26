@@ -1,6 +1,6 @@
 const express = require("express");
 const multer = require("multer");
-
+const dicomParser = require("dicom-parser");
 
 const { getScans, uploadScan, getScansByPatientId, saveAIAnalysis, addDoctorReviewByScanId, generateReport, getFinalReportByScanId, getFinalReportsByPatientId } = require("../controllers/scanController");
 

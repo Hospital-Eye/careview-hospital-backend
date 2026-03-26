@@ -6,6 +6,7 @@ const { logger } = require("../utils/logger");
 const bcrypt = require("bcrypt");
 const nodemailer = require("nodemailer");
 require("dotenv").config();
+const { OAuth2Client } = require("google-auth-library");
 
 module.exports = (
   GOOGLE_CLIENT_ID,
@@ -33,7 +34,7 @@ module.exports = (
   //GOOGLE LOGIN
 
   router.get("/auth/google", (req, res) => {
-    const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${GOOGLE_REDIRECT_URI}&response_type=code&scope=profile email`;
+    const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${GOOGLE_REDIRECT_URI}&response_type=code&scope=profile email&prompt=select_account`;
     res.redirect(url);
   });
 
@@ -52,14 +53,32 @@ module.exports = (
       grant_type: "authorization_code",
     });
 
-    const { access_token } = data;
+    const { id_token } = data;
 
-    // Get Google profile
-    const { data: profile } = await axios.get(
-      "https://www.googleapis.com/oauth2/v1/userinfo",
-      { headers: { Authorization: `Bearer ${access_token}` } }
-    );
 
+    const client = new OAuth2Client(GOOGLE_CLIENT_ID);
+
+    // Verify the ID token
+    const ticket = await client.verifyIdToken({
+      idToken: id_token,
+      audience: GOOGLE_CLIENT_ID,
+    });
+
+    // Extract verified user info
+    const googlePayload = ticket.getPayload();
+
+    // 🔍 Debug (keep temporarily)
+    console.log("GOOGLE PAYLOAD:", googlePayload);
+
+    // Build profile object (same shape as before)
+    const profile = {
+      id: googlePayload.sub,              // Google unique ID
+      email: googlePayload.email,
+      name: googlePayload.name,
+      picture: googlePayload.picture,
+    };
+
+    // Normalize email
     const userEmail = profile.email.toLowerCase();
     const domain = userEmail.split("@")[1];
     const role = ALLOWED_DOMAINS.includes(domain) ? "nurse" : "user";
