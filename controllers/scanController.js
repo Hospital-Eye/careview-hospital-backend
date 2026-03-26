@@ -6,6 +6,9 @@ const { logger } = require('../utils/logger');
 const PdfPrinter = require("pdfmake");
 const { uploadBuffer, getSignedUrl } = require("../utils/gcs");
 const multer = require("multer");
+const fs = require("fs");
+const dicomParser = require("dicom-parser");
+
 
 // Use memory storage so we get req.file.buffer
 const storage = multer.memoryStorage();
@@ -68,7 +71,7 @@ const uploadScan = async (req, res) => {
   logger.info(`[${endpoint}] Incoming request to upload a new scan from user: ${userEmail}`);
 
   try {
-    // Check that a file was uploaded
+    // 1️⃣ Check that a file was uploaded
     if (!req.file) {
       logger.warn(`[${endpoint}] No file uploaded`);
       return res.status(400).json({ error: "No file uploaded" });
@@ -80,18 +83,41 @@ const uploadScan = async (req, res) => {
     logger.debug(`[${endpoint}] Uploader info: ${JSON.stringify({ id: req.user?.id, email: req.user?.email, role: req.user?.role })}`);
     logger.debug(`[${endpoint}] req.file: ${JSON.stringify({ originalname: req.file.originalname, mimetype: req.file.mimetype, size: req.file.size })}`);
 
-    // Find patient
+    // 2️⃣ Find patient
     const patient = await Patient.findOne({ where: { name: patientName, mrn } });
     if (!patient) {
       logger.warn(`[${endpoint}] Patient not found for name="${patientName}" and MRN="${mrn}"`);
       return res.status(404).json({ error: "Patient not found" });
     }
 
-    // Upload to GCS
-    const gcsPath = `reports/${patient.id}/scan_${Date.now()}.pdf`;
-    const fileUrl = await uploadBuffer(req.file.buffer, gcsPath, req.file.mimetype);
+    // 3️⃣ Determine file extension
+    const ext = path.extname(req.file.originalname).toLowerCase();
 
-    // Save scan record in DB
+    // 4️⃣ DICOM validation (if .dcm)
+    if (ext === '.dcm') {
+      try {
+        dicomParser.parseDicom(req.file.buffer);
+      } catch (err) {
+        logger.warn(`[${endpoint}] Invalid DICOM file uploaded`);
+        return res.status(400).json({ error: "Invalid DICOM file" });
+      }
+    }
+
+    // 5️⃣ GCS path & MIME type
+    const gcsPath = `reports/${patient.id}/scan_${Date.now()}${ext}`;
+    const mimeType = ext === '.dcm' ? 'application/dicom' : req.file.mimetype;
+
+    // 6️⃣ Upload to GCS
+    const fileUrl = await uploadBuffer(req.file.buffer, gcsPath, mimeType);
+
+    // 7️⃣ Optional: save a local copy in dev
+    if (process.env.NODE_ENV === 'development') {
+      const localUploadPath = path.join(__dirname, "../uploads/scans");
+      if (!fs.existsSync(localUploadPath)) fs.mkdirSync(localUploadPath, { recursive: true });
+      fs.writeFileSync(path.join(localUploadPath, req.file.originalname), req.file.buffer);
+    }
+
+    // 8️⃣ Save scan record in DB
     const scan = await Scan.create({
       organizationId: patient.organizationId,
       clinicId: patient.clinicId,
@@ -114,6 +140,7 @@ const uploadScan = async (req, res) => {
     return res.status(500).json({ error: "Server error while uploading scan", details: err?.message });
   }
 };
+
 
 // GET all scans by patientId
 const getScansByPatientId = async (req, res) => {

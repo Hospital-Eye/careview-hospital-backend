@@ -5,6 +5,7 @@ const connectDB = require('./config/db');
 const db = require('./models');
 const { initCleanupCron } = require('./utils/cleanup-cron');
 const { logger } = require('./utils/logger');
+const dicomParser = require("dicom-parser");
 
 dotenv.config();
 const app = express();
