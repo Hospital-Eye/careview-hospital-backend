@@ -55,10 +55,9 @@ jobs:
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy ${{ secrets.BACKEND_SERVICE_NAME }} \
-            --image $IMAGE \
-            --region ${{ secrets.REGION }} \
-            --platform managed \
-            --service-account ${{ secrets.BACKEND_SERVICE_ACCOUNT_EMAIL }} \
-            --add-cloudsql-instances ${{ secrets.CLOUDSQL_INSTANCE }} \
-            --set-env-vars "POSTGRES_USER=${{ secrets.POSTGRES_USER }},POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }},POSTGRES_DB=${{ secrets.POSTGRES_DB }},POSTGRES_HOST=${{ secrets.POSTGRES_HOST }},JWT_SECRET=${{ secrets.JWT_SECRET }},GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }},GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }},GOOGLE_REDIRECT_URI=${{ secrets.GOOGLE_REDIRECT_URI }},FRONTEND_BASE_URL=${{ secrets.FRONTEND_BASE_URL }},NODE_ENV=${{ secrets.NODE_ENV }},DEFAULT_ORGANIZATION_ID=${{ secrets.DEFAULT_ORGANIZATION_ID }},DEFAULT_CLINIC_ID=${{ secrets.DEFAULT_CLINIC_ID }},CAL_WEBHOOK_SECRET=${{ secrets.CAL_WEBHOOK_SECRET }},SMTP_HOST=${{ secrets.SMTP_HOST }},SMTP_PORT=${{ secrets.SMTP_PORT }},SMTP_SECURE=${{ secrets.SMTP_SECURE }},SMTP_USER=${{ secrets.SMTP_USER }},SMTP_PASS=${{ secrets.SMTP_PASS }}, GCS_BUCKET_NAME=${{ secrets.GCS_BUCKET_NAME }}" \
-
+          --image $IMAGE \
+          --region ${{ secrets.REGION }} \
+          --platform managed \
+          --service-account ${{ secrets.BACKEND_SERVICE_ACCOUNT_EMAIL }} \
+          --set-cloudsql-instances ${{ secrets.POSTGRES_HOST }} \
+          --set-env-vars "POSTGRES_USER=${{ secrets.POSTGRES_USER }},POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }},POSTGRES_DB=${{ secrets.POSTGRES_DB }},POSTGRES_HOST=/cloudsql/${{ secrets.POSTGRES_HOST }},JWT_SECRET=${{ secrets.JWT_SECRET }},GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }},GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }},GOOGLE_REDIRECT_URI=${{ secrets.GOOGLE_REDIRECT_URI }},FRONTEND_BASE_URL=${{ secrets.FRONTEND_BASE_URL }},NODE_ENV=${{ secrets.NODE_ENV }},DEFAULT_ORGANIZATION_ID=${{ secrets.DEFAULT_ORGANIZATION_ID }},DEFAULT_CLINIC_ID=${{ secrets.DEFAULT_CLINIC_ID }},CAL_WEBHOOK_SECRET=${{ secrets.CAL_WEBHOOK_SECRET }},SMTP_HOST=${{ secrets.SMTP_HOST }},SMTP_PORT=${{ secrets.SMTP_PORT }},SMTP_SECURE=${{ secrets.SMTP_SECURE }},SMTP_USER=${{ secrets.SMTP_USER }},SMTP_PASS=${{ secrets.SMTP_PASS }},GCS_BUCKET_NAME=${{ secrets.GCS_BUCKET_NAME }}"
