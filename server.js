@@ -77,6 +77,9 @@ if (GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET && GOOGLE_REDIRECT_URI && FRONTEND_
   console.warn('⚠️ Google OAuth env not fully set; authRoutes disabled.');
 }
 
+logger.info(`NODE_ENV: ${process.env.NODE_ENV}`);
+logger.info(`POSTGRES_HOST: ${process.env.POSTGRES_HOST}`);
+
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, '0.0.0.0', () => {
