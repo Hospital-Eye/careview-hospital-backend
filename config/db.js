@@ -23,7 +23,7 @@ const sequelize = new Sequelize(
     ...(isCloudSQL
       ? {
           dialectOptions: {
-            socketPath: config.host, // ✅ Cloud SQL socket
+            host: config.host, // ✅ Cloud SQL socket
           },
         }
       : {
