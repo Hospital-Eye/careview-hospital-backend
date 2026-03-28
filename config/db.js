@@ -6,6 +6,34 @@ const env = process.env.NODE_ENV || 'development';
 const config = require('./sequelize.js')[env];
 
 // Detect Cloud SQL socket
+const isCloudSQL = config.host?.startsWith('/');
+
+const sequelize = isCloudSQL
+  ? new Sequelize(
+      // pg reads ?host= as the Unix socket directory — bypasses all Sequelize normalization
+      `postgres://${config.username}:${encodeURIComponent(config.password)}@/${config.database}?host=${config.host}`,
+      {
+        dialect: 'postgres',
+        logging: config.logging,
+        pool: config.pool,
+        define: config.define,
+      }
+    )
+  : new Sequelize(
+      config.database,
+      config.username,
+      config.password,
+      {
+        dialect: config.dialect,
+        host: config.host,
+        port: config.port,
+        logging: config.logging,
+        pool: config.pool,
+        define: config.define,
+        dialectOptions: config.dialectOptions || {},
+      }
+    );
+/*
 const isCloudSQL =
   config.host && config.host.startsWith('/cloudsql');
 
@@ -32,7 +60,7 @@ const sequelize = new Sequelize(
           dialectOptions: config.dialectOptions || {},
         }),
   }
-);
+);*/
 
 const connectDB = async () => {
   try {
