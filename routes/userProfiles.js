@@ -24,6 +24,8 @@ router.get('/', protect, async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
+      clinicName: user.clinic ? user.clinic.name : null,
+      organizationName: user.organization ? user.organization.name : null,
       profilePicture: user.profilePicture || null,
     };
 

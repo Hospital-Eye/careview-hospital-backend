@@ -152,6 +152,8 @@ const getScansByPatientId = async (req, res) => {
     `[${endpoint}] Request to view scans of patientId=${patientId} received from user: ${userEmail}`
   );
 
+  let scans;
+
   try {
     // Find the patient by ID
     const patient = await Patient.findOne({ where: { id: patientId } });
@@ -162,18 +164,25 @@ const getScansByPatientId = async (req, res) => {
     }
 
     // Fetch ALL scans for this patient
-    const scans = await Scan.findAll({
-      where: { patientId },
-      include: [
-        { model: Patient, as: "patient" },
-        { 
-          model: User, 
-          as: "uploader",
-          attributes: ["id", "name", "email"]
-        }
-      ],
-      order: [["createdAt", "DESC"]],
-    });
+    try {
+      scans = await Scan.findAll({
+        where: { patientId },
+        include: [
+          { model: Patient, as: "patient" },
+          { 
+            model: User, 
+            as: "uploader",
+            attributes: ["id", "name", "email"]
+          }
+        ],
+        order: [["createdAt", "DESC"]],
+      });
+    } catch (error) {
+      console.error("Message :", error.message);
+      console.error("Original:", error.original); // actual Postgres error
+      console.error("SQL     :", error.sql);       // exact query that failed
+      throw error;
+    }
 
     if (!scans.length) {
       logger.info(`[${endpoint}] No scans found for patientId=${patient.id}`);
