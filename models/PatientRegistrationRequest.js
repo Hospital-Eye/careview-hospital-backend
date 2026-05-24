@@ -30,6 +30,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.BOOLEAN,
       defaultValue: false
     },
+    clinicalHistory: DataTypes.TEXT,
     requiresIsolationPrecautions: DataTypes.BOOLEAN,
     allergies: DataTypes.ARRAY(DataTypes.STRING),
     diagnoses: DataTypes.ARRAY(DataTypes.STRING),

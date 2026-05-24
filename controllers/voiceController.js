@@ -13,7 +13,7 @@ const identityCheck = async (req, res) => {
 
     let { email, phone, dob, name } = req.body;
 
-    // 🧼 normalize inputs
+    // normalize inputs
     email = email?.toLowerCase().trim() || null;
     phone = phone?.trim() || null;
     name = name?.trim() || null;
@@ -25,7 +25,7 @@ const identityCheck = async (req, res) => {
       });
     }
 
-    // 🔎 Find existing user by email OR phone
+    // Find existing user by email OR phone
     const user = await User.findOne({
       where: {
         [Op.or]: [
@@ -35,7 +35,7 @@ const identityCheck = async (req, res) => {
       },
     });
 
-    // ✅ CASE 1 — Patient exists
+    // CASE 1 — Patient exists
     if (user && user.role === "patient") {
       return res.json({
         status: "patient_exists",
@@ -43,7 +43,7 @@ const identityCheck = async (req, res) => {
       });
     }
 
-    // ✅ CASE 2 — User exists but not patient
+    // CASE 2 — User exists but not patient
     if (user && user.role === "user") {
       return res.json({
         status: "user_exists",
@@ -51,14 +51,14 @@ const identityCheck = async (req, res) => {
       });
     }
 
-    // 🚨 PREVENT creating users without email
+    // PREVENT creating users without email
     if (!email) {
       return res.json({
         status: "insufficient_identity",
       });
     }
 
-    // ✅ CASE 3 — Create new temp user
+    // CASE 3 — Create new temp user
     const newUser = await User.create({
       id: uuidv4(),
       email,
