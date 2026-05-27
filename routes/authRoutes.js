@@ -67,9 +67,6 @@ module.exports = (
     // Extract verified user info
     const googlePayload = ticket.getPayload();
 
-    // 🔍 Debug (keep temporarily)
-    console.log("GOOGLE PAYLOAD:", googlePayload);
-
     // Build profile object (same shape as before)
     const profile = {
       id: googlePayload.sub,              // Google unique ID

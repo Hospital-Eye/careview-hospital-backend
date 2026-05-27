@@ -15,7 +15,7 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 //GET all scans
-const getScans = async (req, res) => {
+const getScans = async (req, res, next) => {
   const endpoint = 'getScans';
   const userEmail = req.user?.email || 'unknown';
 
@@ -59,12 +59,12 @@ const getScans = async (req, res) => {
 
   } catch (err) {
     logger.error(`[${endpoint}] Error in getScans: ${err.stack}`);
-    res.status(500).json({ error: "Server error while fetching scans" });
+    return next(err);
   }
 };
 
 //Upload a Scan
-const uploadScan = async (req, res) => {
+const uploadScan = async (req, res, next) => {
   const endpoint = 'uploadScan';
   const userEmail = req.user?.email || 'unknown';
 
@@ -137,13 +137,13 @@ const uploadScan = async (req, res) => {
     logger.error(`[${endpoint}] Error in uploadScan: ${err?.message}`);
     logger.error(`[${endpoint}] Full Error: ${JSON.stringify(err, null, 2)}`);
     logger.error(err);
-    return res.status(500).json({ error: "Server error while uploading scan", details: err?.message });
+    return next(err);
   }
 };
 
 
 // GET all scans by patientId
-const getScansByPatientId = async (req, res) => {
+const getScansByPatientId = async (req, res, next) => {
   const endpoint = "getScansByPatientId";
   const userEmail = req.user?.email || "unknown";
   const patientId = req.params.patientId;
@@ -178,9 +178,11 @@ const getScansByPatientId = async (req, res) => {
         order: [["createdAt", "DESC"]],
       });
     } catch (error) {
-      console.error("Message :", error.message);
-      console.error("Original:", error.original); // actual Postgres error
-      console.error("SQL     :", error.sql);       // exact query that failed
+      logger.error(`[${endpoint}] Scan query failed`, {
+        message: error.message,
+        original: error.original,
+        sql: error.sql
+      });
       throw error;
     }
 
@@ -215,9 +217,7 @@ const getScansByPatientId = async (req, res) => {
 
   } catch (err) {
     logger.error(`[${endpoint}] Error: ${err.stack}`);
-    return res.status(500).json({
-      error: "Server error while fetching scans",
-    });
+    return next(err);
   }
 };
 
@@ -242,7 +242,7 @@ const saveAIAnalysis = async (req, res) => {
 };
 
 //Add Doctor Review by Scan ID (preferred)
-const addDoctorReviewByScanId = async (req, res) => {
+const addDoctorReviewByScanId = async (req, res, next) => {
   const endpoint = "addDoctorReviewByScanId";
   const userEmail = req.user?.email || "unknown";
 
@@ -307,12 +307,12 @@ const addDoctorReviewByScanId = async (req, res) => {
 
   } catch (err) {
     logger.error(`[${endpoint}] Error: ${err.stack}`);
-    return res.status(500).json({ error: "Server error while saving doctor review" });
+    return next(err);
   }
 };
 
 //generate pdf
-const generateReport = async (req, res) => {
+const generateReport = async (req, res, next) => {
   const endpoint = "generateReport";
   const { scanId } = req.params;
   const userEmail = req.user?.email || "unknown";
@@ -471,10 +471,7 @@ const generateReport = async (req, res) => {
 
       } catch (err) {
         logger.error(`[${endpoint}] Failed uploading PDF`, err);
-
-        return res.status(500).json({
-          error: "Failed to upload report",
-        });
+        return next(err);
       }
     });
 
@@ -482,15 +479,11 @@ const generateReport = async (req, res) => {
 
   } catch (err) {
     logger.error(`[${endpoint}] Error generating PDF`, err);
-
-    return res.status(500).json({
-      error: "Failed to generate PDF",
-      details: err?.message,
-    });
+    return next(err);
   }
 };
 
-const getFinalReportByScanId = async (req, res) => {
+const getFinalReportByScanId = async (req, res, next) => {
   const endpoint = "getFinalReportByScanId";
 
   try {
@@ -549,16 +542,13 @@ const getFinalReportByScanId = async (req, res) => {
 
   } catch (error) {
     logger.error(`[${endpoint}] Error: ${error.message}`);
-    return res.status(500).json({
-      success: false,
-      error: "Failed to fetch review/report for this scan",
-    });
+    return next(error);
   }
 };
 
 
 // GET all final reports for a patient
-const getFinalReportsByPatientId = async (req, res) => {
+const getFinalReportsByPatientId = async (req, res, next) => {
   const endpoint = "getFinalReportsByPatientId";
   const userEmail = req.user?.email || "unknown";
   const { patientId } = req.params;
@@ -609,9 +599,7 @@ const getFinalReportsByPatientId = async (req, res) => {
 
   } catch (err) {
     logger.error(`[${endpoint}] Error: ${err.stack}`);
-    return res.status(500).json({
-      error: "Server error while fetching final reports",
-    });
+    return next(err);
   }
 };
 

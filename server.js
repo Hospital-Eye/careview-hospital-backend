@@ -5,12 +5,15 @@ const connectDB = require('./config/db');
 const db = require('./models');
 const { initCleanupCron } = require('./utils/cleanup-cron');
 const { logger } = require('./utils/logger');
+const { requestContext } = require('./middleware/requestContext');
+const { notFoundHandler, errorHandler } = require('./middleware/errorHandler');
 const dicomParser = require("dicom-parser");
 
 dotenv.config();
 const app = express();
 
 app.use(cors());
+app.use(requestContext);
 
 // --- For Cal webhooks: capture raw body for signature verification ---
 const calWebhookRoutes = require("./routes/calendarWebhookRoutes");
@@ -80,6 +83,8 @@ if (GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET && GOOGLE_REDIRECT_URI && FRONTEND_
 logger.info(`NODE_ENV: ${process.env.NODE_ENV}`);
 logger.info(`POSTGRES_HOST: ${process.env.POSTGRES_HOST}`);
 
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, '0.0.0.0', () => {

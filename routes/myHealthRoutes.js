@@ -12,8 +12,6 @@ router.get('/', protect, authorize('patient'), async (req, res) => {
   try {
     logger.info(`[${endpoint}] Fetching health data for user: ${req.user.email}`);
 
-    console.log("Body: ", req.body);
-
     const patient = await Patient.findOne({
       where: { userId: req.user.id }
     });

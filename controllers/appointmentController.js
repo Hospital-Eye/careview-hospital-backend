@@ -5,7 +5,7 @@ const { logger } = require('../utils/logger');
 const axios = require("axios");
 
 //schedule new appointment via portal
-const scheduleAppointment = async (req, res) => {
+const scheduleAppointment = async (req, res, next) => {
   const endpoint = "scheduleAppointment";
   const userEmail = req.user?.email || "unknown";
 
@@ -79,9 +79,7 @@ const scheduleAppointment = async (req, res) => {
       { stack: err.stack }
     );
 
-    return res.status(500).json({
-      error: "Failed to schedule appointment"
-    });
+    return next(err);
   }
 };
 
@@ -90,7 +88,7 @@ module.exports = {
 };
 
 //Get all appointments
-const getAppointments = async (req, res) => {
+const getAppointments = async (req, res, next) => {
   const endpoint = 'getAppointments';
   const userEmail = req.user?.email || 'unknown';
 
@@ -134,13 +132,13 @@ const getAppointments = async (req, res) => {
       `[${endpoint}] Error fetching appointments: ${err.message}`,
       { stack: err.stack }
     );
-    res.status(500).json({ error: err.message });
+    return next(err);
   }
 };
 
 
 //Get appointment by ID
-const getAppointmentById = async (req, res) => {
+const getAppointmentById = async (req, res, next) => {
   const endpoint = 'getAppointmentById';
   const userEmail = req.user?.email || 'unknown';
   const appointmentId = req.params.id;
@@ -184,17 +182,15 @@ const getAppointmentById = async (req, res) => {
       `[${endpoint}] Error fetching appointment id=${appointmentId}: ${err.message}`,
       { stack: err.stack }
     );
-    res.status(500).json({ error: err.message });
+    return next(err);
   }
 };
 
 // Get appointments by patient ID
-const getAppointmentsByPatientId = async (req, res) => {
+const getAppointmentsByPatientId = async (req, res, next) => {
   const endpoint = 'getAppointmentsByPatientId';
   const userEmail = req.user?.email || 'unknown';
   const patientId = req.params.patientId;
-
-  console.log("payload patientId", patientId);
 
   logger.info(
     `[${endpoint}] Request to view appointments for patientId=${patientId} from user=${userEmail}`
@@ -208,8 +204,6 @@ const getAppointmentsByPatientId = async (req, res) => {
       ...scopeFilter,
       patient_id: patientId
     };
-
-    console.log("constructed query", query);
 
     // Optional filters
     if (req.query.status) query.status = req.query.status;
@@ -242,12 +236,12 @@ const getAppointmentsByPatientId = async (req, res) => {
       `[${endpoint}] Error fetching appointments for patientId=${patientId}: ${err.message}`,
       { stack: err.stack }
     );
-    res.status(500).json({ error: err.message });
+    return next(err);
   }
 };
 
 // Reschedule appointment by ID
-const rescheduleAppointmentById = async (req, res) => {
+const rescheduleAppointmentById = async (req, res, next) => {
   const endpoint = 'rescheduleAppointmentById';
   const userEmail = req.user?.email || 'unknown';
   const appointmentId = req.params.id;
@@ -304,12 +298,12 @@ const rescheduleAppointmentById = async (req, res) => {
       `[${endpoint}] Error rescheduling appointment id=${appointmentId}: ${err.message}`,
       { stack: err.stack }
     );
-    res.status(500).json({ error: err.message });
+    return next(err);
   }
 };
 
 // Cancel appointment by ID
-const cancelAppointmentById = async (req, res) => {
+const cancelAppointmentById = async (req, res, next) => {
   const endpoint = 'cancelAppointmentById';
   const userEmail = req.user?.email || 'unknown';
   const appointmentId = req.params.id;
@@ -359,7 +353,7 @@ const cancelAppointmentById = async (req, res) => {
       `[${endpoint}] Error cancelling appointment id=${appointmentId}: ${err.message}`,
       { stack: err.stack }
     );
-    res.status(500).json({ error: err.message });
+    return next(err);
   }
 };
 

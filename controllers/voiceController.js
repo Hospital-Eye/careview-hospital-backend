@@ -9,7 +9,7 @@ dotenv.config();
 
 const identityCheck = async (req, res) => {
   try {
-    console.log("🧠 IDENTITY BODY FULL:", JSON.stringify(req.body, null, 2));
+    
 
     let { email, phone, dob, name } = req.body;
 
@@ -84,10 +84,6 @@ const identityCheck = async (req, res) => {
 
 const handleRetellEvent = async (req, res) => {
   try {
-    console.log("=================================");
-    console.log("EVENT WEBHOOK HIT");
-    console.log("Payload:", JSON.stringify(req.body, null, 2));
-    console.log("=================================");
 
     const { event, call } = req.body;
 
@@ -109,7 +105,6 @@ const handleRetellEvent = async (req, res) => {
           phone: call.from_number || call.to_number || null
         });
 
-        console.log("✅ CallLog created (call_started)");
       }
 
       // 🔹 CALL ENDED
@@ -124,7 +119,6 @@ const handleRetellEvent = async (req, res) => {
           { where: { callId } }
         );
 
-        console.log("✅ CallLog updated (call_ended)");
       }
 
       // 🔹 CALL ANALYZED
@@ -138,7 +132,6 @@ const handleRetellEvent = async (req, res) => {
           { where: { callId } }
         );
 
-        console.log("✅ CallLog updated (call_analyzed)");
       }
 
       return res.sendStatus(200);
@@ -156,8 +149,6 @@ const handleRetellEvent = async (req, res) => {
         const callId = (req.body.call_id || "").trim();
         const extraction = req.body.output || {};
 
-        console.log("📦 Extraction received for:", callId);
-
         await CallLog.upsert({
             callId,
             name: extraction.name || null,
@@ -166,18 +157,12 @@ const handleRetellEvent = async (req, res) => {
             finalized: true
         });
 
-        console.log("✅ Upsert complete");
-
         return res.sendStatus(200);
         }
-    /* =====================================================
-       🟡 UNKNOWN PAYLOAD
-    ====================================================== */
-    console.log("⚠️ Unknown webhook structure received");
     return res.sendStatus(200);
 
   } catch (err) {
-    console.error("❌ Retell Webhook Error:", err);
+    logger.error("❌ Retell Webhook Error:", err);
     return res.sendStatus(200); // prevent retries
   }
 };

@@ -5,7 +5,7 @@ const { validate: isUUID } = require('uuid');
 const { logger } = require('../utils/logger');
 
 //Create a new admission
-const createAdmission = async (req, res) => {
+const createAdmission = async (req, res, next) => {
   const endpoint = 'createAdmission';
   const userEmail = req.user?.email || 'unknown';
   const patientId = req.body?.patientId || 'unknown';
@@ -153,16 +153,16 @@ const createAdmission = async (req, res) => {
 
   } catch (err) {
     await t.rollback();
-    logger.error(`[${endpoint}] Error creating admission for patient ${patient.name} : ${err.message}`, {
+    logger.error(`[${endpoint}] Error creating admission for patientId=${patientId}: ${err.message}`, {
       stack: err.stack
     });
-    res.status(400).json({ error: err.message });
+    return next(err);
   }
 };
 
 
 //Get all admissions for the user's clinic and organization
-const getAdmissions = async (req, res) => {
+const getAdmissions = async (req, res, next) => {
   const endpoint = 'getAdmissions';
   const userEmail = req.user?.email || 'unknown';
   const clinicId = req.user?.clinicId || 'unknown';
@@ -203,12 +203,12 @@ const getAdmissions = async (req, res) => {
     logger.error(`[${endpoint}] Error in getAdmissions: ${err.message}`, {
       stack: err.stack
     });
-    res.status(500).json({ error: "Server error" });
+    return next(err);
   }
 };
 
 //Get admission by ID
-const getAdmissionById = async (req, res) => {
+const getAdmissionById = async (req, res, next) => {
   const endpoint = 'getAdmissionById';
   const userEmail = req.user?.email || 'unknown';     
   const admissionId = req.params.id;
@@ -241,13 +241,13 @@ const getAdmissionById = async (req, res) => {
       `[${endpoint}] Error in getAdmissionById: ${err.message}`,
       { stack: err.stack }
     );
-    res.status(400).json({ error: err.message });
+    return next(err);
   }
 };
 
 
 //Get active admission for a patient
-const getActiveAdmissionByPatient = async (req, res) => {
+const getActiveAdmissionByPatient = async (req, res, next) => {
   const endpoint = 'getActiveAdmissionByPatient';
   const userEmail = req.user?.email || 'unknown';     
   const admissionId = req.params.id;
@@ -276,12 +276,12 @@ const getActiveAdmissionByPatient = async (req, res) => {
       `[${endpoint}] Error in getAdmissionById: ${err.message}`,
       { stack: err.stack }
     );
-    res.status(500).json({ error: 'Server error: No active admission by patient found' });
+    return next(err);
   }
 };
 
 //Get admission by ID
-const getAdmissionsByDateRange = async (req, res) => {
+const getAdmissionsByDateRange = async (req, res, next) => {
   const endpoint = 'getAdmissionById';
   const userEmail = req.user?.email || 'unknown';     
   const clinicId = req.user?.clinicId || 'unknown';
@@ -311,13 +311,13 @@ const getAdmissionsByDateRange = async (req, res) => {
 
   } catch (err) {
     logger.error(`[${endpoint}] Error in getAdmissionById: ${err.message}`,{ stack: err.stack });
-    res.status(400).json({ error: err.message });
+    return next(err);
   }
 };
 
 
 //Update an admission
-const updateAdmission = async (req, res) => {
+const updateAdmission = async (req, res, next) => {
   const endpoint = 'updateAdmission';
   const userEmail = req.user?.email || 'unknown';     
   const admissionId = req.params.id;
@@ -335,12 +335,12 @@ const updateAdmission = async (req, res) => {
     const updated = await admission.update(req.body);
     res.json(updated);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    return next(err);
   }
 };
 
 //Update workflow stage
-const updateWorkflowStage = async (req, res) => {
+const updateWorkflowStage = async (req, res, next) => {
   const endpoint = 'updateWorkflowStage';
   const userEmail = req.user?.email || 'unknown';     
   const admissionId = req.params.id;
@@ -358,12 +358,12 @@ const updateWorkflowStage = async (req, res) => {
     const updated = await admission.update({ currentWorkflowStage: req.body.stage });
     res.json(updated);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    return next(err);
   }
 };
 
 //Transfer patient to another room
-const transferRoom = async (req, res) => {
+const transferRoom = async (req, res, next) => {
   const endpoint = 'transferRoom';
   const userEmail = req.user?.email || 'unknown';     
   const admissionId = req.params.id;
@@ -394,12 +394,12 @@ const transferRoom = async (req, res) => {
     res.json({ message: 'Patient transferred successfully', admission });
   } catch (err) {
     await t.rollback();
-    res.status(500).json({ error: 'Server error: Unable to transfer patient' });
+    return next(err);
   }
 };
 
 //Cancel an admission
-const cancelAdmission = async (req, res) => {
+const cancelAdmission = async (req, res, next) => {
   const endpoint = 'cancelAdmission';
   const userEmail = req.user?.email || 'unknown';     
   const admissionId = req.params.id;
@@ -433,12 +433,12 @@ const cancelAdmission = async (req, res) => {
     res.json({ message: 'Admission canceled successfully', admission });
   } catch (err) {
     await t.rollback();
-    res.status(500).json({ error: 'Server error: Unable to cancel admission' });
+    return next(err);
   }
 };
 
 //Delete an admission
-const deleteAdmission = async (req, res) => {
+const deleteAdmission = async (req, res, next) => {
   const endpoint = 'deleteAdmission';
   const userEmail = req.user?.email || 'unknown';     
   const admissionId = req.params.id;
@@ -477,7 +477,7 @@ const deleteAdmission = async (req, res) => {
   } catch (err) {
     await t.rollback();
     logger.error(`[${endpoint}] Error deleting admission ID=${admissionId}: ${err.message}`, { stack: err.stack });
-    res.status(500).json({ error: 'Server error: Unable to delete admission' });
+    return next(err);
   }
 };
 

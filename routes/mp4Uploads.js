@@ -49,8 +49,6 @@ router.post('/upload', (req, res, next) => {
           return res.status(400).json({ error: 'No file uploaded' });
         }
 
-        console.log('File uploaded:', req.file);
-
         const mp4File = await MP4File.create({
           filename: req.file.filename,
           originalName: req.file.originalname,

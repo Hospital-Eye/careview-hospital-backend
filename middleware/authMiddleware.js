@@ -19,7 +19,7 @@ const protect = async (req, res, next) => {
       // 🔐 Verify JWT
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-      console.log("Decoded JWT payload:", decoded);
+      logger.debug("[AUTH: protect] Decoded JWT payload", { userId: decoded.id });
 
       // 🔍 Fetch user from DB
       const user = await User.findByPk(decoded.id, {
@@ -188,8 +188,7 @@ const patientCheck = async (req, res, next) => {
     req._skipAuthorize = true;
     next();
   } catch (err) {
-    console.error("patientCheck error:", err);
-    res.status(500).json({ error: "Internal server error" });
+    return next(err);
   }
 };
 

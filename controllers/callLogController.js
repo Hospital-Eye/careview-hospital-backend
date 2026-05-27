@@ -5,21 +5,14 @@ const { logger } = require("../utils/logger");
 const finalizeVoiceCallService = require("../services/finalizeVoiceCallService");
 
 
-const retellWebhook = async (req, res) => {
+const retellWebhook = async (req, res, next) => {
   try {
     const body = req.body;
 
-    console.log("RETELL WEBHOOK:", JSON.stringify(body, null, 2));
-
-    /* =====================================================
-       🟢 1. CALL LIFECYCLE EVENTS (call_started / ended / analyzed)
-    ====================================================== */
     if (body?.event && body?.call?.call_id) {
 
       const { event, call } = body;
       const callId = call.call_id;
-
-      console.log("callId from webhook:", JSON.stringify(callId));
 
       const cleanCallId = callId?.trim();
 
@@ -36,14 +29,13 @@ const retellWebhook = async (req, res) => {
           finalized: false
         });
 
-        console.log("✅ CallLog created (call_started)");
         return res.sendStatus(200);
       }
 
       const callLog = await CallLog.findOne({ where: { callId } });
 
       if (!callLog) {
-        console.log("⚠️ CallLog not found for:", callId);
+        
         return res.sendStatus(200);
       }
 
@@ -56,7 +48,7 @@ const retellWebhook = async (req, res) => {
           disconnectionReason: call.disconnection_reason
         });
 
-        console.log("✅ Updated (call_ended)");
+        
         return res.sendStatus(200);
       }
 
@@ -116,6 +108,7 @@ const retellWebhook = async (req, res) => {
     if (body?.callId || body?.call_id) {
 
       const callId = body.callId || body.call_id;
+      const cleanCallId = callId?.trim();
 
       const callLog = await CallLog.findOne({
         where: { callId: cleanCallId }
@@ -187,16 +180,16 @@ const retellWebhook = async (req, res) => {
     /* =====================================================
        ❗ UNKNOWN STRUCTURE
     ====================================================== */
-    console.log("Unknown webhook structure");
+    logger.warn("Unknown webhook structure:", JSON.stringify(body, null, 2));
     return res.sendStatus(200);
 
   } catch (err) {
-    console.error("Retell webhook error:", err);
-    return res.sendStatus(200);
+    logger.error("Retell webhook error:", err);
+    return next(err);
   }
 };
 
-  const getAllCallTranscripts = async (req, res) => {
+  const getAllCallTranscripts = async (req, res, next) => {
   try {
     const calls = await CallLog.findAll({
       order: [["createdAt", "DESC"]]
@@ -205,14 +198,12 @@ const retellWebhook = async (req, res) => {
     return res.json(calls);
   } catch (err) {
     logger.error("[getAllCallTranscripts] Error", err);
-    return res.status(500).json({
-      error: "Failed to fetch call transcripts"
-    });
+    return next(err);
   }
 };
 
   //Get transcript by callId
-  const getCallTranscriptByCallId = async (req, res) => {
+  const getCallTranscriptByCallId = async (req, res, next) => {
     const { callId } = req.params;
 
     try {
@@ -225,7 +216,7 @@ const retellWebhook = async (req, res) => {
       return res.json(call);
     } catch (err) {
       logger.error("[getCallTranscriptByCallId] Error", err);
-      return res.status(500).json({ error: "Failed to fetch transcript" });
+      return next(err);
     }
   };
 
@@ -234,5 +225,4 @@ const retellWebhook = async (req, res) => {
   getAllCallTranscripts,
   getCallTranscriptByCallId
 };
-
 

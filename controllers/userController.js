@@ -457,8 +457,6 @@ const checkRegistrationState = async (req, res) => {
 const createStaffUser = async (req, res) => {
   const endpoint = "createStaffUser";
 
-  console.log("BODY FOR CREATE STAFF", req.body);
-
   logger.info(`[${endpoint}] Request received`, {
     body: {
       firstName: req.body.firstName,
